@@ -11,7 +11,17 @@
     </target>
 
     <!--define name="USE_SONAR" value="TRUE"/-->
+<!--
+	<define name="MT9F002_OUTPUT_WIDTH" value="1024"/>
+	<define name="MT9F002_OUTPUT_HEIGHT" value="1660"/>
+-->
+	<define name="MT9F002_OUTPUT_WIDTH" value="512"/>
+	<define name="MT9F002_OUTPUT_HEIGHT" value="830"/>
 
+	<define name="MT9F002_OUTPUT_SCALER" value="0.25"/>
+	<define name="MT9F002_INITIAL_OFFSET_X" value="750"/>
+
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="0"/>
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -37,7 +47,7 @@
 
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-
+<!--
     <module name="cv_detect_contour">
 	<define name="DETECT_CONTOUR_CAMERA" value="front_camera"/>
 	</module>
@@ -45,9 +55,9 @@
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
        <define name="CAMERA_ROTATED_180" value="TRUE"/>
-    </module>
+    </module>-->
     <module name="video_rtp_stream">
-       <define name="VIEWVIDEO_CAMERA" value="bottom_camera"/>
+       <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
     </module>
   </modules>
 
