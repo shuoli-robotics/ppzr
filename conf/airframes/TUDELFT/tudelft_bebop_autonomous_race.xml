@@ -19,9 +19,9 @@
 	<define name="MT9F002_OUTPUT_HEIGHT" value="830"/>
 
 	<define name="MT9F002_OUTPUT_SCALER" value="0.25"/>
-	<define name="MT9F002_INITIAL_OFFSET_X" value="750"/>
+	<define name="MT9F002_INITIAL_OFFSET_X" value="1550"/>
 
-	<define name="MT9F002_INITIAL_OFFSET_Y" value="0"/>
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="300"/>
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -47,15 +47,20 @@
 
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
+
+    <module name="cv_opencvdemo">
+	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
+    </module>
 <!--
     <module name="cv_detect_contour">
 	<define name="DETECT_CONTOUR_CAMERA" value="front_camera"/>
 	</module>
+
+-->
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-       <define name="CAMERA_ROTATED_180" value="TRUE"/>
-    </module>-->
+    </module>
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
     </module>
