@@ -26,7 +26,7 @@
 #include "modules/computer_vision/cv.h"
 #include "modules/computer_vision/cv_opencvdemo.h"
 #include "modules/computer_vision/opencv_example.h"
-
+#include "firmwares/rotorcraft/guidance/guidance_h.h"
 
 // Function
 struct image_t* opencv_func(struct image_t* img);
@@ -40,12 +40,21 @@ struct image_t* opencv_func(struct image_t* img)
   }
 
 // opencv_example(NULL, 10,10);
+  float yaw = stateGetNedToBodyEulers_f()->psi;  // will be wrapped to [-pi,pi] later
 
+  if(loc_y>img->h/2){
+   yaw+=0.1;
+	  }
+  else{
+	 yaw -=0.1;
+  }
+  guidance_h_set_guided_heading(yaw);
   return NULL;
 }
 
 void opencvdemo_init(void)
 {
   cv_add_to_device(&OPENCVDEMO_CAMERA, opencv_func);
+  opencv_init_rects();
 }
 
