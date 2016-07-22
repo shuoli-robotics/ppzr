@@ -116,7 +116,7 @@ void board_init2(void)
 
     // Initial values
     .target_fps = 5,
-    .target_exposure = 30,
+    .target_exposure = 70,
     .gain_green1 = 2.0,
     .gain_blue = 2.0,
     .gain_red = 2.0,

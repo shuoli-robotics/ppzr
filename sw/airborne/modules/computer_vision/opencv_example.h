@@ -33,6 +33,7 @@ extern int loc_y;
 extern int cvcolor_lum_min,cvcolor_lum_max,cvcolor_cb_min;
 extern int cvcolor_cb_max,cvcolor_cr_min,cvcolor_cr_max;
 extern int function_to_send_opencv;
+extern   float stddev_colors;
 int opencv_example(char *img, int width, int height);
 void opencv_init_rects(void);
 #ifdef __cplusplus

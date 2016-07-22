@@ -41,6 +41,8 @@ Point origin;
 Rect selection;
 RotatedRect trackBox;
 int loc_y;
+float stddev_colors=5.0;
+float prev_stddev_colors;
 /** my desk **/
 /*
 int cvcolor_lum_min=0,cvcolor_lum_max=53,cvcolor_cb_min=121;
@@ -48,10 +50,13 @@ int cvcolor_lum_min=0,cvcolor_lum_max=53,cvcolor_cb_min=121;
 /** Cyber zoo **/
 int cvcolor_lum_min=0,cvcolor_lum_max=178,cvcolor_cb_min=128;
  int cvcolor_cb_max=169,cvcolor_cr_min=109,cvcolor_cr_max=136;
- int function_to_send_opencv=2;
+ int function_to_send_opencv=4;
 clock_t begin;
 Mat image,thresh_image,mask;
-  Mat image_color,yuvimage;
+  Mat image_color,yuvimage,Z;
+  uint8_t red_lookup[256];
+  	    uint8_t green_lookup[256];
+  	    uint8_t blue_lookup[256];
  static unsigned int get_area_in_border(Mat image, int x,int y,int width_heigth){
 	 Point right_under(y+width_heigth,x+width_heigth);
 	 Point right_up(y,x+width_heigth);
@@ -70,18 +75,102 @@ Mat image,thresh_image,mask;
 	 printf("%s took %f seconds\n",name_part,elapsed_secs);
  }
 
+ void init_lookup_table(){
+	 float mean_red=100.0;
+	 		float mean_blue=-100.0;
+	 		float mean_green=140.0;
+	 		int max=80;
+	 		for(int x=0;x<255;x++){
+	 			red_lookup[x] = max * exp( -0.5 * pow( (x-mean_red)/stddev_colors, 2.0 ));
+	 			green_lookup[x] = max * exp( -0.5 * pow( (x-mean_green)/stddev_colors, 2.0 ));
+	 			blue_lookup[x] = max * exp( -0.5 * pow( (x-mean_blue)/stddev_colors, 2.0 ));
+	 		}
+ }
  void opencv_init_rects(){
 		selection = Rect(Point(0,0),Point(400,400));
-
+		prev_stddev_colors=stddev_colors;
+		init_lookup_table();
  }
 int opencv_example(char *img, int width, int height)
 {
+	 Mat lookUpTable(1, 256, CV_8U);
+	    uchar* p = lookUpTable.data;
+	    int m = 240;
+
+	    if(prev_stddev_colors!=stddev_colors){
+	    		init_lookup_table();
+	    		prev_stddev_colors=stddev_colors;
+	    }
   // Create a new image, using the original bebop image.
 	start_clock();
   Mat M(height, width, CV_8UC2, img);
-
+  Mat colorIntensityImage= Mat::zeros(height, width, CV_8U);
+  float alphas[3]={0.1,0.1,5.0};
   // If you want a color image, uncomment this line
   cvtColor(M, image, CV_YUV2BGR_Y422);
+  uchar lookup_table[256];
+    for(int x=0;x<256;x++){
+  	  lookup_table[x]=saturate_cast<uchar>(x);
+    }
+    for( int i = 0; i < 256; ++i)
+    	        p[i] = lookup_table[i];
+
+  // accept only char type matrices
+      CV_Assert(image.depth() == CV_8U);
+
+      int channels = image.channels();
+
+      int nRows = image.rows;
+      int nCols = image.cols * channels;
+
+      if (image.isContinuous())
+      {
+    	  printf("Continueous\n");
+          nCols *= nRows;
+          nRows = 1;
+      }
+
+      int i,j;
+//      uchar* p;
+      end_clock("start of setting");
+       start_clock();
+       uchar* colorIntensityPointer=colorIntensityImage.data;
+       int indexColorIntensityImage=0;
+      for( i = 0; i < nRows; ++i)
+      {
+          p = image.ptr<uchar>(i);
+          for ( j = 0; j < nCols; )
+          {
+        	  colorIntensityPointer[indexColorIntensityImage++]=blue_lookup[p[j]]+green_lookup[p[j+1]]+red_lookup[p[j+1]];
+              p[j++] = blue_lookup[p[j]];
+              p[j++] = green_lookup[p[j]];
+              p[j++] = red_lookup[p[j]];
+
+          }
+      }
+
+      end_clock("end of setting");
+       start_clock();
+
+//
+//         for( int y = 0; y < image.rows; y++ )
+//         {
+//       	  for( int x = 0; x < image.cols; x++ )
+//       	  { for( int c = 0; c < 3; c++ ) {
+//       //		  image.at<Vec3b>(y,x)[c] = saturate_cast<uchar>( alphas[c]*( image.at<Vec3b>(y,x)[c] ) ); }
+//       	 // image.at<Vec3b>(y,x)[c] = saturate_cast<uchar>( 1+( image.at<Vec3b>(y,x)[c] ) );
+//       	  image.at<Vec3b>(y,x)[c] = lookup_table[image.at<Vec3b>(y,x)[c]];
+//
+//       	  }
+//
+//       	  }
+//         }
+       end_clock("end of setting slowly");
+             start_clock();
+             LUT(image, lookUpTable, image);
+
+		       end_clock("end of setting very very fast");
+		             start_clock();
   // For a grayscale image, use this one
   //cvtColor(M, image, CV_YUV2GRAY_Y422);
    cvtColor(image, yuvimage, CV_BGR2YUV);
@@ -101,7 +190,7 @@ int opencv_example(char *img, int width, int height)
    int window_width=50;
    int border_width=10;
 
-    Mat Z = Mat::zeros(integral_image.rows,integral_image.cols, CV_8U);
+    Z = Mat::zeros(integral_image.rows,integral_image.cols, CV_8U);
 
 	for(int ypos=1;ypos<integral_image.cols-2*window_width-100;ypos++){
 		for(int xpos=1;xpos<integral_image.rows-2*window_width;xpos++){
@@ -166,15 +255,34 @@ int opencv_example(char *img, int width, int height)
   case 0: break; // do nothing. original image
   case 1:
 	  // thresholded image in range
-	   cvtColor(thresh_image, image, CV_GRAY2BGR);
-	  color_opencv_to_yuv422(image, img, width, height);
+//	   cvtColor(thresh_image, image, CV_GRAY2BGR);
+	  grayscale_opencv_to_yuv422(thresh_image, img, width, height);
 
 	  break;
   case 2:
 	  // something with the integral image
-	  cvtColor(Z, image, CV_GRAY2BGR);
-		  color_opencv_to_yuv422(image, img, width, height);
+//	  cvtColor(Z, image, CV_GRAY2BGR);
+	  grayscale_opencv_to_yuv422(Z, img, width, height);
 		  break;
+  case 3:
+ 	  // thresholded image in range
+// 	   cvtColor(yuvimage, image, CV_YUV2BGR);
+	  end_clock("camshift");
+		 	   	   start_clock();
+ 	  coloryuv_opencv_to_yuv422(yuvimage, img, width, height);
+ 	  end_clock("YUV TO YUV");
+ 		 	   	   start_clock();
+ 	  break;
+  case 4:
+   	  // thresholded image in range
+   	//   cvtColor(colorIntensityImage, image, CV_GRAY2BGR);
+	  end_clock("camshift");
+	 	   	   start_clock();
+   	grayscale_opencv_to_yuv422(colorIntensityImage, img, width, height);
+    end_clock("grayscale funcn now");
+   	   	   start_clock();
+   	  break;
+
   default: break; // do nothing. original image
   }
   end_clock("visualisation");
