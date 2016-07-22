@@ -52,11 +52,18 @@ int cvcolor_lum_min=0,cvcolor_lum_max=178,cvcolor_cb_min=128;
  int cvcolor_cb_max=169,cvcolor_cr_min=109,cvcolor_cr_max=136;
  int function_to_send_opencv=4;
 clock_t begin;
+float mean_red=100.0;
+float mean_blue=-100.0;
+float mean_green=140.0;
 Mat image,thresh_image,mask;
   Mat image_color,yuvimage,Z;
   uint8_t red_lookup[256];
-  	    uint8_t green_lookup[256];
-  	    uint8_t blue_lookup[256];
+uint8_t green_lookup[256];
+uint8_t blue_lookup[256];
+
+float y_lookup[256];
+float u_lookup[256];
+float v_lookup[256];
  static unsigned int get_area_in_border(Mat image, int x,int y,int width_heigth){
 	 Point right_under(y+width_heigth,x+width_heigth);
 	 Point right_up(y,x+width_heigth);
@@ -76,21 +83,60 @@ Mat image,thresh_image,mask;
  }
 
  void init_lookup_table(){
-	 float mean_red=100.0;
-	 		float mean_blue=-100.0;
-	 		float mean_green=140.0;
+
 	 		int max=80;
 	 		for(int x=0;x<255;x++){
 	 			red_lookup[x] = max * exp( -0.5 * pow( (x-mean_red)/stddev_colors, 2.0 ));
 	 			green_lookup[x] = max * exp( -0.5 * pow( (x-mean_green)/stddev_colors, 2.0 ));
 	 			blue_lookup[x] = max * exp( -0.5 * pow( (x-mean_blue)/stddev_colors, 2.0 ));
 	 		}
+
+
+	 		for(int x=0;x<255;x++){
+	 			y_lookup[x] = exp( -0.5 * pow( (x-((cvcolor_lum_min+cvcolor_lum_max)/2))/(abs(cvcolor_lum_min-cvcolor_lum_max)), 2.0 ));
+				u_lookup[x] = exp( -0.5 * pow( (x-((cvcolor_cb_min+cvcolor_cb_max)/2))/(abs(cvcolor_cb_min-cvcolor_cb_max)), 2.0 ));
+				v_lookup[x] = exp( -0.5 * pow( (x-((cvcolor_cr_min+cvcolor_cr_max)/2))/(abs(cvcolor_cr_min-cvcolor_cr_max)), 2.0 ));
+		 	}
+
+
+
  }
  void opencv_init_rects(){
 		selection = Rect(Point(0,0),Point(400,400));
 		prev_stddev_colors=stddev_colors;
 		init_lookup_table();
  }
+
+ void yuv422_set_color_intensity(Mat colorIntensity,int width, int height, char* img){
+   int n_rows = colorIntensity.rows;
+   int n_cols = colorIntensity.cols;
+
+   // If the image is one block in memory we can iterate over it all at once!
+   if (colorIntensity.isContinuous()) {
+	 n_cols *= n_rows;
+	 n_rows = 1;
+   }
+
+   // Iterate over the image,
+   int i, j;
+   uchar *p;
+   int index_img = 0;
+   for (i = 0; i < n_rows; ++i) {
+	 p = colorIntensity.ptr<uchar>(i);
+	 for (j = 0; j < n_cols; j+=2) {
+		 // U Y V Y
+		 p[j]=y_lookup[img[index_img+1]]+u_lookup[img[index_img]]+v_lookup[img[index_img+2]];
+		 p[j+1]=y_lookup[img[index_img+3]]+u_lookup[img[index_img]]+v_lookup[img[index_img+2]];
+//		 p[j]=255*y_lookup[img[index_img+1]]*u_lookup[img[index_img]]*v_lookup[img[index_img+2]];
+	//		 p[j+1]=255*y_lookup[img[index_img+3]]*u_lookup[img[index_img]]*v_lookup[img[index_img+2]];
+
+		 index_img+=4;
+	 }
+   }
+
+ }
+
+ Mat colorIntensityYUV(830, 512, CV_8U);
 int opencv_example(char *img, int width, int height)
 {
 	 Mat lookUpTable(1, 256, CV_8U);
@@ -103,20 +149,18 @@ int opencv_example(char *img, int width, int height)
 	    }
   // Create a new image, using the original bebop image.
 	start_clock();
-  Mat M(height, width, CV_8UC2, img);
+//  Mat M(height, width, CV_8UC2, img);
+//	printf("%d %d\n",width,height);
+  yuv422_set_color_intensity( colorIntensityYUV,width, height, img);
+  grayscale_opencv_to_yuv422(colorIntensityYUV, img, width, height);
+  end_clock("end of everything");
+
+
+/*
+
   Mat colorIntensityImage= Mat::zeros(height, width, CV_8U);
-  float alphas[3]={0.1,0.1,5.0};
   // If you want a color image, uncomment this line
   cvtColor(M, image, CV_YUV2BGR_Y422);
-  uchar lookup_table[256];
-    for(int x=0;x<256;x++){
-  	  lookup_table[x]=saturate_cast<uchar>(x);
-    }
-    for( int i = 0; i < 256; ++i)
-    	        p[i] = lookup_table[i];
-
-  // accept only char type matrices
-      CV_Assert(image.depth() == CV_8U);
 
       int channels = image.channels();
 
@@ -125,7 +169,6 @@ int opencv_example(char *img, int width, int height)
 
       if (image.isContinuous())
       {
-    	  printf("Continueous\n");
           nCols *= nRows;
           nRows = 1;
       }
@@ -251,6 +294,7 @@ int opencv_example(char *img, int width, int height)
 */
   // Convert back to YUV422, and put it in place of the original image 8*/
   //grayscale_opencv_to_yuv422(image, img, width, height);
+  /*
   switch(function_to_send_opencv){
   case 0: break; // do nothing. original image
   case 1:
@@ -286,6 +330,6 @@ int opencv_example(char *img, int width, int height)
   default: break; // do nothing. original image
   }
   end_clock("visualisation");
-     start_clock();
+     start_clock();*/
   return 0;
 }
