@@ -1,0 +1,18 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="set_velocity_guidance">
+  <doc>
+    <description>This mudule is used to set velocity command to the drone.</description>
+  </doc>
+  <header>
+    <file name="set_velocity_guidance.h"/>
+  </header>
+  <init fun="set_counter_init()"/>
+  <periodic fun="counter_auto()" freq="1"/>
+  <periodic fun="print_state()" freq="1"/>
+  <periodic fun="set_command()" freq="5"/>
+  <makefile>
+    <file name="set_velocity_guidance.c"/>
+  </makefile>
+</module>
+
