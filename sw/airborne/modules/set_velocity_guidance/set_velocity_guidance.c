@@ -25,6 +25,21 @@
 
 //#include "modules/set_velocity_guidance/set_velocity_guidance.h"
 #include "set_velocity_guidance.h"
+#include <stdio.h>
+#include <pthread.h>
+#include "state.h"
+#include "subsystems/abi.h"
+#include "autopilot.h"
+
+#include "lib/v4l/v4l2.h"
+#include "lib/encoding/jpeg.h"
+#include "lib/encoding/rtp.h"
+#include "errno.h"
+#include "navigation.h"
+#include "firmwares/rotorcraft/guidance/guidance_h.h"
+#include "firmwares/rotorcraft/guidance/guidance_v.h"
+
+#include "cv.h"
 # include <stdio.h>
 int counter_global;
 int counter;
@@ -45,20 +60,18 @@ void print_state(void){
     printf("theta is %d\n",stateGetNedToBodyEulers_i()->theta);
     printf("psi is %d\n",stateGetNedToBodyEulers_i()->psi);
     printf("global counter is %d\n",counter_global);
+    printf("This time is %d\n",get_sys_time_msec());
+
 }
 
 void set_command(){
-if (counter_global <5) {
-    if(autopilot_guided_move_ned(0.5, 0, 0, 0)){
-        return;
-    }
+    printf("set_command() is called!!!!!! \n");
+    guidance_h_set_guided_body_vel(0,0);
+    guidance_h_set_guided_heading(0);
+    guidance_v_set_guided_z(-1.5);
+}
 
-}
-    else{
-    if(autopilot_guided_move_ned(-0.5, 0, 0, 0)){
-        return;
-    }
-}
-}
+
+
 
 
