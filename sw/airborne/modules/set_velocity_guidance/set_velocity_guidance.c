@@ -30,21 +30,27 @@
 #include <stdio.h>
 
 
-int counter_global;
-int counter_in_mode;
-int counter;
+uint8_t counter_global;
+uint8_t counter_in_mode;
+uint8_t counter;
 uint8_t previous_mode;
 uint8_t current_mode;
 bool mode_change_flag;
+bool counter_in_use_flag;
+int motion_type_flag[5] = {1,0,0,0,0}; // hover go_straight go_back turn_around fly_along_arc
+
 float time_global;
 float time_in_mode;
+float time;
 
  void set_counter_init(void) {
      counter_global = 0;
      counter_in_mode = 0;
+     counter = 0;
      previous_mode = autopilot_mode;
      current_mode = autopilot_mode;
      mode_change_flag = 0;
+     counter_in_use_flag = 0;
  }
 
  void counter_auto(void) {      // frequency is 20HZ
@@ -60,8 +66,10 @@ float time_in_mode;
      previous_mode = current_mode;
      counter_global++;
      counter_in_mode++;
+     counter++;
      time_global = counter_global/20.0;
      time_in_mode = counter_in_mode/20.0;
+     time = counter/20.0;
  }
 
 
@@ -78,27 +86,96 @@ void print_state(void){
     printf("\n");
 }
 
-void set_command(void){
+void set_command(void){   //frequency is 10 HZ
     //printf("set_command() is called!!!!!! \n");
-    if (time_in_mode < 3){
-        guidance_h_set_guided_body_vel(0.5,0);
-        guidance_h_set_guided_heading(0.5);
-        guidance_v_set_guided_z(-1.5);
+    int i;
+    for(i = 0; i<5;i++){
+        if (motion_type_flag[0] ==1)
+            hover(3);
+        else if (motion_type_flag[1] ==1)
+            go_straight(0.5,3);
+        else if (motion_type_flag[2] ==1)
+            go_back(0.5,2);
+        else if (motion_type_flag[3] ==1){
+            float psi0 = stateGetNedToBodyEulers_i()->psi;
+            turn_around(psi0,4);
+        }
+        else if (motion_type_flag[4] ==1)
+            hover(3);
     }
-    else if(time_in_mode < 5)
-    {
-        guidance_h_set_guided_body_vel(0, 0);
-        guidance_h_set_guided_heading(0.5);
-        guidance_v_set_guided_z(-1.5);
+}
+
+
+void hover(float time_planned){
+    if (counter_in_use_flag == 0){
+        counter = 0;
+        counter_in_use_flag = 1;
     }
-    else if (time_in_mode < 8){
-        guidance_h_set_guided_body_vel(-0.5, 0);
-        guidance_h_set_guided_heading(0.5);
-        guidance_v_set_guided_z(-1.5);
+
+    if (time < time_planned){
+        guidance_h_set_guided_body_vel(0,0);
     }
-    else if ((time_in_mode > 8)){
-        guidance_h_set_guided_body_vel(0, 0);
-        guidance_h_set_guided_heading(0.5);
-        guidance_v_set_guided_z(0.5);
+    else if (time > time_planned){
+        motion_type_flag[0] = 0;
+        counter_in_use_flag = 0;
+    }
+
+}
+
+void go_straight(float velocity,float time_planned){
+    if (counter_in_use_flag == 0){
+        counter = 0;
+        counter_in_use_flag = 1;
+    }
+
+    if (time < time_planned){
+        guidance_h_set_guided_body_vel(velocity,0);
+    }
+    else if (time > time_planned){
+        motion_type_flag[1] = 0;
+        //motion_type_flag[0] = 1;
+        counter_in_use_flag = 0;
+    }
+
+}
+
+void go_back(float velocity,float time_planned){
+    if (counter_in_use_flag == 0){
+        counter = 0;
+        counter_in_use_flag = 1;
+    }
+
+    if (time < time_planned){
+        guidance_h_set_guided_body_vel(velocity,0);
+    }
+    else if (time > time_planned){
+        motion_type_flag[2] = 0;
+        //motion_type_flag[0] = 1;
+        counter_in_use_flag = 0;
+    }
+}
+
+void turn_around(float psi0,float time_planned){
+    if (counter_in_use_flag == 0){
+        counter = 0;
+        counter_in_use_flag = 1;
+    }
+    if (time < time_planned/4){
+
+        guidance_h_set_guided_heading(psi0+3.14/2);
+    }
+    else if (time < 2*time_planned/4){
+        guidance_h_set_guided_heading(psi0+3.14);
+    }
+        else if (time < 3*time_planned/4){
+        guidance_h_set_guided_heading(psi0+3.14/2*3);
+    }
+        else if (time < time_planned){
+        guidance_h_set_guided_heading(psi0+3.14*2);
+    }
+    else{
+        motion_type_flag[3] = 0;
+        //motion_type_flag[0] = 1;
+        counter_in_use_flag = 0;
     }
 }

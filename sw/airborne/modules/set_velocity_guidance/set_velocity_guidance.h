@@ -26,10 +26,11 @@
 #ifndef SET_VELOCITY_GUIDANCE_H
 #define SET_VELOCITY_GUIDANCE_H
 #include "state.h"
+//#include "autopilot.h"
 
-extern int counter_global;
-extern int counter;
-extern int counter_in_mode;
+extern uint8_t counter_global;
+extern uint8_t counter;
+extern uint8_t counter_in_mode;
 
 extern uint8_t previous_mode;
 extern uint8_t current_mode;
