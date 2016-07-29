@@ -29,8 +29,16 @@
 
 extern int counter_global;
 extern int counter;
+extern int counter_in_mode;
 
+extern uint8_t previous_mode;
+extern uint8_t current_mode;
+extern bool mode_change_flag;
 
+extern float time_global;
+extern float time_in_mode;
+
+//extern void if_mode_change(void);
 extern void set_counter_init(void);
 extern void counter_auto(void);
 extern void print_state(void);

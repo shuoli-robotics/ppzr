@@ -95,7 +95,6 @@ struct HorizontalGuidance {
   bool approx_force_by_thrust;
   /* gains */
   struct HorizontalGuidanceGains gains;
-
   struct HorizontalGuidanceSetpoint sp; ///< setpoints
   struct HorizontalGuidanceReference ref; ///< reference calculated from setpoints
 
