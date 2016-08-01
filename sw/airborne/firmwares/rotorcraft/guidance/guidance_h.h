@@ -108,8 +108,8 @@ extern int32_t transition_theta_offset;
 
 extern void guidance_h_init(void);
 extern void guidance_h_mode_changed(uint8_t new_mode);
-extern void guidance_h_read_rc(bool in_flight);
-extern void guidance_h_run(bool in_flight);
+extern void guidance_h_read_rc(bool in_flight);   // what is this function used for?
+extern void guidance_h_run(bool in_flight);   // important
 
 extern void guidance_h_set_igain(uint32_t igain);
 

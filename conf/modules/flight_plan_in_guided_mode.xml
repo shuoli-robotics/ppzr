@@ -1,0 +1,18 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="flight_plan_in_guided_mode">
+  <doc>
+    <description>This module is used to generate flight plan in guided mode</description>
+  </doc>
+  <header>
+    <file name="flight_plan_in_guided_mode.h"/>
+  </header>
+  <init fun="fligh_plan_in_guided_mode_init()"/>
+  <periodic fun="clock_run()" freq="20"/>
+  <periodic fun="flight_plan_run()" freq="10"/>
+  <periodic fun="display_information()" freq="1"/>
+  <makefile>
+    <file name="flight_plan_in_guided_mode.c"/>
+  </makefile>
+</module>
+

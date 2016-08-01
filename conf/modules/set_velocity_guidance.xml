@@ -10,7 +10,7 @@
   <init fun="set_counter_init()"/>
   <periodic fun="counter_auto()" freq="20"/>
   <periodic fun="print_state()" freq="1"/>
-  <periodic fun="set_command()" freq="10"/>
+  <!--periodic fun="set_command()" freq="10"/-->
   <!--periodic fun="if_mode_change()" freq="0.5"/-->
   <makefile>
     <file name="set_velocity_guidance.c"/>

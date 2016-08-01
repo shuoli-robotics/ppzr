@@ -308,7 +308,7 @@ void autopilot_init(void)
 
   autopilot_arming_init();
 
-  nav_init();
+  nav_init();    //declaration
   guidance_h_init();
   guidance_v_init();
 

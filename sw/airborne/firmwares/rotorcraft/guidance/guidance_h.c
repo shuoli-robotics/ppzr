@@ -258,12 +258,12 @@ void guidance_h_mode_changed(uint8_t new_mode)
         stabilization_attitude_enter();
       break;
 
-    case GUIDANCE_H_MODE_GUIDED:
-    case GUIDANCE_H_MODE_HOVER:
+    case GUIDANCE_H_MODE_GUIDED:            //////////////////
+    case GUIDANCE_H_MODE_HOVER:             /////////////////  pay attention
 #if GUIDANCE_INDI
       guidance_indi_enter();
 #endif
-      guidance_h_hover_enter();
+      guidance_h_hover_enter();      // ！！！！！！！！！
 #if NO_ATTITUDE_RESET_ON_MODE_CHANGE
       /* reset attitude stabilization if previous mode was not using it */
       if (guidance_h.mode == GUIDANCE_H_MODE_KILL ||
@@ -362,6 +362,11 @@ void guidance_h_read_rc(bool  in_flight)
 
 }
 
+//-------------------------------------
+//     Important
+//    2016.8.1 Shuo remarked
+//-------------------------------------
+
 void guidance_h_run(bool  in_flight)
 {
   switch (guidance_h.mode) {
@@ -396,7 +401,7 @@ void guidance_h_run(bool  in_flight)
         guidance_h_hover_enter();
       }
 
-      guidance_h_update_reference();
+      guidance_h_update_reference();   // important
 
 #if GUIDANCE_INDI
       guidance_indi_run(in_flight, guidance_h.sp.heading);
@@ -475,7 +480,7 @@ void guidance_h_run(bool  in_flight)
 }
 
 
-static void guidance_h_update_reference(void)
+static void guidance_h_update_reference(void)    // important
 {
   /* compute reference even if usage temporarily disabled via guidance_h_use_ref */
 #if GUIDANCE_H_USE_REF
