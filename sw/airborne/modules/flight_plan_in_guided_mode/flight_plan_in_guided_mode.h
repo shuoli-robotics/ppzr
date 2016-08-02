@@ -26,7 +26,7 @@
 #ifndef FLIGHT_PLAN_IN_GUIDED_MODE_H
 #define FLIGHT_PLAN_IN_GUIDED_MODE_H
 
- extern void fligh_plan_in_guided_mode_init(void);
+ extern void flight_plan_in_guided_mode_init(void);
  extern void clock_run(void);
  extern void flight_plan_run(void);
  extern void display_information(void);
