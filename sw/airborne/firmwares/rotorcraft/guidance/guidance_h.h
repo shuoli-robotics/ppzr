@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright (C) 2008-2009 Antoine Drouin <poinix@gmail.com>
  *
  * This file is part of paparazzi.
@@ -38,7 +38,7 @@
  * Default is TRUE, define to FALSE to always disable it.
  */
 #ifndef GUIDANCE_H_USE_REF
-#define GUIDANCE_H_USE_REF TRUE
+#define GUIDANCE_H_USE_REF TRUE        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  todo: try false
 #endif
 
 /** Use horizontal guidance speed reference.
@@ -103,7 +103,7 @@ struct HorizontalGuidance {
 
 extern struct HorizontalGuidance guidance_h;
 
-extern int32_t transition_percentage;
+extern int32_t transition_percentage;                ////  ??????????????
 extern int32_t transition_theta_offset;
 
 extern void guidance_h_init(void);
