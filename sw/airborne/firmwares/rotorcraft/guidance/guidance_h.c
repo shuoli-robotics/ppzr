@@ -396,6 +396,7 @@ void guidance_h_run(bool  in_flight)
       guidance_h.sp.heading = guidance_h.rc_sp.psi;
       /* fall trough to GUIDED to update ref, run traj and set final attitude setpoint */
 
+          // pay attention
     case GUIDANCE_H_MODE_GUIDED:
       /* guidance_h.sp.pos and guidance_h.sp.heading need to be set from external source */
       if (!in_flight) {

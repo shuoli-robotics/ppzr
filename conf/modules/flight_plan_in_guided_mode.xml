@@ -6,13 +6,16 @@
   </doc>
   <header>
     <file name="flight_plan_in_guided_mode.h"/>
+    <file name="flight_plan_clock.h"/>
   </header>
   <init fun="flight_plan_in_guided_mode_init()"/>
-  <periodic fun="clock_run()" freq="20"/>
+  <init fun="flight_plan_clock_init()()"/>
+  <periodic fun="flight_plan_clock_run()" freq="20"/>
   <periodic fun="flight_plan_run()" freq="10"/>
   <periodic fun="display_information()" freq="1"/>
   <makefile>
     <file name="flight_plan_in_guided_mode.c"/>
+    <file name="flight_plan_clock.c"/>
   </makefile>
 </module>
 

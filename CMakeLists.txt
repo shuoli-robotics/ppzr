@@ -9131,6 +9131,6 @@ set(SOURCE_FILES
     pprz_src_test.sh
     README.md
     start.py
-    Vagrantfile)
+    Vagrantfile sw/airborne/modules/flight_plan_in_guided_mode/flight_plan_clock.cpp sw/airborne/modules/flight_plan_in_guided_mode/flight_plan_clock.h)
 
 add_executable(paparazzi ${SOURCE_FILES})
