@@ -92,10 +92,10 @@ void display_information()
     {
         printf("Time in guidance mode is %f\n",time_temp1);
     }
-
-    printf("Guidance h mode is %d\n",guidance_h.mode);
-    printf("Guidance v mode is %d\n",guidance_v_mode);
-    printf("Atuopilot mode is %d\n",autopilot_mode);
+//
+//    printf("Guidance h mode is %d\n",guidance_h.mode);
+//    printf("Guidance v mode is %d\n",guidance_v_mode);
+//    printf("Atuopilot mode is %d\n",autopilot_mode);
     printf("\n");
 }
 
@@ -116,7 +116,7 @@ void flight_plan_run() {        // 10HZ
 
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && primitive_valid_flag[0] == TRUE)
     {
-        hover(5);
+        hover(3);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && primitive_valid_flag[1] == TRUE)
     {
@@ -124,7 +124,7 @@ void flight_plan_run() {        // 10HZ
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && primitive_valid_flag[2] == TRUE)
     {
-        change_heading_hover(90/180*3.14,5);
+        change_heading_hover(90/180*3.14,2);
     }
 
 }
@@ -137,8 +137,13 @@ bool hover(float planned_time)
         counter_valid_flag[2] = TRUE;
         if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT)
         {
-            guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
-            guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+//            guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
+//            guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+            guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+            guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+            guidance_h_set_guided_body_vel(0,0);
+            guidance_v_set_guided_z(-1.5);
+            printf("In hover primitive\n");
             return 1;
         }
     }
@@ -164,6 +169,7 @@ bool go_straight(float planned_time, float velocity){
             guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
             guidance_h_set_guided_body_vel(velocity,0);
             guidance_v_set_guided_z(-1.5);
+            printf("in go straight primitive\n");
             return 1;
         }
     }
@@ -190,12 +196,13 @@ bool change_heading_hover(float derta_psi,float planned_time){
             psi0 = stateGetNedToBodyEulers_f()->psi;
             guidance_h_set_guided_body_vel(0,0);
             guidance_v_set_guided_z(-1.5);
+            printf("In change heading hover primitive\n");
             return 1;
         }
     }
     else if(counter_valid_flag[2] && time_temp1<planned_time)
     {
-        guidance_h_set_guided_heading(psi0+derta_psi/planned_time*time_temp1);
+        guidance_h_set_guided_heading(60/180*3.14);
         guidance_h_set_guided_body_vel(0,0);
         guidance_v_set_guided_z(-1.5);
         return 1;

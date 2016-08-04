@@ -20,7 +20,7 @@
  */
 
 /** @file firmwares/rotorcraft/guidance/guidance_h.h
- *  Horizontal guidance for rotorcrafts.
+ *  Horizontal guidance for  rotorcrafts.
  *
  */
 
@@ -71,7 +71,7 @@ struct HorizontalGuidanceSetpoint {
   struct Int32Vect2 speed;  ///< only used in HOVER mode if GUIDANCE_H_USE_SPEED_REF or in GUIDED mode
   int32_t heading;          ///< with #INT32_ANGLE_FRAC
   int32_t heading_rate;     ///< with #INT32_RATE_FRAC
-  uint8_t mask;             ///< bit 5: vx & vy, bit 6: vz, bit 7: vyaw
+  uint8_t mask;             ///< bit 5: vx & vy, bit 6: vz, bit 7: vyaw // ???? what is this used for?
 };
 
 struct HorizontalGuidanceReference {

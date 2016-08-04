@@ -479,7 +479,7 @@ void guidance_h_run(bool  in_flight)
   }
 }
 
-
+//
 static void guidance_h_update_reference(void)    // important
 {
   /* compute reference even if usage temporarily disabled via guidance_h_use_ref */
