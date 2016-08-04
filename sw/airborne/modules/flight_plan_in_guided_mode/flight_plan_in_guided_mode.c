@@ -149,8 +149,6 @@ bool change_heading_hover(float derta_psi,float planned_time){
     else if(time_primitive < planned_time)
     {
         guidance_h_set_guided_heading(psi0+derta_psi/planned_time*time_primitive);
-        guidance_h_set_guided_body_vel(0,0);
-        guidance_v_set_guided_z(-1.5);
         return 1;
     }
     else if (time_temp1>planned_time)
