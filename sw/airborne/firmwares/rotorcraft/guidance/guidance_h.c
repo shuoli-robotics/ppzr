@@ -396,6 +396,7 @@ void guidance_h_run(bool  in_flight)
       guidance_h.sp.heading = guidance_h.rc_sp.psi;
       /* fall trough to GUIDED to update ref, run traj and set final attitude setpoint */
 
+          // pay attention
     case GUIDANCE_H_MODE_GUIDED:
       /* guidance_h.sp.pos and guidance_h.sp.heading need to be set from external source */
       if (!in_flight) {
@@ -480,13 +481,8 @@ void guidance_h_run(bool  in_flight)
   }
 }
 
-<<<<<<< HEAD
-//
-
-=======
 
 static void guidance_h_update_reference(void)    // important    //calculate ref according to current state and sp
->>>>>>> pprz/master
 {
   /* compute reference even if usage temporarily disabled via guidance_h_use_ref */
 #if GUIDANCE_H_USE_REF
