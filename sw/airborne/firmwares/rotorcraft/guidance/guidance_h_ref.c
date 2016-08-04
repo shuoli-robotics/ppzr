@@ -144,7 +144,7 @@ void gh_update_ref_from_pos_sp(struct Int32Vect2 pos_sp)
   gh_saturate_ref_speed();
 }
 
-
+//// important
 void gh_update_ref_from_speed_sp(struct Int32Vect2 speed_sp)
 {
   /* WARNING: SPEED SATURATION UNTESTED */
@@ -153,7 +153,7 @@ void gh_update_ref_from_speed_sp(struct Int32Vect2 speed_sp)
 
   // compute speed error
   struct Int32Vect2 speed_err;
-  INT32_VECT2_RSHIFT(speed_err, speed_sp, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC));
+  INT32_VECT2_RSHIFT(speed_err, speed_sp, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC)); // speed_sp/(INT32_SPEED_FRAC - GH_SPEED_REF_FRAC)
   VECT2_DIFF(speed_err, gh_ref.speed, speed_err);
   // convert to accel resolution
   INT32_VECT2_RSHIFT(speed_err, speed_err, (GH_SPEED_REF_FRAC - GH_ACCEL_REF_FRAC));

@@ -103,7 +103,7 @@ int32_t guidance_v_delta_t;
 
 float guidance_v_nominal_throttle;
 bool guidance_v_adapt_throttle_enabled;
-bool guidance_v_guided_vel_enabled;
+bool guidance_v_guided_vel_enabled;       // mask
 
 /** Direct throttle from radio control.
  *  range 0:#MAX_PPRZ
