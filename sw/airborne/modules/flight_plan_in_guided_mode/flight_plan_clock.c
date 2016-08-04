@@ -27,7 +27,7 @@ void flight_plan_clock_init(){
     SetBit(clock_mask,1);
     counter_global = 0;
     counter_autopilot_mode = 0;
-    uint32_t counter_primitive = 0;
+    counter_primitive = 0;
     counter_temp1 = 0;
     counter_temp2 = 0;
     counter_temp3 = 0;

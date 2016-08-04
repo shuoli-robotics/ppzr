@@ -15,7 +15,7 @@ extern float time_temp2;
 extern float time_temp3;
 
 extern void flight_plan_clock_init(void);
-extern flight_plan_clock_run(void);
+extern void flight_plan_clock_run(void);
 
 
 #endif //PPRZ_ON_DESKTOP_FLIGHT_PLAN_CLOCK_H
