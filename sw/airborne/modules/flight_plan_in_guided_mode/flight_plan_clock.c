@@ -34,37 +34,12 @@ void flight_plan_clock_init(){
 }
 
 void flight_plan_clock_run() {
-    if (bit_is_set(clock_mask,1))
-    {
-        counter_global++;
-    }
-    else
-    counter_global = 0;
-
-    if (bit_is_set(clock_mask,2))
+    counter_global++;
     counter_autopilot_mode++;
-    else
-    counter_autopilot_mode = 0;
-
-    if (bit_is_set(clock_mask,3))
-        counter_primitive++;
-    else
-        counter_primitive = 0;
-
-    if (bit_is_set(clock_mask,4))
-        counter_temp1++;
-    else
-        counter_temp1 = 0;
-
-    if (bit_is_set(clock_mask,5))
-        counter_temp2++;
-    else
-        counter_temp2 = 0;
-
-    if (bit_is_set(clock_mask,6))
-        counter_temp3++;
-    else
-        counter_temp3 = 0;
+    counter_primitive++;
+    counter_temp1++;
+    counter_temp2++;
+    counter_temp3++;
 
     time_global = counter_global/20.0;
     time_autopilot_mode = counter_autopilot_mode/20.0;

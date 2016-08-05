@@ -7,6 +7,8 @@
 
 extern uint8_t clock_mask;
 
+extern uint32_t counter_autopilot_mode; // start when autopilot mode is changed
+extern uint32_t counter_primitive;
 extern float time_global;
 extern float time_autopilot_mode;
 extern float time_primitive;
