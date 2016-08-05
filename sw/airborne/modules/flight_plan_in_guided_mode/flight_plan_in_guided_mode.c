@@ -50,10 +50,12 @@ void display_information()
 {
     if (autopilot_mode == AP_MODE_GUIDED) {
         if(bit_is_set(primitive_mask,1))
+            printf("It is in take of mode\n");
+        else if(bit_is_set(primitive_mask,2))
             printf("It is in hover mode\n");
-        else if (bit_is_set(primitive_mask,2))
-            printf("It is in go straight mode\n");
         else if (bit_is_set(primitive_mask,3))
+            printf("It is in go straight mode\n");
+        else if (bit_is_set(primitive_mask,4))
             printf("It is in change_heading_hover mode\n");
 
         if (bit_is_set(clock_mask,3))
@@ -78,7 +80,7 @@ bool take_off(float altitude){
         guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
         return 1;
     }
-    else if(time_primitive < planned_time) {
+    else if(abs(altitude-stateGetPositionNed_f()->z)>0.2) {
         return 1;
     }
     else
@@ -161,7 +163,6 @@ bool change_heading_hover(float derta_psi,float planned_time){
             guidance_h_set_guided_heading(psi0+derta_psi/4*3);
         else if (abs(time_primitive-planned_time)<0.2)
             guidance_h_set_guided_heading(psi0+derta_psi);
-        else
         return 1;
     }
     else       //(time_primitive>planned_time)
@@ -185,7 +186,7 @@ void flight_plan_run() {        // 10HZ
 
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set(primitive_mask,1))
     {
-        take_off(1.5);
+        take_off(-1.5);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set(primitive_mask,2))
     {
