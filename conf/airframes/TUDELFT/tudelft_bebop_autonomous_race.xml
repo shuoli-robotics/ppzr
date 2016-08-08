@@ -46,7 +46,10 @@
     </module>
 
     <module name="sonar_bebop"/>
-    <module name="pose_history"/>
+    <module name="pose_history"/><!--
+ <module name="cv_colorfilter">
+	<define name="COLORFILTER_CAMERA" value="front_camera"/>
+    </module>-->
 
     <module name="cv_opencvdemo">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
@@ -63,6 +66,9 @@
     </module>
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
+	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="4"/>
+
+	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
     </module>
   </modules>
 

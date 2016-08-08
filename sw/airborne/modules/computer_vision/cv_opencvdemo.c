@@ -28,6 +28,12 @@
 #include "modules/computer_vision/opencv_example.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 
+#include "modules/computer_vision/lib/vision/image.h"
+
+#include "std.h"
+
+#include <stdlib.h>
+#include <string.h>
 // Function
 struct image_t* opencv_func(struct image_t* img);
 struct image_t* opencv_func(struct image_t* img)
@@ -37,19 +43,24 @@ struct image_t* opencv_func(struct image_t* img)
   {
     // Call OpenCV (C++ from paparazzi C function)
     opencv_example((char*) img->buf, img->w, img->h);
-  }
 
-// opencv_example(NULL, 10,10);
-  float yaw = stateGetNedToBodyEulers_f()->psi;  // will be wrapped to [-pi,pi] later
-
-  if(loc_y>img->h/2){
-   yaw+=0.1;
-	  }
-  else{
-	 yaw -=0.1;
+   // struct point_t to={rect_top.x+rect_size.x,rect_top.y+rect_size.y};
+   // struct point_t to={100,100};
+   // image_draw_line(img,&rect_top,&to);
+   // printf("Drawing from %d %d to %d %d\n",rect_top.x,rect_top.y,to.x,to.y);
   }
-  guidance_h_set_guided_heading(yaw);
-  return NULL;
+//
+//// opencv_example(NULL, 10,10);
+//  float yaw = stateGetNedToBodyEulers_f()->psi;  // will be wrapped to [-pi,pi] later
+//
+//  if(loc_y>img->h/2){
+//   yaw+=0.1;
+//	  }
+//  else{
+//	 yaw -=0.1;
+//  }
+//  guidance_h_set_guided_heading(yaw);
+  return img;
 }
 
 void opencvdemo_init(void)
