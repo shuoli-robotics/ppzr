@@ -33,7 +33,7 @@
 #include "state.h"
 
 
-float psi0;//
+float psi0;
 uint16_t primitive_mask;
 uint8_t previous_mode;
 uint8_t current_mode;
