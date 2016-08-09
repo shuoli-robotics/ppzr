@@ -43,14 +43,7 @@ struct image_t* opencv_func(struct image_t* img)
   {
     // Call OpenCV (C++ from paparazzi C function)
     opencv_example((char*) img->buf, img->w, img->h);
-
-   // struct point_t to={rect_top.x+rect_size.x,rect_top.y+rect_size.y};
-   // struct point_t to={100,100};
-   // image_draw_line(img,&rect_top,&to);
-   // printf("Drawing from %d %d to %d %d\n",rect_top.x,rect_top.y,to.x,to.y);
   }
-//
-//// opencv_example(NULL, 10,10);
 //  float yaw = stateGetNedToBodyEulers_f()->psi;  // will be wrapped to [-pi,pi] later
 //
 //  if(loc_y>img->h/2){
