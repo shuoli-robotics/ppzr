@@ -31,7 +31,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 #include "state.h"
-
+#include <math.h>
 
 float psi0;//
 uint16_t primitive_mask;
@@ -60,15 +60,17 @@ void display_information()
 
         if (bit_is_set(clock_mask,3))
             printf("Time in primitive is %f\n",time_primitive);
+
+        printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
     }
 }
 
-bool take_off(float altitude);
-bool hover(float planned_time);
-bool go_straight(float planned_time, float velocity);
-bool change_heading_hover(float derta_psi,float planned_time);
+void take_off(float altitude);
+void hover(float planned_time);
+void go_straight(float planned_time, float velocity);
+void change_heading_hover(float derta_psi,float planned_time);
 
-bool take_off(float altitude){
+void take_off(float altitude){
     if (!bit_is_set(clock_mask,3))
     {
         SetBit(clock_mask,3);
@@ -78,22 +80,18 @@ bool take_off(float altitude){
         guidance_h_set_guided_body_vel(0,0);
         guidance_v_set_guided_z(altitude);
         guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
-        return 1;
     }
-    else if(abs(altitude-stateGetPositionNed_f()->z)>0.2) {
-        return 1;
-    }
-    else
+
+    else if(fabs(altitude-stateGetPositionNed_f()->z)<0.2)
     {
         ClearBit(primitive_mask,1);
         SetBit(primitive_mask,2);
         ClearBit(clock_mask,3);
-        return 0;
     }
 
 }
 
-bool hover(float planned_time)
+void hover(float planned_time)
 {
     if (!bit_is_set(clock_mask,3))
     {
@@ -104,43 +102,32 @@ bool hover(float planned_time)
         guidance_h_set_guided_body_vel(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
         guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
-        return 1;
     }
-    else if(time_primitive < planned_time) {
-        return 1;
-    }
-    else
+    else if(time_primitive > planned_time)
     {
         ClearBit(primitive_mask,2);
         SetBit(primitive_mask,3);
         ClearBit(clock_mask,3);
-        return 0;
     }
 }
 
-bool go_straight(float planned_time, float velocity){
+void go_straight(float planned_time, float velocity){
     if (!bit_is_set(clock_mask,3)){
         SetBit(clock_mask,3);
         counter_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        return 1;
     }
-    else if(time_primitive < planned_time) {
-        return 1;
-    }
-    else
+    else if(time_primitive > planned_time)
     {
-
         ClearBit(primitive_mask,3);
         SetBit(primitive_mask,4);
         ClearBit(clock_mask,3);
-        return 0;
     }
 }
 
-bool change_heading_hover(float derta_psi,float planned_time){
+void change_heading_hover(float derta_psi,float planned_time){
     if (!bit_is_set(clock_mask,3))
     {
         SetBit(clock_mask,3);
@@ -151,26 +138,23 @@ bool change_heading_hover(float derta_psi,float planned_time){
         guidance_h_set_guided_body_vel(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
         guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
-        return 1;
     }
     else if(time_primitive < planned_time)
     {
-        if (abs(time_primitive-planned_time/4)<0.2)
+        if (fabs(time_primitive-planned_time/4)<0.2)
         guidance_h_set_guided_heading(psi0+derta_psi/4);
-        else if (abs(time_primitive-planned_time/2)<0.2)
+        else if (fabs(time_primitive-planned_time/2)<0.2)
             guidance_h_set_guided_heading(psi0+derta_psi/2);
-        else if (abs(time_primitive-planned_time/4*3)<0.2)
+        else if (fabs(time_primitive-planned_time/4*3)<0.2)
             guidance_h_set_guided_heading(psi0+derta_psi/4*3);
-        else if (abs(time_primitive-planned_time)<0.2)
+        else if (fabs(time_primitive-planned_time)<0.2)
             guidance_h_set_guided_heading(psi0+derta_psi);
-        return 1;
     }
-    else       //(time_primitive>planned_time)
+    else if(time_primitive < planned_time)      //(time_primitive>planned_time)
     {
         ClearBit(primitive_mask,4);
         SetBit(primitive_mask,2);
         ClearBit(clock_mask,3);
-        return 0;
     }
 }
 
