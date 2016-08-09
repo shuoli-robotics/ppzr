@@ -11,17 +11,14 @@
     </target>
 
     <!--define name="USE_SONAR" value="TRUE"/-->
-<!--
-	<define name="MT9F002_OUTPUT_WIDTH" value="1024"/>
-	<define name="MT9F002_OUTPUT_HEIGHT" value="1660"/>
--->
-	<define name="MT9F002_OUTPUT_WIDTH" value="512"/>
-	<define name="MT9F002_OUTPUT_HEIGHT" value="830"/>
 
-	<define name="MT9F002_OUTPUT_SCALER" value="0.25"/>
-	<define name="MT9F002_INITIAL_OFFSET_X" value="1550"/>
+	<define name="MT9F002_OUTPUT_WIDTH" value="128"/>
+	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 
-	<define name="MT9F002_INITIAL_OFFSET_Y" value="300"/>
+	<define name="MT9F002_OUTPUT_SCALER" value="0.125"/>
+	<define name="MT9F002_INITIAL_OFFSET_X" value="2050"/>
+
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="700"/>
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>

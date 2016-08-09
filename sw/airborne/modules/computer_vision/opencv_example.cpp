@@ -40,7 +40,7 @@ Point origin;
 Rect selection;
 RotatedRect trackBox;
 int loc_y;
-float stddev_colors = 5.0;
+float stddev_colors = 25.0;
 float prev_stddev_colors;
 
 struct point_t rect_top;
@@ -70,6 +70,10 @@ float y_lookup[256];
 float u_lookup[256];
 float v_lookup[256];
 
+uint8_t only_uv_u_lookup[256];
+uint8_t only_uv_v_lookup[256];
+
+/*
 // YUV in opencv convert to YUV on Bebop
 void yuv_opencv_to_yuv422(Mat image, char *img, int width, int height) {
 //Turn the opencv RGB colored image back in a YUV colored image for the drone
@@ -106,7 +110,7 @@ void uyvy_opencv_to_yuv_opencv(Mat image, Mat image_in, int width, int height) {
 
 		}
 	}
-}
+}*/
 
 static unsigned int get_area_in_border(Mat image, int x, int y,
 		int width_heigth) {
@@ -130,48 +134,26 @@ inline void end_clock(char *name_part) {
 
 void init_lookup_table() {
 
-	int max = 80;
-	for (int x = 0; x < 255; x++) {
-		red_lookup[x] = max
-				* exp(-0.5 * pow((x - mean_red) / stddev_colors, 2.0));
-		green_lookup[x] = max
-				* exp(-0.5 * pow((x - mean_green) / stddev_colors, 2.0));
-		blue_lookup[x] = max
-				* exp(-0.5 * pow((x - mean_blue) / stddev_colors, 2.0));
-	}
+	int max=256/2;
+	//40
+	int meanu1=40;
+	int meanu2=255;
 
+//200
+	int meanv1=175;
+	int meanv2=255;
 	for (int x = 0; x < 255; x++) {
-		y_lookup[x] = exp(
-				-0.5
-						* pow(
-								(x - ((cvcolor_lum_min + cvcolor_lum_max) / 2))
-										/ (abs(
-												cvcolor_lum_min
-														- cvcolor_lum_max)),
-								2.0));
-		u_lookup[x] =
-				exp(
-						-0.5
-								* pow(
-										(x
-												- ((cvcolor_cb_min
-														+ cvcolor_cb_max) / 2))
-												/ (abs(
-														cvcolor_cb_min
-																- cvcolor_cb_max)),
-										2.0));
-		v_lookup[x] =
-				exp(
-						-0.5
-								* pow(
-										(x
-												- ((cvcolor_cr_min
-														+ cvcolor_cr_max) / 2))
-												/ (abs(
-														cvcolor_cr_min
-																- cvcolor_cr_max)),
-										2.0));
-	}
+		only_uv_u_lookup[x] = max
+					* exp(-0.5 * pow((x - meanu1) / stddev_colors, 2.0));
+
+		only_uv_u_lookup[x] += max
+					* exp(-0.5 * pow((x - meanu2) / stddev_colors, 2.0));
+
+		only_uv_v_lookup[x] = max
+					* exp(-0.5 * pow((x - meanv1) / stddev_colors, 2.0));
+		only_uv_v_lookup[x] += max
+					* exp(-0.5 * pow((x - meanv2) / stddev_colors, 2.0));
+		}
 
 }
 void opencv_init_rects() {
@@ -180,8 +162,7 @@ void opencv_init_rects() {
 	init_lookup_table();
 }
 
-void yuv422_set_color_intensity(Mat colorIntensity, int width, int height,
-		char* img) {
+void yuv422_set_color_intensity(Mat colorIntensity,char* img) {
 	int n_rows = colorIntensity.rows;
 	int n_cols = colorIntensity.cols;
 
@@ -199,17 +180,99 @@ void yuv422_set_color_intensity(Mat colorIntensity, int width, int height,
 		p = colorIntensity.ptr<uchar>(i);
 		for (j = 0; j < n_cols; j += 2) {
 			// U Y V Y
-			p[j] = y_lookup[img[index_img + 1]] + u_lookup[img[index_img]]
-					+ v_lookup[img[index_img + 2]];
-			p[j + 1] = y_lookup[img[index_img + 3]] + u_lookup[img[index_img]]
-					+ v_lookup[img[index_img + 2]];
-//		 p[j]=255*y_lookup[img[index_img+1]]*u_lookup[img[index_img]]*v_lookup[img[index_img+2]];
-			//		 p[j+1]=255*y_lookup[img[index_img+3]]*u_lookup[img[index_img]]*v_lookup[img[index_img+2]];
-
-			index_img += 4;
+			if(only_uv_u_lookup[img[index_img+1]]<170){ // Max Y value
+				p[j] = only_uv_u_lookup[img[index_img]]
+					+ only_uv_v_lookup[img[index_img + 2]];
+			}
+			else{
+				p[j]=0;
+			}
+			if(only_uv_u_lookup[img[index_img+3]]<170){
+				p[j + 1] = only_uv_u_lookup[img[index_img]]
+					+ only_uv_v_lookup[img[index_img + 2]];
+			}
+			else{
+				p[j+1]=0;
+			}
+			index_img += 4; // TODO p+=2
 		}
 	}
 
+}
+
+void grayscale_hor_sum(Mat grayImage, uint32_t hor_sum[],uint32_t vert_sum[]){
+	int n_rows = grayImage.rows;
+	int n_cols = grayImage.cols;
+
+	// Iterate over the image,
+	int i, j;
+	uchar *p;
+	int index_img = 0;
+	int bin_divider=4;
+
+	// TODO Memset
+	for (j = 0; j < n_cols/bin_divider; j ++) {
+		hor_sum[j]=0;
+	}
+
+	for (j = 0; j < n_rows/bin_divider; j ++) {
+		vert_sum[j]=0;
+	}
+
+	// set each sum
+	for (i = 0; i < n_rows; ++i) {
+		p = grayImage.ptr<uchar>(i);
+		for (j = 0; j < n_cols; j++) {
+			hor_sum[j/bin_divider]+=p[j];
+			vert_sum[i/bin_divider]+=p[j];
+		}
+	}
+
+	// Now smooth!
+	int smooth_dist=5;
+	for (j = n_cols/bin_divider;j>smooth_dist; j--) {
+		int sum=0;
+		for(int x=0;x<smooth_dist;x++){
+			sum+=hor_sum[j-x];
+		}
+		hor_sum[j]=sum;
+	}
+
+	for (j = n_rows/bin_divider;j>smooth_dist; j--) {
+		int sum=0;
+		for(int x=0;x<smooth_dist;x++){
+			sum+=vert_sum[j-x];
+		}
+		vert_sum[j]=sum;
+	}
+
+	int maxLocation2=0;
+	uint32_t maxValue2=0;
+	int maxLocation_vert=0;
+	int max_value_vert=0;
+	for (j = 0; j < n_rows/bin_divider; j ++) {
+		if(vert_sum[j]>max_value_vert){
+			max_value_vert=vert_sum[j];
+			maxLocation_vert = j;
+		}
+	}
+	for (j = 0; j < n_cols/bin_divider; j ++) {
+		if(hor_sum[j]>maxValue2){
+			maxValue2=hor_sum[j];
+			maxLocation2 = j;
+		}
+
+	}
+
+//	line(grayImage,Point(0,maxLocation*bin_divider),Point(n_rows,maxLocation*bin_divider),Scalar(255,255,255),5);
+
+	line(grayImage,Point(maxLocation2*bin_divider,0),Point(maxLocation2*bin_divider,n_rows),Scalar(255,255,255),5);
+
+	line(grayImage,Point(0,maxLocation_vert*bin_divider),Point(n_cols,maxLocation_vert*bin_divider),Scalar(255,255,255),5);
+
+	//	C++: void line(Mat& img, Point pt1, Point pt2, const Scalar& color, int thickness=1, int lineType=8, int shift=0)
+
+	printf("%d %d\n",maxLocation2,maxValue2);
 }
 
 Mat colorIntensityYUV(830, 512, CV_8U);
@@ -248,19 +311,20 @@ void draw_line_example(Mat imggray, char* img, int width, int height){
 int opencv_example(char *img, int width, int height) {
 
 	Mat M(height, width, CV_8UC2, img); // original
-	Mat color;
-	cvtColor(M, color, CV_YUV2BGR_Y422);
-	int r=250,h=90,c=400,w=125;//,h,c,w = 250,90,400,125  # simply hardcoded the values
-	Rect region_of_interest = Rect(r,c, w, h);
-	Mat image_roi = color(region_of_interest);
-	Mat hsv_roi;
+	Mat probImage(height,width,CV_8UC1); // prob projected
+	yuv422_set_color_intensity(probImage,img);
 
-	   cvtColor(image_roi,hsv_roi, COLOR_BGR2HSV);
-	   Mat mask;
-	   inRange(hsv_roi, mask,Scalar(0., 60.,32.), Scalar(180.,255.,255.));
+	uint32_t hor_sum_image[width];
+	uint32_t vert_sum_image[height];
+
+	grayscale_hor_sum( probImage,hor_sum_image,vert_sum_image);
+
+	grayscale_opencv_to_yuv422(probImage, img, width, height);
+
+/*
 
 
-	  	const int channels[] = {0, 1, 2};
+		  	const int channels[] = {0, 1, 2};
 	    const int histSize[] = {32, 32, 32};
 	    const float rgbRange[] = {0, 256};
 	    const float* ranges[] = {rgbRange, rgbRange, rgbRange};

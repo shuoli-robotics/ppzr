@@ -115,7 +115,7 @@ void board_init2(void)
     .row_speed_10_8 = 1,
 
     // Initial values
-    .target_fps = 5,
+    .target_fps = 50,
     .target_exposure = 70,
     .gain_green1 = 2.0,
     .gain_blue = 2.0,
