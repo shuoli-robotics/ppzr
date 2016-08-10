@@ -44,15 +44,17 @@ struct image_t* opencv_func(struct image_t* img)
     // Call OpenCV (C++ from paparazzi C function)
     opencv_example((char*) img->buf, img->w, img->h);
   }
-//  float yaw = stateGetNedToBodyEulers_f()->psi;  // will be wrapped to [-pi,pi] later
-//
-//  if(loc_y>img->h/2){
-//   yaw+=0.1;
-//	  }
-//  else{
-//	 yaw -=0.1;
-//  }
-//  guidance_h_set_guided_heading(yaw);
+  float yaw = stateGetNedToBodyEulers_f()->psi;
+  if(loc_y>img->h/2){
+   yaw-=0.15;
+	  }
+  else{
+	 yaw +=0.15;
+  }
+  guidance_h_set_guided_heading(yaw);
+//  guidance_h_set_guided_body_vel(0.15,0.0);
+//  guidance_h_set_guided_body_vel(0.15,0.0);
+
   return img;
 }
 

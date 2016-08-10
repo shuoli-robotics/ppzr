@@ -219,7 +219,107 @@ bool changedParameters(){
 	}
 	return false;
 }
+void guidoMethod(Mat probImage){
+	uint32_t totalResponse=0;
+	int n_rows = probImage.rows;
+	int n_cols = probImage.cols;
+	printf("%d %d \n",n_rows,n_cols);
 
+	// Iterate over the image,
+	int i, j;
+	uchar *p;
+
+   int n = 0;
+   double meann = 0.0;
+   double M2 = 0.0;
+
+
+	// set each sum and stdev using Welfords
+	for (i = 0; i < n_rows; ++i) {
+		p = probImage.ptr<uchar>(i);
+		for (j = 0; j < n_cols; j++) {
+			totalResponse+=p[j];
+
+			n += 1;
+			double delta = p[j] - meann;
+			meann += delta/n;
+			M2 += delta*(p[j] - meann);
+		}
+	}
+	double stdev =  M2 / (n - 1);
+	float toPrint = stdev;
+	printf("Mean %f stdev %f\n",meann,toPrint);
+
+
+	// set each response lower than mean+1.5stdev to zero
+	for (i = 0; i < n_rows; ++i) {
+		p = probImage.ptr<uchar>(i);
+		for (j = 0; j < n_cols; j++) {
+			if(p[j]<meann+0.3*stdev){
+				p[j]=0;
+			}
+		}
+	}
+
+
+
+	// make bins ans store the response per row (and col) in each bin
+
+	double mean_vert[n_rows];
+	for (j = 0; j < n_rows; j++) {
+		mean_vert[j]=0.0;
+	}
+	double sum_vert = 0.0;
+
+	// set each sum and stdev using Welfords
+	for (i = 0; i < n_rows; ++i) {
+		p = probImage.ptr<uchar>(i);
+		 n = 0;
+		 meann = 0.0;
+		for (j = 0; j < n_cols; j++) {
+			totalResponse+=p[j];
+
+			n += 1;
+			double delta = p[j] - meann;
+			meann += delta/n;
+//			M2 += delta*(p[j] - meann);
+		}
+		mean_vert[i]=meann;
+		sum_vert+=meann;
+	}
+
+	double sum2=0.0;
+	double totalAfter=0.0;
+	for (j = 0; j < n_rows; j++) {
+		sum2+=mean_vert[j];
+		mean_vert[j]/=sum_vert;
+		totalAfter+=mean_vert[j];
+	}
+
+	//calculate cum sum
+	double cum_som[n_rows];
+	cum_som[0]=mean_vert[0];
+	for (j = 1; j < n_rows; j++) {
+			cum_som[j]=mean_vert[j]+cum_som[j-1];
+
+		}
+
+	// find the median
+	int median_index=0;
+	for (j = 0; j < n_rows; j++) {
+		if(cum_som[j]>0.5){
+			median_index=j;
+			break;
+		}
+	}
+	loc_y=median_index;
+
+	printf("Median index %d\n",median_index);
+	if(median_index>0){
+		line(probImage,Point(0,loc_y),Point(n_cols,loc_y),Scalar(255,255,255),5);
+	}
+
+}
 int opencv_example(char *img, int width, int height) {
 	if(changedParameters()){
 		init_lookup_table();
@@ -227,11 +327,11 @@ int opencv_example(char *img, int width, int height) {
 	Mat M(height, width, CV_8UC2, img); // original
 	Mat probImage(height,width,CV_8UC1); // prob projected
 	yuv422_set_color_intensity(probImage,img);
+	guidoMethod(probImage);
+//	uint32_t hor_sum_image[width];
+//	uint32_t vert_sum_image[height];
 
-	uint32_t hor_sum_image[width];
-	uint32_t vert_sum_image[height];
-
-	grayscale_hor_sum( probImage,hor_sum_image,vert_sum_image);
+	//grayscale_hor_sum( probImage,hor_sum_image,vert_sum_image);
 	grayscale_opencv_to_yuv422(probImage, img, width, height);
 	return 0;
 }
