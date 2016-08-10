@@ -37,7 +37,7 @@ using namespace cv;
 #include "opencv_image_functions.h"
 #include <ctime>
 int loc_y;
-float stddev_colors = 20.0;
+float stddev_colors = 7.0;
 float prev_stddev_colors;
 int mean_u=75;
 int mean_v=171;
@@ -52,7 +52,7 @@ Mat image_color, yuvimage, Z;
 
 uint8_t only_uv_u_lookup[256];
 uint8_t only_uv_v_lookup[256];
-
+uint8_t h_lookup[256];
 static unsigned int get_area_in_border(Mat image, int x, int y,
 		int width_heigth) {
 	Point right_under(y + width_heigth, x + width_heigth);
@@ -78,6 +78,8 @@ void init_lookup_table() {
 	int max=256/2;
 	int meanu2=1255;
 	int meanv2=1255;
+	int meanh1=0;
+	int meanh2=180; // H between 0 and 180 (360/2)
 	for (int x = 0; x < 255; x++) {
 		only_uv_u_lookup[x] = max
 					* exp(-0.5 * pow((x - mean_u) / stddev_colors, 2.0));
@@ -89,6 +91,10 @@ void init_lookup_table() {
 					* exp(-0.5 * pow((x - mean_v) / stddev_colors, 2.0));
 		only_uv_v_lookup[x] += max
 					* exp(-0.5 * pow((x - meanv2) / stddev_colors, 2.0));
+
+		h_lookup[x] = 256* exp(-0.5 * pow((x - meanh1) / stddev_colors, 2.0));
+		h_lookup[x] += 256* exp(-0.5 * pow((x - meanh2) / stddev_colors, 2.0));
+
 		}
 
 }
@@ -135,6 +141,32 @@ void yuv422_set_color_intensity(Mat colorIntensity,char* img) {
 
 }
 
+
+void hsv_set_color_intensity(Mat colorIntensity,Mat hsvImage) {
+	int n_rows = colorIntensity.rows;
+	int n_cols = colorIntensity.cols;
+
+	// If the image is one block in memory we can iterate over it all at once!
+	if (colorIntensity.isContinuous()) {
+		n_cols *= n_rows;
+		n_rows = 1;
+	}
+
+	// Iterate over the image,
+	int i, j;
+	uchar *p;
+	uchar *hsvRow;
+	int index_img = 0;
+	for (i = 0; i < n_rows; ++i) {
+		p = colorIntensity.ptr<uchar>(i);
+		hsvRow = hsvImage.ptr<uchar>(i);
+		for (j = 0; j < n_cols; j ++) {
+			p[j]=h_lookup[hsvRow[0]];
+			hsvRow+=3;
+		}
+	}
+
+}
 void grayscale_hor_sum(Mat grayImage, uint32_t hor_sum[],uint32_t vert_sum[]){
 	int n_rows = grayImage.rows;
 	int n_cols = grayImage.cols;
@@ -255,7 +287,7 @@ void guidoMethod(Mat probImage){
 	for (i = 0; i < n_rows; ++i) {
 		p = probImage.ptr<uchar>(i);
 		for (j = 0; j < n_cols; j++) {
-			if(p[j]<meann+0.3*stdev){
+			if(p[j]<meann+0.0*stdev){
 				p[j]=0;
 			}
 		}
@@ -325,8 +357,17 @@ int opencv_example(char *img, int width, int height) {
 		init_lookup_table();
 	}
 	Mat M(height, width, CV_8UC2, img); // original
+	Mat hsvImage;
+	Mat rgbImage;
+	cvtColor(M,rgbImage,CV_YUV2BGRA_Y422);
+
+	cvtColor(rgbImage,hsvImage,CV_BGR2HSV);
+
+
 	Mat probImage(height,width,CV_8UC1); // prob projected
-	yuv422_set_color_intensity(probImage,img);
+	hsv_set_color_intensity(probImage,hsvImage);
+
+	//	yuv422_set_color_intensity(probImage,img);
 	guidoMethod(probImage);
 //	uint32_t hor_sum_image[width];
 //	uint32_t vert_sum_image[height];

@@ -45,14 +45,13 @@ struct image_t* opencv_func(struct image_t* img)
     opencv_example((char*) img->buf, img->w, img->h);
   }
   float yaw = stateGetNedToBodyEulers_f()->psi;
-  if(loc_y>img->h/2){
-   yaw-=0.15;
-	  }
-  else{
-	 yaw +=0.15;
-  }
+  float viewingAngle=0.45;//radians
+  float diff = loc_y-(img->h/2);
+  double pixelsPerDegree = viewingAngle/img->h;
+  yaw += pixelsPerDegree * diff;
+
   guidance_h_set_guided_heading(yaw);
-//  guidance_h_set_guided_body_vel(0.15,0.0);
+  guidance_h_set_guided_body_vel(0.07,0.0);
 //  guidance_h_set_guided_body_vel(0.15,0.0);
 
   return img;
