@@ -43,10 +43,12 @@ struct guidance_module_st {
 
 extern struct guidance_module_st guidance_module;
 
-extern void guidance_loop_vel_init(void);
+extern void guidance_h_module_init(void);
 extern void guidance_loop_pid(void);
 extern void guidance_loop_set_heading(float heading);
 extern void guidance_loop_set_velocity(float vx, float vy);
 extern void guidance_h_module_run(bool in_flight);
+extern void guidance_h_module_read_rc(void);
+extern void guidance_h_module_enter(void);
 #endif
 

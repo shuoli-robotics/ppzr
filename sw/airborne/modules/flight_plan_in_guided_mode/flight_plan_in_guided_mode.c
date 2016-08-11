@@ -31,6 +31,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 #include "state.h"
+#include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
 #include <math.h>
 
 float psi0;//
@@ -48,7 +49,7 @@ void flight_plan_in_guided_mode_init() {
 
 void display_information()
 {
-    if (autopilot_mode == AP_MODE_GUIDED) {
+    if (autopilot_mode == AP_MODE_MODULE) {
         if(bit_is_set(primitive_mask,1))
             printf("It is in take of mode\n");
         else if(bit_is_set(primitive_mask,2))
@@ -75,11 +76,11 @@ void take_off(float altitude){
     {
         SetBit(clock_mask,3);
         counter_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        guidance_h_set_guided_body_vel(0,0);
+        guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(altitude);
-        guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
+        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
     }
 
     else if(fabs(altitude-stateGetPositionNed_f()->z)<0.2)
@@ -97,11 +98,11 @@ void hover(float planned_time)
     {
         SetBit(clock_mask,3);
         counter_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        guidance_h_set_guided_body_vel(0,0);
+        guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
+        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
     }
     else if(time_primitive > planned_time)
     {
@@ -115,8 +116,9 @@ void go_straight(float planned_time, float velocity){
     if (!bit_is_set(clock_mask,3)){
         SetBit(clock_mask,3);
         counter_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        guidance_loop_set_velocity(0,0);   // earth coordinate
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
     }
     else if(time_primitive > planned_time)
@@ -132,23 +134,23 @@ void change_heading_hover(float derta_psi,float planned_time){
     {
         SetBit(clock_mask,3);
         counter_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        guidance_h_set_guided_body_vel(0,0);
+        guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        guidance_h_set_guided_heading(stateGetNedToBodyEulers_f()->psi);
+        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
     }
     else if(time_primitive < planned_time)
     {
         if (fabs(time_primitive-planned_time/4)<0.2)
-        guidance_h_set_guided_heading(psi0+derta_psi/4);
+            guidance_loop_set_heading(psi0+derta_psi/4);
         else if (fabs(time_primitive-planned_time/2)<0.2)
-            guidance_h_set_guided_heading(psi0+derta_psi/2);
+            guidance_loop_set_heading(psi0+derta_psi/2);
         else if (fabs(time_primitive-planned_time/4*3)<0.2)
-            guidance_h_set_guided_heading(psi0+derta_psi/4*3);
+            guidance_loop_set_heading(psi0+derta_psi/4*3);
         else if (fabs(time_primitive-planned_time)<0.2)
-            guidance_h_set_guided_heading(psi0+derta_psi);
+            guidance_loop_set_heading(psi0+derta_psi);
     }
     else if(time_primitive < planned_time)      //(time_primitive>planned_time)
     {

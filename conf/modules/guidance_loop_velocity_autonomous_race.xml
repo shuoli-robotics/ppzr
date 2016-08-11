@@ -7,7 +7,7 @@
   <header>
     <file name="guidance_loop_velocity_autonomous_race.h"/>
   </header>
-  <init fun="guidance_loop_vel_init()"/>
+  <init fun="guidance_h_module_init()"/>
   <periodic fun="guidance_loop_pid()"/>
   <makefile>
     <file name="guidance_loop_velocity_autonomous_race.c"/>

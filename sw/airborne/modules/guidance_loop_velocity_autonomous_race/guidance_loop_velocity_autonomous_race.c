@@ -33,51 +33,71 @@
 
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
-#ifndef VISION_PHI_PGAIN
-#define VISION_PHI_PGAIN 400
+#ifndef PHI_PGAIN
+#define PHI_PGAIN 400
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
 
-#ifndef VISION_PHI_IGAIN
-#define VISION_PHI_IGAIN 20
+#ifndef PHI_IGAIN
+#define PHI_IGAIN 20
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
 
-#ifndef VISION_THETA_PGAIN
-#define VISION_THETA_PGAIN 400
+#ifndef THETA_PGAIN
+#define THETA_PGAIN 400
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
-#ifndef VISION_THETA_IGAIN
-#define VISION_THETA_IGAIN 20
+#ifndef HETA_IGAIN
+#define THETA_IGAIN 20
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
 
-#ifndef VISION_DESIRED_VX
-#define VISION_DESIRED_VX 0
+#ifndef DESIRED_VX
+#define DESIRED_VX 0
 #endif
 PRINT_CONFIG_VAR(VISION_DESIRED_VX)
 
-#ifndef VISION_DESIRED_VY
-#define VISION_DESIRED_VY 0
+#ifndef DESIRED_VY
+#define DESIRED_VY 0
 #endif
 PRINT_CONFIG_VAR(VISION_DESIRED_VY)
 
 struct guidance_module_st guidance_module = {
-        .phi_pgain = VISION_PHI_PGAIN,
-        .phi_igain = VISION_PHI_IGAIN,
-        .theta_pgain = VISION_THETA_PGAIN,
-        .theta_igain = VISION_THETA_IGAIN,
-        .desired_vx = VISION_DESIRED_VX,
-        .desired_vy = VISION_DESIRED_VY
+        .phi_pgain = PHI_PGAIN,
+        .phi_igain = PHI_IGAIN,
+        .theta_pgain = THETA_PGAIN,
+        .theta_igain = THETA_IGAIN,
+        .desired_vx = DESIRED_VX,
+        .desired_vy = DESIRED_VY
 };
 
-void guidance_loop_vel_init() {
+void guidance_h_module_init(void) {
     guidance_module.err_vx_int = 0;
     guidance_module.err_vy_int = 0;
     guidance_module.cmd.phi = 0;
     guidance_module.cmd.theta = 0;
     guidance_module.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+}
+
+void guidance_h_module_enter(void)
+{
+    /* Reset the integrated errors */
+    guidance_module.err_vx_int = 0;
+    guidance_module.err_vy_int = 0;
+
+    /* Set rool/pitch to 0 degrees and psi to current heading */
+    guidance_module.cmd.phi = 0;
+    guidance_module.cmd.theta = 0;
+    guidance_module.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+}
+
+/**
+ * Read the RC commands
+ */
+void guidance_h_module_read_rc(void)
+{
+    // TODO: change the desired vx/vy
 }
 
 void guidance_h_module_run(bool in_flight)
