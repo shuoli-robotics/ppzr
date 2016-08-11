@@ -29,7 +29,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 #include "firmwares/rotorcraft/stabilization.h"
-
+#include <stdio.h>
 
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
@@ -104,7 +104,7 @@ void guidance_h_module_run(bool in_flight)
 {
     /* Update the setpoint */
     //stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
-
+    //printf("My guidance module is running\n");
     stab_att_sp_euler.phi = guidance_module.cmd.phi;
     stab_att_sp_euler.theta = guidance_module.cmd.theta;
     stab_att_sp_euler.psi = guidance_module.cmd.psi;
@@ -119,6 +119,7 @@ void guidance_h_module_run(bool in_flight)
  */
 void guidance_loop_pid()
 {
+    //printf("My guidance loop PID is running!\n");
     /* Check if we are in the correct AP_MODE before setting commands */
     if (autopilot_mode != AP_MODE_MODULE) {
         return;

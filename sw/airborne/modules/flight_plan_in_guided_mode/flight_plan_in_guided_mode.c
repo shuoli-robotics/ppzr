@@ -63,6 +63,7 @@ void display_information()
             printf("Time in primitive is %f\n",time_primitive);
 
         printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
+        printf("The horiz guided mode is %d\n", guidance_h.mode);
     }
 }
 
