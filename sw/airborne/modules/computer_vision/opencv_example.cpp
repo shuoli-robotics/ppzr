@@ -280,7 +280,7 @@ void guidoMethod(Mat probImage){
 	}
 	double stdev =  M2 / (n - 1);
 	float toPrint = stdev;
-	printf("Mean %f stdev %f\n",meann,toPrint);
+//	printf("Mean %f stdev %f\n",meann,toPrint);
 
 
 	// set each response lower than mean+1.5stdev to zero
@@ -296,7 +296,6 @@ void guidoMethod(Mat probImage){
 
 
 	// make bins ans store the response per row (and col) in each bin
-
 	double mean_vert[n_rows];
 	for (j = 0; j < n_rows; j++) {
 		mean_vert[j]=0.0;
@@ -321,13 +320,13 @@ void guidoMethod(Mat probImage){
 	}
 
 	double sum2=0.0;
-	double totalAfter=0.0;
+	double totSumWhoo = 0.0;
 	for (j = 0; j < n_rows; j++) {
 		sum2+=mean_vert[j];
 		mean_vert[j]/=sum_vert;
-		totalAfter+=mean_vert[j];
+		totSumWhoo+= mean_vert[j];
 	}
-
+	double mean_histogram = totSumWhoo/n_rows;
 	//calculate cum sum
 	double cum_som[n_rows];
 	cum_som[0]=mean_vert[0];
@@ -344,9 +343,22 @@ void guidoMethod(Mat probImage){
 			break;
 		}
 	}
+	printf("mean_vert[median] %f mean hist: %f\n",mean_vert[median_index],mean_histogram);
+	if(mean_vert[median_index]>mean_histogram){
+		printf("Moving as it is higher %d\n",median_index);
+		// start moving left or right
+		int direction;
+		if(median_index < n_rows/2){
+			median_index+=n_rows/4;
+		}
+		else{
+			median_index-=n_rows/4;
+		}
+		printf("Moved to %d\n",median_index);
+
+	}
 	loc_y=median_index;
 
-	printf("Median index %d\n",median_index);
 	if(median_index>0){
 		line(probImage,Point(0,loc_y),Point(n_cols,loc_y),Scalar(255,255,255),5);
 	}
@@ -359,7 +371,7 @@ int opencv_example(char *img, int width, int height) {
 	Mat M(height, width, CV_8UC2, img); // original
 	Mat hsvImage;
 	Mat rgbImage;
-	cvtColor(M,rgbImage,CV_YUV2BGRA_Y422);
+	cvtColor(M,rgbImage,CV_YUV2BGR_Y422);
 
 	cvtColor(rgbImage,hsvImage,CV_BGR2HSV);
 

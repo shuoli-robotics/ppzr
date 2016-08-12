@@ -51,7 +51,9 @@ struct image_t* opencv_func(struct image_t* img)
   yaw += pixelsPerDegree * diff;
 
   guidance_h_set_guided_heading(yaw);
-  guidance_h_set_guided_body_vel(0.07,0.0);
+
+  guidance_h_set_guided_body_vel(0.5,0.0);
+
 //  guidance_h_set_guided_body_vel(0.15,0.0);
 
   return img;

@@ -27,7 +27,10 @@
     <module name="imu" type="bebop"/>
     <module name="gps" type="datalink"/>
     <module name="stabilization" type="int_quat"/>
-    <module name="ahrs"          type="float_mlkf"/>
+    <module name="ahrs" type="int_cmpl_quat">
+      <configure name="USE_MAGNETOMETER" value="FALSE"/>
+      <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
+    </module>
     <module name="ins" type="extended"/>
   </firmware>
 
@@ -57,10 +60,11 @@
 	</module>
 
 -->
+<!--
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-    </module>
+    </module>-->
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="4"/>
@@ -123,20 +127,24 @@
 
   <!-- local magnetic field -->
   <!-- http://wiki.paparazziuav.org/wiki/Subsystem/ahrs#Local_Magnetic_Field -->
-  <section name="AHRS" prefix="AHRS_">
+ <section name="AHRS" prefix="AHRS_">
     <!-- values used if no GPS fix, on 3D fix is update by geo_mag module -->
     <!-- Delft -->
     <define name="H_X" value="0.3892503"/>
     <define name="H_Y" value="0.0017972"/>
     <define name="H_Z" value="0.9211303"/>
 
-    <!-- For vibrating airfames -->
+    <define name="HEADING_UPDATE_GPS_MIN_SPEED" value="0"/>
     <define name="GRAVITY_HEURISTIC_FACTOR" value="0"/>
   </section>
 
   <section name="INS" prefix="INS_">
     <define name="SONAR_MAX_RANGE" value="2.2"/>
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
+
+    <!-- Use GPS altitude measurments and set the R gain -->
+    <define name="USE_GPS_ALT" value="1"/>
+    <define name="VFF_R_GPS" value="0.01"/>
   </section>
 
 
@@ -197,10 +205,10 @@
     <define name="MAX_BANK" value="20" unit="deg"/>
     <!-- Bad weather -->
     <!-- define name="MAX_BANK" value="32" unit="deg"/ -->
-    <define name="PGAIN" value="350"/>
+    <define name="PGAIN" value="200"/>
     <define name="DGAIN" value="100"/>
     <define name="IGAIN" value="30"/>
-    <define name="REF_MAX_SPEED" value="0.2"/>
+    <define name="REF_MAX_SPEED" value="0.5"/>
   </section>
 
   <section name="NAVIGATION" prefix="NAV_">
