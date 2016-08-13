@@ -57,10 +57,11 @@
 	</module>
 
 -->
+<!--
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-    </module>
+    </module>-->
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="4"/>

@@ -7,7 +7,7 @@
    telemetry="telemetry/default_rotorcraft.xml"
    flight_plan="flight_plans/rotorcraft_basic.xml"
    settings="settings/rotorcraft_basic.xml settings/control/rotorcraft_guidance.xml settings/control/stabilization_att_int_quat.xml settings/estimation/ahrs_int_cmpl_quat.xml settings/estimation/body_to_imu.xml"
-   settings_modules="modules/gps.xml modules/gps_ubx_ucenter.xml modules/air_data.xml modules/geo_mag.xml modules/video_rtp_stream.xml"
+   settings_modules="modules/gps.xml modules/gps_ubx_ucenter.xml modules/air_data.xml modules/geo_mag.xml modules/cv_opticflow.xml"
    gui_color="#ffffd633d633"
   />
   <aircraft
@@ -330,6 +330,17 @@
    gui_color="green"
   />
   <aircraft
+   name="autonomous_following"
+   ac_id="15"
+   airframe="airframes/TUDELFT/tudelft_bebop_following.xml"
+   radio="radios/dummy.xml"
+   telemetry="telemetry/default_rotorcraft.xml"
+   flight_plan="flight_plans/TUDELFT/tudelft_course2016_avoid_orange_cyberzoo.xml"
+   settings="settings/rotorcraft_basic.xml settings/control/rotorcraft_guidance.xml settings/control/stabilization_att_int_quat.xml settings/control/rotorcraft_speed.xml"
+   settings_modules="modules/gps.xml modules/geo_mag.xml modules/air_data.xml"
+   gui_color="#ffffbc3bce5b"
+  />
+  <aircraft
    name="autonomous_race"
    ac_id="8"
    airframe="airframes/TUDELFT/tudelft_bebop_autonomous_race.xml"
@@ -337,7 +348,7 @@
    telemetry="telemetry/default_rotorcraft.xml"
    flight_plan="flight_plans/rotorcraft_basic.xml"
    settings="settings/rotorcraft_basic.xml settings/control/rotorcraft_guidance.xml settings/control/stabilization_att_int_quat.xml settings/control/rotorcraft_speed.xml"
-   settings_modules="modules/gps.xml modules/geo_mag.xml modules/air_data.xml modules/cv_opencvdemo.xml modules/cv_opticflow.xml modules/video_rtp_stream.xml"
+   settings_modules="modules/gps.xml modules/geo_mag.xml modules/air_data.xml modules/cv_opencvdemo.xml modules/video_rtp_stream.xml"
    gui_color="#ffffbc3bce5b"
   />
   <aircraft
