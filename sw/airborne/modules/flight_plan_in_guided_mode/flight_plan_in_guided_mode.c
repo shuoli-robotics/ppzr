@@ -83,7 +83,8 @@ void display_information()
         EULERS_FLOAT_OF_BFP(temp, guidance_module.cmd);
         printf("Command in stabilization is Phi = %f degree, Theta = %f degree, Psi = %f degree\n",
         temp.phi/3.14*180,temp.theta/3.14*180,temp.psi/3.14*180);
-        printf("Setpoint is Phi = %f degree, Theta = %f degree\n",stab_att_sp_euler.phi/3.14*180,stab_att_sp_euler.theta/3.14*180);
+        printf("Setpoint is Phi = %f degree, Theta = %f degree\n",(float)stab_att_sp_euler.phi*pow(2,-INT32_ANGLE_FRAC)/3.14*180,
+               (float)stab_att_sp_euler.theta*pow(2,-INT32_ANGLE_FRAC)/3.14*180);
         printf("\n");
         printf("\n");
         printf("\n");
