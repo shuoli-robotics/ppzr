@@ -31,6 +31,7 @@
 #include "math/pprz_algebra_int.h"
 #include STABILIZATION_ATTITUDE_TYPE_H
 
+
 extern void stabilization_attitude_init(void);
 extern void stabilization_attitude_read_rc(bool in_flight, bool in_carefree, bool coordinated_turn);
 extern void stabilization_attitude_enter(void);

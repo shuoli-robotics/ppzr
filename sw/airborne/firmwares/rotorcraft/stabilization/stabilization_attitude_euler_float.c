@@ -42,7 +42,7 @@
 struct FloatAttitudeGains stabilization_gains;
 struct FloatEulers stabilization_att_sum_err;
 
-struct FloatEulers stab_att_sp_euler;
+struct FloatEulers stab_att_sp_euler;    // setpoint of Euler
 struct AttRefEulerFloat att_ref_euler_f;
 
 float stabilization_att_fb_cmd[COMMANDS_NB];

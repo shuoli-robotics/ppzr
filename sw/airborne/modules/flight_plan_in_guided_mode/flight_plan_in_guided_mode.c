@@ -33,6 +33,9 @@
 #include "state.h"
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
 #include <math.h>
+#include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
+//#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
+
 
 float psi0;//
 uint16_t primitive_mask;
@@ -50,20 +53,40 @@ void flight_plan_in_guided_mode_init() {
 void display_information()
 {
     if (autopilot_mode == AP_MODE_MODULE) {
-        if(bit_is_set(primitive_mask,1))
-            printf("It is in take of mode\n");
-        else if(bit_is_set(primitive_mask,2))
-            printf("It is in hover mode\n");
-        else if (bit_is_set(primitive_mask,3))
-            printf("It is in go straight mode\n");
-        else if (bit_is_set(primitive_mask,4))
-            printf("It is in change_heading_hover mode\n");
+//        if(bit_is_set(primitive_mask,1))
+//            printf("It is in take of mode\n");
+//        else if(bit_is_set(primitive_mask,2))
+//            printf("It is in hover mode\n");
+//        else if (bit_is_set(primitive_mask,3))
+//            printf("It is in go straight mode\n");
+//        else if (bit_is_set(primitive_mask,4))
+//            printf("It is in change_heading_hover mode\n");
+//
+//        if (bit_is_set(clock_mask,3))
+//            printf("Time in primitive is %f\n",time_primitive);
 
-        if (bit_is_set(clock_mask,3))
-            printf("Time in primitive is %f\n",time_primitive);
-
-        printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
-        printf("The horiz guided mode is %d\n", guidance_h.mode);
+        //printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
+        //printf("Current velocity vx = %f, vy = %f\n", current_vel_x,current_vel_y);
+        printf("Desired velocity is vx_d = %f,vy_d = %f\n",guidance_module.desired_vx,guidance_module.desired_vy);
+        printf("Velocity error is error_x = %f, error_y = %f\n",guidance_h_module_speed_error_x,guidance_h_module_speed_error_y);
+        printf("current attitude is Theta = %f degree, Phi = %f degree, Psi = %f degree\n ",
+               stateGetNedToBodyEulers_f()->theta/3.14*180,
+               stateGetNedToBodyEulers_f()->phi/3.14*180,
+               stateGetNedToBodyEulers_f()->psi/3.14*180);
+        printf("Needed attitude is Phi = %f degree, Theta = %f degree\n",phi_desired_f/3.14*180,theta_desired_f/3.14*180);
+        float phi;
+        float theta;
+        phi = (float)guidance_module.cmd.phi * pow(2,-INT32_ANGLE_FRAC);
+        theta = (float)guidance_module.cmd.theta * pow(2,-INT32_ANGLE_FRAC);
+        printf("Phi in guidance_module is %f degree Theta in guidance_module is %f degree\n",phi/3.14*180,theta/3.14*180);
+        struct FloatEulers temp;
+        EULERS_FLOAT_OF_BFP(temp, guidance_module.cmd);
+        printf("Command in stabilization is Phi = %f degree, Theta = %f degree, Psi = %f degree\n",
+        temp.phi/3.14*180,temp.theta/3.14*180,temp.psi/3.14*180);
+        printf("Setpoint is Phi = %f degree, Theta = %f degree\n",stab_att_sp_euler.phi/3.14*180,stab_att_sp_euler.theta/3.14*180);
+        printf("\n");
+        printf("\n");
+        printf("\n");
     }
 }
 
