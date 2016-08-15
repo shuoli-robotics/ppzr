@@ -29,10 +29,10 @@
 #include "math/pprz_algebra_int.h"
 
 struct guidance_module_st {
-    int32_t phi_pgain;        ///< The roll P gain on the err_vx
-    int32_t phi_igain;        ///< The roll I gain on the err_vx_int
-    int32_t theta_pgain;      ///< The pitch P gain on the err_vy
-    int32_t theta_igain;      ///< The pitch I gain on the err_vy_int
+    float phi_pgain;        ///< The roll P gain on the err_vx
+    float phi_igain;        ///< The roll I gain on the err_vx_int
+    float theta_pgain;      ///< The pitch P gain on the err_vy
+    float theta_igain;      ///< The pitch I gain on the err_vy_int
     float desired_vx;         ///< The desired velocity in the x direction (cm/s)
     float desired_vy;         ///< The desired velocity in the y direction (cm/s)
 

@@ -36,22 +36,22 @@
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
 #ifndef PHI_PGAIN
-#define PHI_PGAIN 5
+#define PHI_PGAIN 0.6
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
 
 #ifndef PHI_IGAIN
-#define PHI_IGAIN 0
+#define PHI_IGAIN 0.5
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
 
 #ifndef THETA_PGAIN
-#define THETA_PGAIN 5
+#define THETA_PGAIN 0.6
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
 #ifndef HETA_IGAIN
-#define THETA_IGAIN 0
+#define THETA_IGAIN 0.5
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
 
@@ -149,8 +149,10 @@ void guidance_loop_pid()
     float psi = stateGetNedToBodyEulers_f()->psi;
     float s_psi = sinf(psi);
     float c_psi = cosf(psi);
-    phi_desired_f = -s_psi * cmd_f.x + c_psi * cmd_f.y;
-    theta_desired_f = -c_psi * cmd_f.x - s_psi * cmd_f.y;
+    phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
+    theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
+//    phi_desired_f = 0;
+//    theta_desired_f = 0;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
     /* Bound the roll and pitch commands */
