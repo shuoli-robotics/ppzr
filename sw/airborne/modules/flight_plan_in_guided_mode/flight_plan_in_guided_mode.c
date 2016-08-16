@@ -45,7 +45,7 @@ uint8_t current_mode;
 void flight_plan_in_guided_mode_init() {
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
-    set_bit_ls(primitive_mask,0);
+    set_bit_ls(primitive_mask,1);
 }
 
 
@@ -104,7 +104,8 @@ void take_off(float altitude){
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(altitude);
-        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
+       // guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
+        guidance_loop_set_heading(0);
     }
 
     else if(fabs(altitude-stateGetPositionNed_f()->z)<0.5)
@@ -112,7 +113,7 @@ void take_off(float altitude){
         clear_bit_ls(primitive_mask,0);
         set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
-        printf("The altitude is been reached!!!!!!\n");
+        printf("The altitude is reached!!!!!!\n");
     }
 
 }
@@ -127,12 +128,14 @@ void hover(float planned_time)
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
+        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
     }
     else if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,1);
-        set_bit_ls(primitive_mask,1);
+        set_bit_ls(primitive_mask,2);
         clear_bit_ls(clock_mask,2);
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
 
@@ -144,15 +147,17 @@ void go_straight(float planned_time, float velocity){
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         float psi = stateGetNedToBodyEulers_f()->psi;
         float vx_earth = cosf(psi)*velocity;
-        float vy_earth = -sinf(psi)*velocity;
+        float vy_earth = sinf(psi)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
+        printf("FUCK!!!!!");
     }
     else if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,2);
-        set_bit_ls(primitive_mask,3);
+        set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
+        printf("FUCK!!!!!FUCK!!!");
     }
 }
 
@@ -181,7 +186,7 @@ void change_heading_hover(float derta_psi,float planned_time){
 //    }
     else if(time_primitive > planned_time)      //(time_primitive>planned_time)
     {
-        clear_bit_ls(primitive_mask,3);
+        clear_bit_ls(primitive_mask,2);
         set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
     }
@@ -193,7 +198,7 @@ void flight_plan_run() {        // 10HZ
     if (current_mode != previous_mode)
     {
         counter_autopilot_mode = 0;
-        guidance_h_module_enter();  // clear interg...
+        //guidance_h_module_enter();  // clear interg...
     }
     if (autopilot_mode != AP_MODE_GUIDED)
         clear_bit_ls(clock_mask,3);
@@ -204,11 +209,11 @@ void flight_plan_run() {        // 10HZ
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,1))
     {
-        hover(5);
+        hover(3);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,2))
     {
-        go_straight(3,0.3);
+        go_straight(3,0.5);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,3))
     {
