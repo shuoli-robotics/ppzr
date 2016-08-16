@@ -5,6 +5,7 @@
 #include<std.h>
 #include "flight_plan_clock.h"
 
+
 uint32_t counter_global;  // start when codes are uploaded
 uint32_t counter_autopilot_mode; // start when autopilot mode is changed
 uint32_t counter_primitive;
@@ -13,7 +14,7 @@ uint32_t counter_temp2; // counter for temporarily use
 uint32_t counter_temp3; // counter for temporarily use
 
 
-uint8_t clock_mask;
+bool clock_mask[5];
 
 float time_global;
 float time_autopilot_mode;
@@ -23,8 +24,7 @@ float time_temp2;
 float time_temp3;
 
 void flight_plan_clock_init(){
-    clock_mask = 0;
-    SetBit(clock_mask,1);
+    set_bit_ls(clock_mask,0);
     counter_global = 0;
     counter_autopilot_mode = 0;
     counter_primitive = 0;

@@ -30,6 +30,9 @@
  extern void flight_plan_in_guided_mode_init(void);
  extern void flight_plan_run(void);
  extern void display_information(void);
+ extern void set_bit_ls(bool *mask,int bit);
+ extern void clear_bit_ls(bool *mask,int bit);
+ extern bool bit_is_set_ls(bool *mask,int bit);
 
 #endif
 
