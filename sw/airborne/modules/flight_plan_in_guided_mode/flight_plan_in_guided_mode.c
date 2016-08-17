@@ -61,7 +61,7 @@ void display_information()
         else if (bit_is_set_ls(primitive_mask,3))
             printf("It is in change_heading_hover mode\n");
 
-        if (bit_is_set_ls(clock_mask,3))
+        //if (bit_is_set_ls(clock_mask,2))
             printf("Time in primitive is %f\n",time_primitive);
 
         printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
@@ -209,7 +209,7 @@ void flight_plan_run() {        // 10HZ
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,1))
     {
-        hover(3);
+        hover(5);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,2))
     {
