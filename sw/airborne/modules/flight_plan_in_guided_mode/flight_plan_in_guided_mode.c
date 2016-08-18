@@ -41,10 +41,14 @@ float psi0;//
 bool primitive_mask[4] = {0,0,0,0};
 uint8_t previous_mode;
 uint8_t current_mode;
+uint8_t previous_guidance_h_mode;
+uint8_t current_guidance_h_mode;
 
 void flight_plan_in_guided_mode_init() {
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
+    previous_guidance_h_mode = guidance_h.mode;
+    current_guidance_h_mode = guidance_h.mode;
     set_bit_ls(primitive_mask,1);
 }
 
@@ -65,13 +69,15 @@ void display_information()
             printf("Time in primitive is %f\n",time_primitive);
 
         printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
+        printf("Z setpoint is %f !\n",(float)guidance_v_z_sp*pow(2,-INT32_POS_FRAC));
+        printf("Z reference is %f \n", (float)guidance_v_z_ref*pow(2,-INT32_POS_FRAC));
         //printf("Current velocity vx = %f, vy = %f\n", current_vel_x,current_vel_y);
         //printf("Desired velocity is vx_d = %f,vy_d = %f\n",guidance_module.desired_vx,guidance_module.desired_vy);
         //printf("Velocity error is error_x = %f, error_y = %f\n",guidance_h_module_speed_error_x,guidance_h_module_speed_error_y);
-        printf("current attitude is Theta = %f degree, Phi = %f degree, Psi = %f degree\n ",
+        /*printf("current attitude is Theta = %f degree, Phi = %f degree, Psi = %f degree\n ",
                stateGetNedToBodyEulers_f()->theta/3.14*180,
                stateGetNedToBodyEulers_f()->phi/3.14*180,
-               stateGetNedToBodyEulers_f()->psi/3.14*180);
+               stateGetNedToBodyEulers_f()->psi/3.14*180);*/
 //        printf("Needed attitude is Phi = %f degree, Theta = %f degree\n",phi_desired_f/3.14*180,theta_desired_f/3.14*180);
 //        float phi;
 //        float theta;
@@ -82,8 +88,8 @@ void display_information()
 //        EULERS_FLOAT_OF_BFP(temp, guidance_module.cmd);
 //        printf("Command in stabilization is Phi = %f degree, Theta = %f degree, Psi = %f degree\n",
 //        temp.phi/3.14*180,temp.theta/3.14*180,temp.psi/3.14*180);
-        printf("Setpoint is Phi = %f degree, Theta = %f degree\n",(float)stab_att_sp_euler.phi*pow(2,-INT32_ANGLE_FRAC)/3.14*180,
-               (float)stab_att_sp_euler.theta*pow(2,-INT32_ANGLE_FRAC)/3.14*180);
+//        printf("Setpoint is Phi = %f degree, Theta = %f degree\n",(float)stab_att_sp_euler.phi*pow(2,-INT32_ANGLE_FRAC)/3.14*180,
+//               (float)stab_att_sp_euler.theta*pow(2,-INT32_ANGLE_FRAC)/3.14*180);
         printf("\n");
         printf("\n");
         printf("\n");
@@ -108,7 +114,7 @@ void take_off(float altitude){
         guidance_loop_set_heading(0);
     }
 
-    else if(fabs(altitude-stateGetPositionNed_f()->z)<0.5)
+    else if(fabs(altitude-stateGetPositionNed_f()->z)<0.3)
     {
         clear_bit_ls(primitive_mask,0);
         set_bit_ls(primitive_mask,1);
@@ -129,13 +135,13 @@ void hover(float planned_time)
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
         guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
     else if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,1);
         set_bit_ls(primitive_mask,2);
         clear_bit_ls(clock_mask,2);
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
 
@@ -150,14 +156,12 @@ void go_straight(float planned_time, float velocity){
         float vy_earth = sinf(psi)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        printf("FUCK!!!!!");
     }
     else if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,2);
         set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
-        printf("FUCK!!!!!FUCK!!!");
     }
 }
 
@@ -195,11 +199,13 @@ void change_heading_hover(float derta_psi,float planned_time){
 
 void flight_plan_run() {        // 10HZ
     current_mode = autopilot_mode;
+    //current_guidance_h_mode = guidance_h.mode;
     if (current_mode != previous_mode)
     {
         counter_autopilot_mode = 0;
-        //guidance_h_module_enter();  // clear interg...
+        clear_bit_ls(clock_mask,2);
     }
+
     if (autopilot_mode != AP_MODE_GUIDED)
         clear_bit_ls(clock_mask,3);
 
@@ -209,16 +215,17 @@ void flight_plan_run() {        // 10HZ
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,1))
     {
-        hover(5);
+        hover(3);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,2))
     {
-        go_straight(3,0.5);
+        go_straight(3,0.2);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,3))
     {
         change_heading_hover(90/180*3.14,5);
     }
+    previous_mode = current_mode;
 }
 
 void set_bit_ls(bool *mask,int bit){
