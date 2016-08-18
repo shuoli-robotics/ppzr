@@ -4,11 +4,12 @@
   <header>
 #include "autopilot.h"
   </header>
-  <waypoints>
+<waypoints>
     <waypoint name="HOME" x="0.0" y="0.0"/>
     <waypoint name="CLIMB" x="0.0" y="5.0"/>
     <waypoint name="STDBY" x="-2.0" y="-5.0"/>
   </waypoints>
+
   <blocks>
     <block name="Geo init">
       <while cond="LessThan(NavBlockTime(), 10)"/>
