@@ -44,6 +44,12 @@ struct image_t* opencv_func(struct image_t* img)
     // Call OpenCV (C++ from paparazzi C function)
     opencv_example((char*) img->buf, img->w, img->h);
   }
+  <message name="OBSTACLE_RACE_INFO" id="107">
+    <field name="distance_pixels" type="int16"/>
+    <field name="center_pixels" type="int16"/>
+  </message>
+
+
   float yaw = stateGetNedToBodyEulers_f()->psi;
   float viewingAngle=0.45;//radians
   float diff = loc_y-(img->h/2);
