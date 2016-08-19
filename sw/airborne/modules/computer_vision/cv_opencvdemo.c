@@ -36,6 +36,11 @@
 #include <string.h>
 
 #include "subsystems/datalink/telemetry.h"
+int eyes_closed_go = 0;
+int wait_here_time=0;
+int go_right_time=0;
+int go_backwards_time=0;
+int go_left_time=0;
 // Function
 struct image_t* opencv_func(struct image_t* img);
 struct image_t* opencv_func(struct image_t* img)
@@ -47,40 +52,91 @@ struct image_t* opencv_func(struct image_t* img)
     opencv_example((char*) img->buf, img->w, img->h);
   }
 
-//  DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
+  DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
 
 
-//
-//  float yaw = stateGetNedToBodyEulers_f()->psi;
-//  float viewingAngle=0.45;//radians
-//  float diff = loc_y-(img->h/2);
-//
-//  float unexplainedOffset=60.0;
-//  diff+=unexplainedOffset;
-//  double pixelsPerDegree = viewingAngle/img->h;
-//  yaw += pixelsPerDegree * diff;
-//  float totalHeight = left_height + right_height;
-//  float ratio = left_height/totalHeight;
-//  float ratio_wanted = 0.49;
-//  totalHeight/=100.0;
-//  guidance_h_set_guided_heading(yaw);
-//  if(too_close){
-//	  guidance_h_set_guided_body_vel(-1.0,0);
-//  }
-//  else{
-//	  if(ratio < ratio_wanted || ratio > (1.0-ratio_wanted)){
-//		  if(ratio < ratio_wanted){
-//
-//			  guidance_h_set_guided_body_vel(0.0,-ratio/totalHeight);
-//		  }
-//		  else{
-//			  guidance_h_set_guided_body_vel(0.0,ratio/totalHeight);
-//		  }
-//	  }
-//	  else{
-//		  guidance_h_set_guided_body_vel(0.5,diff/img->h);
-//	  }
-//  }
+
+  float yaw = stateGetNedToBodyEulers_f()->psi;
+  float viewingAngle=0.45;//radians
+  float diff = loc_y-(img->h/2);
+
+  float unexplainedOffset=50.0;
+  diff+=unexplainedOffset;
+  double pixelsPerDegree = viewingAngle/img->h;
+  yaw += pixelsPerDegree * diff;
+  float totalHeight = left_height + right_height;
+  float ratio = left_height/totalHeight;
+  float ratio_wanted = 0.44;
+  int distance_pixels_between_just_go=125;
+  totalHeight/=100.0;
+
+  if(eyes_closed_go>0){
+	  eyes_closed_go--;
+	  if(eyes_closed_go<=0){
+		  eyes_closed_go=0;
+		  wait_here_time=40;
+	  }
+	  guidance_h_set_guided_body_vel(1.0,0);
+  }
+  else if(wait_here_time>0){
+	  wait_here_time--;
+	  if(wait_here_time<=0){
+		  go_right_time=100;
+	  }
+	  guidance_h_set_guided_body_vel(0.0,0);
+  }
+  else if(go_right_time>0){
+	  go_right_time--;
+	  if(go_right_time<=0){
+		  go_backwards_time=200;
+	  }
+
+	  guidance_h_set_guided_body_vel(0.0,1.0);
+
+  }
+  else if(go_backwards_time>0){
+	  go_backwards_time--;
+	  	  if(go_backwards_time<=0){
+	  		go_left_time=100;
+	  	  }
+
+		  guidance_h_set_guided_body_vel(-1.0,0);
+  }
+  else if(go_left_time>0){
+	  go_left_time--;
+	 	  	  if(go_left_time<=0){
+	 	  		go_left_time=0;
+	 	  	  }
+
+	 		  guidance_h_set_guided_body_vel(0.0,-1.0);
+  }
+  else{
+	  guidance_h_set_guided_heading(yaw);
+
+	  if(too_close){
+		  guidance_h_set_guided_body_vel(-1.0,0);
+	  }
+	  else{
+
+		  if(ratio < ratio_wanted || ratio > (1.0-ratio_wanted)){
+			  if(ratio < ratio_wanted){
+				  guidance_h_set_guided_body_vel(0.0,-ratio/totalHeight);
+			  }
+			  else{
+				  guidance_h_set_guided_body_vel(0.0,ratio/totalHeight);
+			  }
+		  }
+		  else{
+			  if(distance_pixels>distance_pixels_between_just_go){
+				  eyes_closed_go=60;
+				  guidance_h_set_guided_body_vel(0.5,0);
+			  }
+			  else{
+				  guidance_h_set_guided_body_vel(0.5,diff/img->h);
+			  }
+		  }
+	  }
+  }
 //  guidance_h_set_guided_body_vel(0.15,0.0);
 
   return img;

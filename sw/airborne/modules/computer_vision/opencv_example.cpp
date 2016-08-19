@@ -213,7 +213,7 @@ void guidoMethod(Mat probImage){
 	int n_rows = probImage.rows;
 	int n_cols = probImage.cols;
 	printf("%d %d \n",n_rows,n_cols);
-	if(countNonZero(probImage)>(n_rows*n_cols)/6){
+	if(countNonZero(probImage)>(n_rows*n_cols)/4){
 		too_close=1;
 		return;
 	}
