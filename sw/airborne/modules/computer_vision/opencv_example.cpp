@@ -51,6 +51,8 @@ Mat image, mask;
 Mat image_color, yuvimage, Z;
 int16_t distance_pixels;
 int16_t center_pixels;
+ int16_t left_height;
+ int16_t right_height;
 
 uint8_t only_uv_u_lookup[256];
 uint8_t only_uv_v_lookup[256];
@@ -270,9 +272,14 @@ void guidoMethod(Mat probImage){
 		     center_pixels=loc_y;
 		     int idx_l=0;
 		     int idx_r=1;
+		     left_height = values[0].value;
+		     right_height = values[1].value;
 		     if(values[0].position>values[1].position){
 		    	 idx_l=1;
 		    	 idx_r=0;
+
+			     left_height = values[1].value;
+			     right_height = values[0].value;
 		     }
 		     printf("Left %f Right %f\n",values[idx_l].value,values[idx_r].value);
 		     float toal = values[idx_l].value+values[idx_r].value;

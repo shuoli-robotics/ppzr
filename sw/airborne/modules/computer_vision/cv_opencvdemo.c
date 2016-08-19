@@ -47,31 +47,40 @@ struct image_t* opencv_func(struct image_t* img)
     opencv_example((char*) img->buf, img->w, img->h);
   }
 
-  DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels);
+//  DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
 
 
-
-  float yaw = stateGetNedToBodyEulers_f()->psi;
-  float viewingAngle=0.45;//radians
-  float diff = loc_y-(img->h/2);
-
-  float unexplainedOffset=10.0;
-  diff+=10.0;
-  double pixelsPerDegree = viewingAngle/img->h;
-  yaw += pixelsPerDegree * diff;
-
-  guidance_h_set_guided_heading(yaw);
-  if(too_close){
-	  guidance_h_set_guided_body_vel(-1.0,0);
-  }
-  else{
-	  if(super_roll==1 || super_roll==-1){
-		  guidance_h_set_guided_body_vel(0.0,super_roll*1.0);
-	  }
-	  else{
-		  guidance_h_set_guided_body_vel(0.5,diff/img->h);
-	  }
-  }
+//
+//  float yaw = stateGetNedToBodyEulers_f()->psi;
+//  float viewingAngle=0.45;//radians
+//  float diff = loc_y-(img->h/2);
+//
+//  float unexplainedOffset=60.0;
+//  diff+=unexplainedOffset;
+//  double pixelsPerDegree = viewingAngle/img->h;
+//  yaw += pixelsPerDegree * diff;
+//  float totalHeight = left_height + right_height;
+//  float ratio = left_height/totalHeight;
+//  float ratio_wanted = 0.49;
+//  totalHeight/=100.0;
+//  guidance_h_set_guided_heading(yaw);
+//  if(too_close){
+//	  guidance_h_set_guided_body_vel(-1.0,0);
+//  }
+//  else{
+//	  if(ratio < ratio_wanted || ratio > (1.0-ratio_wanted)){
+//		  if(ratio < ratio_wanted){
+//
+//			  guidance_h_set_guided_body_vel(0.0,-ratio/totalHeight);
+//		  }
+//		  else{
+//			  guidance_h_set_guided_body_vel(0.0,ratio/totalHeight);
+//		  }
+//	  }
+//	  else{
+//		  guidance_h_set_guided_body_vel(0.5,diff/img->h);
+//	  }
+//  }
 //  guidance_h_set_guided_body_vel(0.15,0.0);
 
   return img;
