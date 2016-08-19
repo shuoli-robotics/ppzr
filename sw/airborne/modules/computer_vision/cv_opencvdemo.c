@@ -34,6 +34,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "subsystems/datalink/telemetry.h"
 // Function
 struct image_t* opencv_func(struct image_t* img);
 struct image_t* opencv_func(struct image_t* img)
@@ -44,10 +46,9 @@ struct image_t* opencv_func(struct image_t* img)
     // Call OpenCV (C++ from paparazzi C function)
     opencv_example((char*) img->buf, img->w, img->h);
   }
-  <message name="OBSTACLE_RACE_INFO" id="107">
-    <field name="distance_pixels" type="int16"/>
-    <field name="center_pixels" type="int16"/>
-  </message>
+
+  DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels);
+
 
 
   float yaw = stateGetNedToBodyEulers_f()->psi;

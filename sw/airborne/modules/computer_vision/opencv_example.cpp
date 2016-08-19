@@ -49,6 +49,8 @@ int super_roll=0;
 RNG rng(12345);
 Mat image, mask;
 Mat image_color, yuvimage, Z;
+int16_t distance_pixels;
+int16_t center_pixels;
 
 uint8_t only_uv_u_lookup[256];
 uint8_t only_uv_v_lookup[256];
@@ -258,8 +260,14 @@ void guidoMethod(Mat probImage){
 			  line(probImage,Point(0,values[i].position),Point(n_cols,values[i].position),Scalar(255,255,255),5);
 		  }
 
-		     loc_y=(values[0].position+values[1].position)/2;
+		  	  int dist =values[0].position-values[1].position;
+		  	  if(dist < 0){
+		  		  dist *=-1;
+		  	  }
+			distance_pixels = dist ;
 
+		     loc_y=(values[0].position+values[1].position)/2;
+		     center_pixels=loc_y;
 		     int idx_l=0;
 		     int idx_r=1;
 		     if(values[0].position>values[1].position){
@@ -284,113 +292,6 @@ void guidoMethod(Mat probImage){
 	}else{
 		loc_y=n_rows/2;
 	}
-
-	  /*f
-	// Iterate over the image,
-	int i, j;
-	uchar *p;
-
-   int n = 0;
-   double meann = 0.0;
-   double M2 = 0.0;
-
-
-	// set each sum and stdev using Welfords
-	for (i = 0; i < n_rows; ++i) {
-		p = probImage.ptr<uchar>(i);
-		for (j = 0; j < n_cols; j++) {
-			totalResponse+=p[j];
-
-			n += 1;
-			double delta = p[j] - meann;
-			meann += delta/n;
-			M2 += delta*(p[j] - meann);
-		}
-	}
-	double stdev =  M2 / (n - 1);
-	float toPrint = stdev;
-//	printf("Mean %f stdev %f\n",meann,toPrint);
-
-
-	// set each response lower than mean+1.5stdev to zero
-	for (i = 0; i < n_rows; ++i) {
-		p = probImage.ptr<uchar>(i);
-		for (j = 0; j < n_cols; j++) {
-			if(p[j]<meann+0.0*stdev){
-				p[j]=0;
-			}
-		}
-	}
-
-
-
-	// make bins ans store the response per row (and col) in each bin
-	double mean_vert[n_rows];
-	for (j = 0; j < n_rows; j++) {
-		mean_vert[j]=0.0;
-	}
-	double sum_vert = 0.0;
-
-	// set each sum and stdev using Welfords
-	for (i = 0; i < n_rows; ++i) {
-		p = probImage.ptr<uchar>(i);
-		 n = 0;
-		 meann = 0.0;
-		for (j = 0; j < n_cols; j++) {
-			totalResponse+=p[j];
-
-			n += 1;
-			double delta = p[j] - meann;
-			meann += delta/n;
-//			M2 += delta*(p[j] - meann);
-		}
-		mean_vert[i]=meann;
-		sum_vert+=meann;
-	}
-
-	double sum2=0.0;
-	double totSumWhoo = 0.0;
-	for (j = 0; j < n_rows; j++) {
-		sum2+=mean_vert[j];
-		mean_vert[j]/=sum_vert;
-		totSumWhoo+= mean_vert[j];
-	}
-	double mean_histogram = totSumWhoo/n_rows;
-	//calculate cum sum
-	double cum_som[n_rows];
-	cum_som[0]=mean_vert[0];
-	for (j = 1; j < n_rows; j++) {
-			cum_som[j]=mean_vert[j]+cum_som[j-1];
-
-		}
-
-	// find the median
-	int median_index=0;
-	for (j = 0; j < n_rows; j++) {
-		if(cum_som[j]>0.5){
-			median_index=j;
-			break;
-		}
-	}
-	printf("mean_vert[median] %f mean hist: %f\n",mean_vert[median_index],mean_histogram);
-	if(mean_vert[median_index]>mean_histogram){
-		printf("Moving as it is higher %d\n",median_index);
-		// start moving left or right
-		int direction;
-		if(median_index < n_rows/2){
-			median_index+=n_rows/4;
-		}
-		else{
-			median_index-=n_rows/4;
-		}
-		printf("Moved to %d\n",median_index);
-
-	}
-	loc_y=median_index;
-
-	if(median_index>0){
-		line(probImage,Point(0,loc_y),Point(n_cols,loc_y),Scalar(255,255,255),5);
-	}*/
 
 }
 int opencv_example(char *img, int width, int height) {

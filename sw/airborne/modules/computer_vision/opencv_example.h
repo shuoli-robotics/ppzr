@@ -35,6 +35,8 @@ extern int mean_v;
 extern int loc_y;
 extern int super_roll;
 extern int too_close;
+extern int16_t distance_pixels;
+extern int16_t center_pixels;
 int opencv_example(char *img, int width, int height);
 void opencv_init_rects(void);
 #ifdef __cplusplus
