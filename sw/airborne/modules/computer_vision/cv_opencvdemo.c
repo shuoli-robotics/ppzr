@@ -47,11 +47,24 @@ struct image_t* opencv_func(struct image_t* img)
   float yaw = stateGetNedToBodyEulers_f()->psi;
   float viewingAngle=0.45;//radians
   float diff = loc_y-(img->h/2);
+
+  float unexplainedOffset=10.0;
+  diff+=10.0;
   double pixelsPerDegree = viewingAngle/img->h;
   yaw += pixelsPerDegree * diff;
 
   guidance_h_set_guided_heading(yaw);
-  guidance_h_set_guided_body_vel(0.07,0.0);
+  if(too_close){
+	  guidance_h_set_guided_body_vel(-1.0,0);
+  }
+  else{
+	  if(super_roll==1 || super_roll==-1){
+		  guidance_h_set_guided_body_vel(0.0,super_roll*1.0);
+	  }
+	  else{
+		  guidance_h_set_guided_body_vel(0.5,diff/img->h);
+	  }
+  }
 //  guidance_h_set_guided_body_vel(0.15,0.0);
 
   return img;

@@ -43,9 +43,9 @@ int mean_u=75;
 int mean_v=171;
 int prev_mean_u;
 int prev_mean_v;
-
+int too_close=0;
 clock_t begin;
-
+int super_roll=0;
 RNG rng(12345);
 Mat image, mask;
 Mat image_color, yuvimage, Z;
@@ -167,6 +167,16 @@ void hsv_set_color_intensity(Mat colorIntensity,Mat hsvImage) {
 	}
 
 }
+
+void smooth_array(float array[],int length_array, int smooth_dist ){
+		for (int j = length_array-1;j>smooth_dist; j--) {
+			int sum=0;
+			for(int x=0;x<smooth_dist;x++){
+				sum+=array[j-x];
+			}
+			array[j]=sum/float(smooth_dist);
+		}
+}
 void grayscale_hor_sum(Mat grayImage, uint32_t hor_sum[],uint32_t vert_sum[]){
 	int n_rows = grayImage.rows;
 	int n_cols = grayImage.cols;
@@ -251,12 +261,113 @@ bool changedParameters(){
 	}
 	return false;
 }
+
+
+float getAverageValueArea(int min_x, int min_y,int max_x,int max_y, Mat integral_image){
+//% function dd = getAvgDisparity(min_x, min_y, max_x, max_y, II)
+		int w = max_x - min_x + 1;
+	int h = max_y - min_y + 1;
+	float n_pix = w * h;
+	int sum_disparities = integral_image.at<int>(min_y, min_x) +  integral_image.at<int>(max_y, max_x) - integral_image.at<int>(min_y, max_x) - integral_image.at<int>(max_y, min_x);
+	float dd = sum_disparities / n_pix;
+	return dd;
+}
+
+struct ValueAndPos{
+	float value;
+	int position;
+};
+
+int compare_doubles (const void *a, const void *b)
+{
+	struct ValueAndPos *da = (struct ValueAndPos *) a;
+	struct ValueAndPos *db = (struct ValueAndPos *) b;
+	int val1 = da->value*1000.0;
+	int val2 = db->value*1000.0;
+  return val2-val1;
+}
 void guidoMethod(Mat probImage){
 	uint32_t totalResponse=0;
 	int n_rows = probImage.rows;
 	int n_cols = probImage.cols;
 	printf("%d %d \n",n_rows,n_cols);
+	if(countNonZero(probImage)>(n_rows*n_cols)/6){
+		too_close=1;
+		return;
+	}
+	else{
+		too_close=0;
+	}
+	Mat my_int(n_rows,n_cols,CV_32S);
 
+	integral(probImage,my_int,CV_32S);
+	int border_size=8;
+	int border_y=0;
+	int border_x=0;
+	int guidoLength=n_rows-3*border_size;
+	float Ver [guidoLength];
+	for(int i=0;i<guidoLength;i++){
+		Ver[i]=0.0;
+	}
+	//% Center surround ding
+	for(int y =0;y< guidoLength;y++){
+		   Ver[y] = - getAverageValueArea(border_x, y, n_cols-border_x,y+3*border_size, my_int) +  2 * getAverageValueArea(border_x,y+border_size, n_cols-border_x,y+2*border_size-1, my_int);
+	}
+
+	smooth_array(Ver,guidoLength, 4 );
+	struct ValueAndPos values[guidoLength];
+	int amountPeaks=0;
+	// find peaks
+
+	for(int i=1;i<guidoLength-1;i++){
+		if(Ver[i]>Ver[i-1]&&Ver[i]>Ver[i+1]){
+			values[amountPeaks].position=i;
+			values[amountPeaks].value=Ver[i];
+			amountPeaks++;
+		}
+	}
+
+	// sort on size
+	if(amountPeaks>=2){
+	  qsort (values, amountPeaks, sizeof (struct ValueAndPos), compare_doubles);
+	  //printf("values largest: %f %f %d %d\n",values[0].value,values[1].value,values[0].position,values[1].position);
+	  float meanVals = (values[0].value+values[1].value)/2;
+
+	     if(meanVals > 1.0 && abs(1-values[1].value/values[0].value) < 0.5){
+////		  // draw
+		  for(int i=0;i<2;i++){
+		//	  printf("%f at position %d\n",values[i].value,values[i].position);
+			  line(probImage,Point(0,values[i].position),Point(n_cols,values[i].position),Scalar(255,255,255),5);
+		  }
+
+		     loc_y=(values[0].position+values[1].position)/2;
+
+		     int idx_l=0;
+		     int idx_r=1;
+		     if(values[0].position>values[1].position){
+		    	 idx_l=1;
+		    	 idx_r=0;
+		     }
+		     printf("Left %f Right %f\n",values[idx_l].value,values[idx_r].value);
+		     float toal = values[idx_l].value+values[idx_r].value;
+		     if(values[idx_l].value>toal*.66){
+		    	 super_roll=1;
+		     }
+		     else if(values[idx_r].value>toal*.66){
+		    	 super_roll=-1;
+		     }
+		     else{
+		    	 super_roll=0;
+		     }
+	     }
+	     else{
+	    	 loc_y=n_rows/2;
+	     }
+	}else{
+		loc_y=n_rows/2;
+	}
+
+	  /*f
 	// Iterate over the image,
 	int i, j;
 	uchar *p;
@@ -280,7 +391,7 @@ void guidoMethod(Mat probImage){
 	}
 	double stdev =  M2 / (n - 1);
 	float toPrint = stdev;
-	printf("Mean %f stdev %f\n",meann,toPrint);
+//	printf("Mean %f stdev %f\n",meann,toPrint);
 
 
 	// set each response lower than mean+1.5stdev to zero
@@ -296,7 +407,6 @@ void guidoMethod(Mat probImage){
 
 
 	// make bins ans store the response per row (and col) in each bin
-
 	double mean_vert[n_rows];
 	for (j = 0; j < n_rows; j++) {
 		mean_vert[j]=0.0;
@@ -321,13 +431,13 @@ void guidoMethod(Mat probImage){
 	}
 
 	double sum2=0.0;
-	double totalAfter=0.0;
+	double totSumWhoo = 0.0;
 	for (j = 0; j < n_rows; j++) {
 		sum2+=mean_vert[j];
 		mean_vert[j]/=sum_vert;
-		totalAfter+=mean_vert[j];
+		totSumWhoo+= mean_vert[j];
 	}
-
+	double mean_histogram = totSumWhoo/n_rows;
 	//calculate cum sum
 	double cum_som[n_rows];
 	cum_som[0]=mean_vert[0];
@@ -344,12 +454,25 @@ void guidoMethod(Mat probImage){
 			break;
 		}
 	}
+	printf("mean_vert[median] %f mean hist: %f\n",mean_vert[median_index],mean_histogram);
+	if(mean_vert[median_index]>mean_histogram){
+		printf("Moving as it is higher %d\n",median_index);
+		// start moving left or right
+		int direction;
+		if(median_index < n_rows/2){
+			median_index+=n_rows/4;
+		}
+		else{
+			median_index-=n_rows/4;
+		}
+		printf("Moved to %d\n",median_index);
+
+	}
 	loc_y=median_index;
 
-	printf("Median index %d\n",median_index);
 	if(median_index>0){
 		line(probImage,Point(0,loc_y),Point(n_cols,loc_y),Scalar(255,255,255),5);
-	}
+	}*/
 
 }
 int opencv_example(char *img, int width, int height) {
@@ -359,7 +482,7 @@ int opencv_example(char *img, int width, int height) {
 	Mat M(height, width, CV_8UC2, img); // original
 	Mat hsvImage;
 	Mat rgbImage;
-	cvtColor(M,rgbImage,CV_YUV2BGRA_Y422);
+	cvtColor(M,rgbImage,CV_YUV2BGR_Y422);
 
 	cvtColor(rgbImage,hsvImage,CV_BGR2HSV);
 
