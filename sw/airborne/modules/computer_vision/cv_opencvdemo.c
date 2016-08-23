@@ -29,7 +29,8 @@
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 
 #include "modules/computer_vision/lib/vision/image.h"
-
+#include "navigation.h"
+#include "generated/flight_plan.h"
 #include "std.h"
 
 #include <stdlib.h>
@@ -41,11 +42,45 @@ int wait_here_time=0;
 int go_right_time=0;
 int go_backwards_time=0;
 int go_left_time=0;
+enum DRONE_STATE dronerace_drone_state=GO_SAFETY;
+//void guided_stay_wp(uint8_t wp){
+//	 struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
+//	struct EnuCoor_f actually_ned;
+//	ENU_OF_TO_NED(actually_ned, enu_i_wp);
+//	guidance_h_set_guided_pos(actually_ned.x, actually_ned.y);
+//}
+uint8_t guided_stay_wp(uint8_t wp){
+	 struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
+	struct EnuCoor_f actually_ned;
+	ENU_OF_TO_NED(actually_ned, enu_i_wp);
+	guidance_h_set_guided_pos(actually_ned.x, actually_ned.y);
+	return 0;
+}
+float getPosErrorMeters(uint8_t wp){
+	struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
+
+	struct EnuCoor_f my_place =*stateGetPositionEnu_f();
+
+	double squared = fabs(my_place.x-enu_i_wp.x)*fabs(my_place.x-enu_i_wp.x)+\
+			fabs(my_place.y-enu_i_wp.y)*fabs(my_place.y-enu_i_wp.y);
+	return sqrt(squared);
+//	NED_FLOAT_OF_BFP(state.ned_pos_f, state.ned_posi);
+}
+uint8_t start_fly_through(){
+	dronerace_drone_state=GO_THROUGH_WINDOW;
+	return 0;
+}
+
+uint8_t should_go_safety(){
+	if(dronerace_drone_state==GO_SAFETY){
+		return 1;
+	}
+	return 0;
+}
 // Function
 struct image_t* opencv_func(struct image_t* img);
 struct image_t* opencv_func(struct image_t* img)
 {
-
   if (img->type == IMAGE_YUV422)
   {
     // Call OpenCV (C++ from paparazzi C function)
@@ -70,47 +105,26 @@ struct image_t* opencv_func(struct image_t* img)
   int distance_pixels_between_just_go=125;
   totalHeight/=100.0;
 
-  if(eyes_closed_go>0){
-	  eyes_closed_go--;
-	  if(eyes_closed_go<=0){
-		  eyes_closed_go=0;
-		  wait_here_time=40;
+  if(dronerace_drone_state==GO_THROUGH_WINDOW){
+	  if(eyes_closed_go>0){
+		  eyes_closed_go--;
+		  if(eyes_closed_go<=0){
+			  eyes_closed_go=0;
+			  wait_here_time=40;
+		  }
+		  guidance_h_set_guided_body_vel(1.0,0);
 	  }
-	  guidance_h_set_guided_body_vel(1.0,0);
-  }
-  else if(wait_here_time>0){
-	  wait_here_time--;
-	  if(wait_here_time<=0){
-		  go_right_time=100;
+	  else if(wait_here_time>0){
+		  wait_here_time--;
+		  if(wait_here_time<=0){
+			  go_right_time=100;
+
+
+		  }
+		  dronerace_drone_state=GO_SAFETY;
 	  }
-	  guidance_h_set_guided_body_vel(0.0,0);
   }
-  else if(go_right_time>0){
-	  go_right_time--;
-	  if(go_right_time<=0){
-		  go_backwards_time=200;
-	  }
-
-	  guidance_h_set_guided_body_vel(0.0,1.0);
-
-  }
-  else if(go_backwards_time>0){
-	  go_backwards_time--;
-	  	  if(go_backwards_time<=0){
-	  		go_left_time=100;
-	  	  }
-
-		  guidance_h_set_guided_body_vel(-1.0,0);
-  }
-  else if(go_left_time>0){
-	  go_left_time--;
-	 	  	  if(go_left_time<=0){
-	 	  		go_left_time=0;
-	 	  	  }
-
-	 		  guidance_h_set_guided_body_vel(0.0,-1.0);
-  }
-  else{
+  else if(dronerace_drone_state == DETECT_WINDOW){
 	  guidance_h_set_guided_heading(yaw);
 
 	  if(too_close){
@@ -129,6 +143,7 @@ struct image_t* opencv_func(struct image_t* img)
 		  else{
 			  if(distance_pixels>distance_pixels_between_just_go){
 				  eyes_closed_go=60;
+				  dronerace_drone_state=GO_THROUGH_WINDOW;
 				  guidance_h_set_guided_body_vel(0.5,0);
 			  }
 			  else{
@@ -137,7 +152,6 @@ struct image_t* opencv_func(struct image_t* img)
 		  }
 	  }
   }
-//  guidance_h_set_guided_body_vel(0.15,0.0);
 
   return img;
 }
