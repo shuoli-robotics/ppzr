@@ -27,57 +27,57 @@
 #include "modules/computer_vision/cv_opencvdemo.h"
 #include "modules/computer_vision/opencv_example.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
-
 #include "modules/computer_vision/lib/vision/image.h"
 #include "navigation.h"
 #include "generated/flight_plan.h"
 #include "std.h"
-
 #include <stdlib.h>
 #include <string.h>
-
 #include "subsystems/datalink/telemetry.h"
+
+// Variables for my state diagram
 int eyes_closed_go = 0;
 int wait_here_time=0;
-int go_right_time=0;
-int go_backwards_time=0;
-int go_left_time=0;
-enum DRONE_STATE dronerace_drone_state=GO_SAFETY;
-//void guided_stay_wp(uint8_t wp){
-//	 struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
-//	struct EnuCoor_f actually_ned;
-//	ENU_OF_TO_NED(actually_ned, enu_i_wp);
-//	guidance_h_set_guided_pos(actually_ned.x, actually_ned.y);
-//}
+enum DRONE_STATE dronerace_drone_state=GO_THROUGH_WINDOW;
+
+// Global settings
+float ratio_wanted = 0.44; // ratio between left and right to be enough in front of the window
+int distance_pixels_between_just_go=125; // distance in pixels between the left and right pole of the window
+float viewingAngle=0.45;//radians
+
+/* Sets the guided mode goal to a waypoint */
 uint8_t guided_stay_wp(uint8_t wp){
-	 struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
-	struct EnuCoor_f actually_ned;
+	struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
+	struct NedCoor_f actually_ned;
 	ENU_OF_TO_NED(actually_ned, enu_i_wp);
 	guidance_h_set_guided_pos(actually_ned.x, actually_ned.y);
 	return 0;
 }
+
+/* Get the position error to a waypoint */
 float getPosErrorMeters(uint8_t wp){
 	struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
-
 	struct EnuCoor_f my_place =*stateGetPositionEnu_f();
-
 	double squared = fabs(my_place.x-enu_i_wp.x)*fabs(my_place.x-enu_i_wp.x)+\
 			fabs(my_place.y-enu_i_wp.y)*fabs(my_place.y-enu_i_wp.y);
 	return sqrt(squared);
-//	NED_FLOAT_OF_BFP(state.ned_pos_f, state.ned_posi);
 }
+
+/* Sets the state to detect window */
 uint8_t start_fly_through(){
-	dronerace_drone_state=GO_THROUGH_WINDOW;
+	dronerace_drone_state=DETECT_WINDOW;
 	return 0;
 }
 
+/* gets whether the drone is in state GO_SAFETY */
 uint8_t should_go_safety(){
 	if(dronerace_drone_state==GO_SAFETY){
 		return 1;
 	}
 	return 0;
 }
-// Function
+// Function that calls the vision part of the drone race
+// Then does a little bit of control.
 struct image_t* opencv_func(struct image_t* img);
 struct image_t* opencv_func(struct image_t* img)
 {
@@ -89,10 +89,7 @@ struct image_t* opencv_func(struct image_t* img)
 
   DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
 
-
-
   float yaw = stateGetNedToBodyEulers_f()->psi;
-  float viewingAngle=0.45;//radians
   float diff = loc_y-(img->h/2);
 
   float unexplainedOffset=50.0;
@@ -101,11 +98,12 @@ struct image_t* opencv_func(struct image_t* img)
   yaw += pixelsPerDegree * diff;
   float totalHeight = left_height + right_height;
   float ratio = left_height/totalHeight;
-  float ratio_wanted = 0.44;
-  int distance_pixels_between_just_go=125;
+
   totalHeight/=100.0;
 
+  // Some quickly made control sequence that works with optitrack in the cyberzoo
   if(dronerace_drone_state==GO_THROUGH_WINDOW){
+	  // Check is we want to go forward for a certain amount of time
 	  if(eyes_closed_go>0){
 		  eyes_closed_go--;
 		  if(eyes_closed_go<=0){
@@ -114,24 +112,24 @@ struct image_t* opencv_func(struct image_t* img)
 		  }
 		  guidance_h_set_guided_body_vel(1.0,0);
 	  }
+	  // Check if we want to wait here for a certain amount of time
 	  else if(wait_here_time>0){
 		  wait_here_time--;
 		  if(wait_here_time<=0){
-			  go_right_time=100;
-
-
+			  dronerace_drone_state=GO_SAFETY;
 		  }
-		  dronerace_drone_state=GO_SAFETY;
 	  }
   }
   else if(dronerace_drone_state == DETECT_WINDOW){
+	  // Always look at the obstacle
 	  guidance_h_set_guided_heading(yaw);
 
+	  // Too much red might mean that we are approaching the side of the obstacle
 	  if(too_close){
 		  guidance_h_set_guided_body_vel(-1.0,0);
 	  }
 	  else{
-
+		  // Make sure we are exactly in front of the obstacle by rolling
 		  if(ratio < ratio_wanted || ratio > (1.0-ratio_wanted)){
 			  if(ratio < ratio_wanted){
 				  guidance_h_set_guided_body_vel(0.0,-ratio/totalHeight);
@@ -141,12 +139,15 @@ struct image_t* opencv_func(struct image_t* img)
 			  }
 		  }
 		  else{
+			  // Here we know we are in front of the obstacle.
+			  // Check if we are so close to the obstacle that we would go through
 			  if(distance_pixels>distance_pixels_between_just_go){
 				  eyes_closed_go=60;
 				  dronerace_drone_state=GO_THROUGH_WINDOW;
 				  guidance_h_set_guided_body_vel(0.5,0);
 			  }
 			  else{
+				  // Go forward slowly, roll a bit more to the center
 				  guidance_h_set_guided_body_vel(0.5,diff/img->h);
 			  }
 		  }

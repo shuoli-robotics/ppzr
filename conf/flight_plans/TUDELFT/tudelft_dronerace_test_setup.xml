@@ -40,12 +40,12 @@
       <corner name="_OZ4"/>
     </sector>
   </sectors>
-  <exceptions>
+  <!--<exceptions>
     <exception cond="!InsideCyberZoo(GetPosX(), GetPosY())" deroute="Standby"/>
     <exception cond="datalink_time > 2" deroute="Land here"/>
     <exception cond="electrical.bat_low && !(nav_block == IndexOfBlock('Land')) && !(nav_block == IndexOfBlock('Flare')) && !(nav_block == IndexOfBlock('Landed'))" deroute="Land"/>
     <exception cond="electrical.bat_critical && !(nav_block == IndexOfBlock('Land')) && !(nav_block == IndexOfBlock('Flare')) && !(nav_block == IndexOfBlock('Landed'))" deroute="Land here"/>
-  </exceptions>
+  </exceptions>-->
   <blocks>
     <block name="Wait GPS">
       <call fun="NavKillThrottle()"/>
@@ -78,12 +78,13 @@
     </block>
 <block name="NavigateToWindow">
 	<call fun="guided_stay_wp(WP_front_window)"/>
-
       <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
-	<exception cond="LessThan(getPosErrorMeters(WP_front_window),0.5)" deroute="FlyThroughWindow"/>
+	<exception cond="LessThan(getPosErrorMeters(WP_front_window),0.5)" deroute="FlyThroughWindowSetup"/>
+</block>
+<block name="FlyThroughWindowSetup">
+	<call fun="start_fly_through()"/>
 </block>
 <block name="FlyThroughWindow">
-	<call fun="start_fly_through()"/>
       <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
 	<exception cond="should_go_safety()" deroute="StaySafe"/>
 </block>
