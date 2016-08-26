@@ -28,6 +28,9 @@
 
 extern enum DRONE_STATE{DETECT_WINDOW,GO_THROUGH_WINDOW,GO_SAFETY};
 extern enum DRONE_STATE dronerace_drone_state;
+extern uint8_t navigate_through_blue_window(void);
+extern uint8_t navigate_through_red_window(void);
+extern uint8_t make_turn_right_radians(float);
 extern void fly_through_gate_init(void);
 extern uint8_t start_fly_through(void);
 extern uint8_t guided_stay_wp(uint8_t);

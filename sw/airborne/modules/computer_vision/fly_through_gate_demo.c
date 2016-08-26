@@ -69,6 +69,26 @@ uint8_t start_fly_through(){
 	return 0;
 }
 
+
+uint8_t navigate_through_red_window(){
+	set_red_window();
+	return FALSE;
+}
+uint8_t make_turn_right_radians(float radians){
+	 float yaw = stateGetNedToBodyEulers_f()->psi;
+	 printf("Yaw now %f\n",yaw);
+		 yaw+=radians;
+		 printf("Yaw set %f\n",yaw);
+		 guidance_h_set_guided_heading(yaw);
+
+		return FALSE;
+
+}
+uint8_t navigate_through_blue_window(){
+	set_blue_window();
+
+	return FALSE;
+}
 /* gets whether the drone is in state GO_SAFETY */
 uint8_t should_go_safety(){
 	if(dronerace_drone_state==GO_SAFETY){

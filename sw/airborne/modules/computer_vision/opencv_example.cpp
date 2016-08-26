@@ -286,9 +286,10 @@ void guidoMethod(Mat probImage) {
 		// Check if this is indeed a window
 		// Correcsponds to the cross in Guido's MATLAB code.
 		// The treshold for
+		float tresholdActuallyGate = 0.4;
 		float some_sim = 1.0 - values[1].value / values[0].value;
 		if (meanVals > 1.0
-				&& fabs(some_sim) < 0.4) {
+				&& fabs(some_sim) < tresholdActuallyGate) {
 			for (int i = 0; i < 2; i++) {
 				line(probImage, Point(0, values[i].position),
 						Point(n_cols, values[i].position),

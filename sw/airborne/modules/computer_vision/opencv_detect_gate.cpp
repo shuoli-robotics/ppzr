@@ -45,6 +45,9 @@ int prev_mean_u;
 int prev_mean_v;
 int too_close = 0;
 clock_t begin;
+int meanh1 = 0;
+int meanh2 = 180; // H between 0 and 180 (360/2)
+bool changed_parameter;
 int super_roll = 0;
 RNG rng(12345);
 Mat image, mask;
@@ -79,6 +82,17 @@ struct ValueAndPos {
 static inline uint8_t gaus(int amp, int mean, float stdev, int pos) {
 	return amp * exp(-0.5 * pow((pos - mean) / stdev, 2.0));
 }
+void set_blue_window(){
+	meanh1=98;
+	meanh2=98;
+	changed_parameter=true;
+}
+void set_red_window(){
+	meanh1=0;
+	meanh2=180;
+
+	changed_parameter=true;
+}
 /** Initialise the lookup table used in the color seperation
  */
 static void init_lookup_table() {
@@ -86,8 +100,7 @@ static void init_lookup_table() {
 	int max = 256 / 2;
 	int meanu2 = 1255;
 	int meanv2 = 1255;
-	int meanh1 = 0;
-	int meanh2 = 180; // H between 0 and 180 (360/2)
+
 	for (int x = 0; x < 255; x++) {
 		only_uv_u_lookup[x] = gaus(max, mean_u, stddev_colors, x);
 		only_uv_u_lookup[x] += gaus(max, meanu2, stddev_colors, x);
@@ -106,15 +119,15 @@ void opencv_init_rects() {
 
 /* Sets the color intensity in a single chanel image
  * based on the passed UYVY image img.
- * Note that the colorIntensity image should have a specified amount of rows
+ * Note that the color_intensity image should have a specified amount of rows
  * and columns.
  */
-static void yuv422_set_color_intensity(Mat colorIntensity, char* img) {
-	int n_rows = colorIntensity.rows;
-	int n_cols = colorIntensity.cols;
+static void yuv422_set_color_intensity(Mat color_intensity, char* img) {
+	int n_rows = color_intensity.rows;
+	int n_cols = color_intensity.cols;
 
 	// If the image is one block in memory we can iterate over it all at once!
-	if (colorIntensity.isContinuous()) {
+	if (color_intensity.isContinuous()) {
 		n_cols *= n_rows;
 		n_rows = 1;
 	}
@@ -124,7 +137,7 @@ static void yuv422_set_color_intensity(Mat colorIntensity, char* img) {
 	uchar *p;
 	int index_img = 0;
 	for (i = 0; i < n_rows; ++i) {
-		p = colorIntensity.ptr<uchar>(i);
+		p = color_intensity.ptr<uchar>(i);
 		for (j = 0; j < n_cols; j += 2) {
 			// U Y V Y
 			if (only_uv_u_lookup[img[index_img + 1]] < 170) { // Max Y value
@@ -145,12 +158,12 @@ static void yuv422_set_color_intensity(Mat colorIntensity, char* img) {
 
 }
 
-static void hsv_set_color_intensity(Mat colorIntensity, Mat hsvImage) {
-	int n_rows = colorIntensity.rows;
-	int n_cols = colorIntensity.cols;
+static void hsv_set_color_intensity(Mat color_intensity, Mat hsvImage) {
+	int n_rows = color_intensity.rows;
+	int n_cols = color_intensity.cols;
 
 	// If the image is one block in memory we can iterate over it all at once!
-	if (colorIntensity.isContinuous()) {
+	if (color_intensity.isContinuous()) {
 		n_cols *= n_rows;
 		n_rows = 1;
 	}
@@ -161,7 +174,7 @@ static void hsv_set_color_intensity(Mat colorIntensity, Mat hsvImage) {
 	uchar *hsvRow;
 	int index_img = 0;
 	for (i = 0; i < n_rows; ++i) {
-		p = colorIntensity.ptr<uchar>(i);
+		p = color_intensity.ptr<uchar>(i);
 		hsvRow = hsvImage.ptr<uchar>(i);
 		for (j = 0; j < n_cols; j++) {
 			p[j] = h_lookup[hsvRow[0]];
@@ -189,12 +202,13 @@ static void smooth_array(float array[], int length_array, int smooth_dist) {
 /**
  * Checks if any of the global parameters changed.
  */
-bool changedParameters() {
-	if (prev_mean_u != mean_u || prev_mean_v != mean_v
-			|| prev_stddev_colors != stddev_colors) {
+bool changed_parameters() {
+	if (changed_parameter || prev_mean_u != mean_u || prev_mean_v != mean_v
+			|| prev_stddev_colors != stddev_colors ) {
 		prev_mean_u = mean_u;
 		prev_mean_v = mean_v;
 		prev_stddev_colors = stddev_colors;
+
 		return true;
 
 	}
@@ -204,7 +218,7 @@ bool changedParameters() {
 /**
  * Given an integral image, returns the average value in a certain area.
  */
-float getAverageValueArea(int min_x, int min_y, int max_x, int max_y,
+float get_average_value_area(int min_x, int min_y, int max_x, int max_y,
 		Mat integral_image) {
 	int w = max_x - min_x + 1;
 	int h = max_y - min_y + 1;
@@ -251,28 +265,28 @@ void guidoMethod(Mat probImage) {
 	// And store the values in Ver
 	int border_size = 8;
 	int guidoLength = n_rows - 3 * border_size;
-	float Ver[guidoLength];
+	float vertical_activation[guidoLength];
 	int border_y = 0; // borders can be used to filter out parts of the image that are irrelevant
 	int border_x = 0; // examples: floor, ceiling, sides of the drone.
 	for (int y = 0; y < guidoLength; y++) {
-		Ver[y] = -getAverageValueArea(border_x, y, n_cols - border_x,
+		vertical_activation[y] = -get_average_value_area(border_x, y, n_cols - border_x,
 				y + 3 * border_size, my_int)
 				+ 2
-						* getAverageValueArea(border_x, y + border_size,
+						* get_average_value_area(border_x, y + border_size,
 								n_cols - border_x, y + 2 * border_size - 1,
 								my_int);
 	}
 
 	// Smooth the array
-	smooth_array(Ver, guidoLength, 4);
+	smooth_array(vertical_activation, guidoLength, 4);
 
 	// find peaks by searching for places that are higher than their neighbours
 	struct ValueAndPos values[guidoLength];
 	int amountPeaks = 0;
 	for (int i = 1; i < guidoLength - 1; i++) {
-		if (Ver[i] > Ver[i - 1] && Ver[i] > Ver[i + 1]) {
+		if (vertical_activation[i] > vertical_activation[i - 1] && vertical_activation[i] > vertical_activation[i + 1]) {
 			values[amountPeaks].position = i;
-			values[amountPeaks].value = Ver[i];
+			values[amountPeaks].value = vertical_activation[i];
 			amountPeaks++;
 		}
 	}
@@ -281,14 +295,14 @@ void guidoMethod(Mat probImage) {
 		// sort the peaks based on the height of the peak.
 		qsort(values, amountPeaks, sizeof(struct ValueAndPos),
 				compare_value_and_pos);
-		float meanVals = (values[0].value + values[1].value) / 2;
+		float mean_vals = (values[0].value + values[1].value) / 2;
 
 		// Check if this is indeed a window
 		// Correcsponds to the cross in Guido's MATLAB code.
 		// The treshold for
 		float tresholdActuallyGate = 0.4;
 		float some_sim = 1.0 - values[1].value / values[0].value;
-		if (meanVals > 1.0
+		if (mean_vals > 1.0
 				&& fabs(some_sim) < tresholdActuallyGate) {
 			for (int i = 0; i < 2; i++) {
 				line(probImage, Point(0, values[i].position),
@@ -304,14 +318,9 @@ void guidoMethod(Mat probImage) {
 
 			loc_y = (values[0].position + values[1].position) / 2;
 			center_pixels = loc_y;
-			int idx_l = 0;
-			int idx_r = 1;
 			left_height = values[0].value;
 			right_height = values[1].value;
 			if (values[0].position > values[1].position) {
-				idx_l = 1;
-				idx_r = 0;
-
 				left_height = values[1].value;
 				right_height = values[0].value;
 			}
@@ -325,8 +334,16 @@ void guidoMethod(Mat probImage) {
 
 }
 int opencv_gate_detect(char *img, int width, int height) {
-	if (changedParameters()) {
+	/*meanh1++;
+		meanh2=meanh1;
+		changed_parameter=true;
+		printf("meanh1 %d\n",meanh1);
+		if(meanh1>max_h){
+			meanh1=min_h;
+		}*/
+	if (changed_parameters()) {
 		init_lookup_table();
+		changed_parameter=false;
 	}
 	Mat M(height, width, CV_8UC2, img); // original
 	Mat hsvImage;

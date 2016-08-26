@@ -54,7 +54,7 @@
 	<define name="COLORFILTER_CAMERA" value="front_camera"/>
     </module>-->
 
-    <module name="cv_opencvdemo">
+    <module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
     </module>
 <!--
@@ -68,12 +68,13 @@
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
     </module>
+<!--
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
 
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-    </module>
+    </module>-->
   </modules>
 
   <commands>

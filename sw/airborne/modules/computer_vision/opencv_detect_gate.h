@@ -38,7 +38,8 @@ extern int16_t distance_pixels;
 extern int16_t center_pixels;
 extern int16_t left_height;
 extern int16_t right_height;
-
+void set_blue_window(void);
+void set_red_window(void);
 int opencv_gate_detect(char *img, int width, int height);
 void opencv_init_rects(void);
 #ifdef __cplusplus

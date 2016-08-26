@@ -31,7 +31,8 @@ extern enum DRONE_STATE dronerace_drone_state;
 extern void opencvdemo_init(void);
 extern uint8_t start_fly_through(void);
 extern uint8_t guided_stay_wp(uint8_t);
-
+extern uint8_t navigate_through_red_window(void);
+extern uint8_t navigate_through_blue_window(void);
 extern uint8_t should_go_safety();
 extern float getPosErrorMeters(uint8_t);
 

@@ -357,9 +357,9 @@
    airframe="airframes/TUDELFT/tudelft_bebop_autonomous_race.xml"
    radio="radios/dummy.xml"
    telemetry="telemetry/default_rotorcraft.xml"
-   flight_plan="flight_plans/rotorcraft_optitrack.xml"
+   flight_plan="flight_plans/TUDELFT/tudelft_dronerace_test_setup.xml"
    settings="settings/rotorcraft_basic.xml settings/control/rotorcraft_guidance.xml settings/control/stabilization_att_int_quat.xml settings/control/rotorcraft_speed.xml"
-   settings_modules="modules/gps.xml modules/geo_mag.xml modules/air_data.xml modules/cv_opencvdemo.xml modules/cv_opticflow.xml modules/video_rtp_stream.xml"
+   settings_modules="modules/gps.xml modules/geo_mag.xml modules/air_data.xml modules/cv_detect_gate.xml modules/cv_opticflow.xml"
    gui_color="#ffffbc3bce5b"
   />
   <aircraft
@@ -449,5 +449,16 @@
    settings="settings/rotorcraft_basic.xml settings/control/stabilization_att_int_quat.xml"
    settings_modules="modules/gps_ubx_ucenter.xml modules/gps.xml"
    gui_color="#b29eb22cffff"
+  />
+  <aircraft
+   name="tofdemo"
+   ac_id="17"
+   airframe="airframes/TUDELFT/tudelft_bebop_autonomous_race.xml"
+   radio="radios/dummy.xml"
+   telemetry="telemetry/default_rotorcraft.xml"
+   flight_plan="flight_plans/TUDELFT/tudelft_dronerace_test_setup.xml"
+   settings="settings/rotorcraft_basic.xml settings/control/rotorcraft_guidance.xml settings/control/stabilization_att_int_quat.xml settings/control/rotorcraft_speed.xml"
+   settings_modules="modules/gps.xml modules/geo_mag.xml modules/air_data.xml modules/cv_detect_gate.xml modules/cv_opticflow.xml"
+   gui_color="#ffffbc3bce5b"
   />
 </conf>
