@@ -38,7 +38,10 @@
 
 
 float psi0;//
-bool primitive_mask[4] = {0,0,0,0};
+float psi_omega;
+
+bool primitive_mask[5] = {0,0,0,0,0}; // 0 take off;1 hover;2 go straight;3 change_heading_hover;
+// 5 circle
 uint8_t previous_mode;
 uint8_t current_mode;
 uint8_t previous_guidance_h_mode;
@@ -71,25 +74,6 @@ void display_information()
         printf("Altitude now is %f !\n",stateGetPositionNed_f()->z);
         printf("Z setpoint is %f !\n",(float)guidance_v_z_sp*pow(2,-INT32_POS_FRAC));
         printf("Z reference is %f \n", (float)guidance_v_z_ref*pow(2,-INT32_POS_FRAC));
-        //printf("Current velocity vx = %f, vy = %f\n", current_vel_x,current_vel_y);
-        //printf("Desired velocity is vx_d = %f,vy_d = %f\n",guidance_module.desired_vx,guidance_module.desired_vy);
-        //printf("Velocity error is error_x = %f, error_y = %f\n",guidance_h_module_speed_error_x,guidance_h_module_speed_error_y);
-        /*printf("current attitude is Theta = %f degree, Phi = %f degree, Psi = %f degree\n ",
-               stateGetNedToBodyEulers_f()->theta/3.14*180,
-               stateGetNedToBodyEulers_f()->phi/3.14*180,
-               stateGetNedToBodyEulers_f()->psi/3.14*180);*/
-//        printf("Needed attitude is Phi = %f degree, Theta = %f degree\n",phi_desired_f/3.14*180,theta_desired_f/3.14*180);
-//        float phi;
-//        float theta;
-//        phi = (float)guidance_module.cmd.phi * pow(2,-INT32_ANGLE_FRAC);
-//        theta = (float)guidance_module.cmd.theta * pow(2,-INT32_ANGLE_FRAC);
-//        printf("Phi in guidance_module is %f degree Theta in guidance_module is %f degree\n",phi/3.14*180,theta/3.14*180);
-//        struct FloatEulers temp;
-//        EULERS_FLOAT_OF_BFP(temp, guidance_module.cmd);
-//        printf("Command in stabilization is Phi = %f degree, Theta = %f degree, Psi = %f degree\n",
-//        temp.phi/3.14*180,temp.theta/3.14*180,temp.psi/3.14*180);
-//        printf("Setpoint is Phi = %f degree, Theta = %f degree\n",(float)stab_att_sp_euler.phi*pow(2,-INT32_ANGLE_FRAC)/3.14*180,
-//               (float)stab_att_sp_euler.theta*pow(2,-INT32_ANGLE_FRAC)/3.14*180);
         printf("\n");
         printf("\n");
         printf("\n");
@@ -100,6 +84,7 @@ void take_off(float altitude);
 void hover(float planned_time);
 void go_straight(float planned_time, float velocity);
 void change_heading_hover(float derta_psi,float planned_time);
+void circle(float radius, float planned_time);
 
 void take_off(float altitude){
     if (!bit_is_set_ls(clock_mask,2))
@@ -119,7 +104,6 @@ void take_off(float altitude){
         clear_bit_ls(primitive_mask,0);
         set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
-        printf("The altitude is reached!!!!!!\n");
     }
 
 }
@@ -135,9 +119,8 @@ void hover(float planned_time)
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
         guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
-    else if(time_primitive > planned_time)
+    if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,1);
         set_bit_ls(primitive_mask,2);
@@ -157,7 +140,7 @@ void go_straight(float planned_time, float velocity){
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
     }
-    else if(time_primitive > planned_time)
+    if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,2);
         set_bit_ls(primitive_mask,1);
@@ -166,6 +149,7 @@ void go_straight(float planned_time, float velocity){
 }
 
 void change_heading_hover(float derta_psi,float planned_time){
+    psi_omega = derta_psi/planned_time;
     if (!bit_is_set_ls(clock_mask,2))
     {
         set_bit_ls(clock_mask,2);
@@ -173,22 +157,18 @@ void change_heading_hover(float derta_psi,float planned_time){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
+        psi_omega = derta_psi/planned_time;
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        guidance_loop_set_heading(psi0+derta_psi);
+        guidance_loop_set_heading(psi0);
     }
-//    else if(time_primitive < planned_time)
-//    {
-//        if (fabs(time_primitive-planned_time/4)<0.2)
-//            guidance_loop_set_heading(psi0+derta_psi/4);
-//        else if (fabs(time_primitive-planned_time/2)<0.2)
-//            guidance_loop_set_heading(psi0+derta_psi/2);
-//        else if (fabs(time_primitive-planned_time/4*3)<0.2)
-//            guidance_loop_set_heading(psi0+derta_psi/4*3);
-//        else if (fabs(time_primitive-planned_time)<0.2)
-//            guidance_loop_set_heading(psi0+derta_psi);
-//    }
-    else if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    else
+    {
+        guidance_loop_set_velocity(0,0);
+        guidance_v_set_guided_z(stateGetPositionNed_f()->z);
+        guidance_loop_set_heading(psi0+psi_omega*time_primitive);
+    }
+    if(time_primitive > planned_time)      //(time_primitive>planned_time)
     {
         clear_bit_ls(primitive_mask,2);
         set_bit_ls(primitive_mask,1);
@@ -196,6 +176,35 @@ void change_heading_hover(float derta_psi,float planned_time){
     }
 }
 
+void circle(float radius, float planned_time){
+    float omega = 2*3.14/planned_time;
+    if (!bit_is_set_ls(clock_mask,2))
+    {
+        set_bit_ls(clock_mask,2);
+        counter_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_velocity(0,omega*radius);
+        guidance_v_set_guided_z(stateGetPositionNed_f()->z);
+        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
+    }
+    else
+    {
+        float vx = -omega*radius*sinf(omega*time_primitive);
+        float vy = omega*radius*cosf(omega*time_primitive);
+        guidance_loop_set_velocity(vx,vy);
+        guidance_v_set_guided_z(stateGetPositionNed_f()->z);
+        float heading = atan2(vy,vx);
+        guidance_loop_set_heading(heading);
+    }
+    if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    {
+        clear_bit_ls(primitive_mask,2);
+        set_bit_ls(primitive_mask,1);
+        clear_bit_ls(clock_mask,2);
+    }
+}
 
 void flight_plan_run() {        // 10HZ
     current_mode = autopilot_mode;
@@ -204,6 +213,7 @@ void flight_plan_run() {        // 10HZ
     {
         counter_autopilot_mode = 0;
         clear_bit_ls(clock_mask,2);
+        set_bit_ls(primitive_mask,1);
     }
 
     if (autopilot_mode != AP_MODE_GUIDED)
@@ -215,11 +225,11 @@ void flight_plan_run() {        // 10HZ
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,1))
     {
-        hover(3);
+        hover(2);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,2))
     {
-        go_straight(4,0.8);
+        go_straight(3,1);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,3))
     {

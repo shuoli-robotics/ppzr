@@ -35,6 +35,8 @@ struct guidance_module_st {
     float theta_igain;      ///< The pitch I gain on the err_vy_int
     float desired_vx;         ///< The desired velocity in the x direction (cm/s)
     float desired_vy;         ///< The desired velocity in the y direction (cm/s)
+    float desired_z;
+    float desired_heading;
 
     float err_vx_int;         ///< The integrated velocity error in x direction (m/s)
     float err_vy_int;         ///< The integrated velocity error in y direction (m/s)
