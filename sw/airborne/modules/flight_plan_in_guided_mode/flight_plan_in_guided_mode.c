@@ -39,6 +39,8 @@
 
 float psi0;//
 float psi_omega;
+float omega_gamma;
+float heading;
 
 bool primitive_mask[5] = {0,0,0,0,0}; // 0 take off;1 hover;2 go straight;3 change_heading_hover;
 // 5 circle
@@ -95,7 +97,6 @@ void take_off(float altitude){
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(altitude);
-       // guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
         guidance_loop_set_heading(0);
     }
 
@@ -178,6 +179,7 @@ void change_heading_hover(float derta_psi,float planned_time){
 
 void circle(float radius, float planned_time){
     float omega = 2*3.14/planned_time;
+    float body_velocity_y = omega*radius;
     if (!bit_is_set_ls(clock_mask,2))
     {
         set_bit_ls(clock_mask,2);
@@ -185,18 +187,22 @@ void circle(float radius, float planned_time){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_velocity(0,omega*radius);
+        guidance_loop_set_heading(psi0);
+        float vx_earth = cosf(psi0)*body_velocity_y;
+        float vy_earth = sinf(psi0)*body_velocity_y;
+        guidance_loop_set_velocity(vx_earth,vy_earth);
         guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        guidance_loop_set_heading(stateGetNedToBodyEulers_f()->psi);
+
     }
     else
     {
-        float vx = -omega*radius*sinf(omega*time_primitive);
-        float vy = omega*radius*cosf(omega*time_primitive);
-        guidance_loop_set_velocity(vx,vy);
-        guidance_v_set_guided_z(stateGetPositionNed_f()->z);
-        float heading = atan2(vy,vx);
+        heading = psi0*omega*time_primitive;
         guidance_loop_set_heading(heading);
+        float psi = stateGetNedToBodyEulers_f()->psi;
+        float vx_earth = cosf(psi)*body_velocity_y;
+        float vy_earth = sinf(psi)*body_velocity_y;
+        guidance_loop_set_velocity(vx_earth,vy_earth);
+        guidance_v_set_guided_z(stateGetPositionNed_f()->z);
     }
     if(time_primitive > planned_time)      //(time_primitive>planned_time)
     {
@@ -204,6 +210,10 @@ void circle(float radius, float planned_time){
         set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
     }
+}
+
+void arc(float radius, float derta_gamma,float time_planned){
+
 }
 
 void flight_plan_run() {        // 10HZ
