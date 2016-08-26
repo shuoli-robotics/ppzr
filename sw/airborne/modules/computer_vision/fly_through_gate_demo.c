@@ -25,7 +25,7 @@
 
 #include "modules/computer_vision/cv.h"
 #include "modules/computer_vision/fly_through_gate_demo.h"
-#include "modules/computer_vision/opencv_example.h"
+#include "modules/computer_vision/opencv_detect_gate.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "modules/computer_vision/lib/vision/image.h"
 #include "navigation.h"
