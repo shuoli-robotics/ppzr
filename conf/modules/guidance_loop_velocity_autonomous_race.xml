@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="guidance_loop_velocity_autonomous_race">
+  <doc>
+    <description>This module is used to control velocity only in MODULE mode</description>
+  </doc>
+  <header>
+    <file name="guidance_loop_velocity_autonomous_race.h"/>
+  </header>
+  <init fun="guidance_h_module_init()"/>
+  <periodic fun="guidance_loop_pid()"/>
+  <makefile>
+    <file name="guidance_loop_velocity_autonomous_race.c"/>
+  </makefile>
+</module>
+

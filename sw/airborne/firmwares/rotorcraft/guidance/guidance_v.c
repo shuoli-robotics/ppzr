@@ -108,7 +108,7 @@ bool guidance_v_guided_vel_enabled;       // mask
 /** Direct throttle from radio control.
  *  range 0:#MAX_PPRZ
  */
-int32_t guidance_v_rc_delta_t;
+int32_t guidance_v_rc_delta_t;   // delta_t is throttle force U1
 
 /** Vertical speed setpoint from radio control.
  *  fixed point representation: Q12.19
@@ -230,7 +230,7 @@ void guidance_v_mode_changed(uint8_t new_mode)
   }
 
   switch (new_mode) {
-    case GUIDANCE_V_MODE_GUIDED:
+    case GUIDANCE_V_MODE_GUIDED:     // !!!!!!
     case GUIDANCE_V_MODE_HOVER:
       /* disable vertical velocity setpoints */
       guidance_v_guided_vel_enabled = false;
@@ -279,7 +279,7 @@ void guidance_v_notify_in_flight(bool in_flight)
   }
 }
 
-
+// Important
 void guidance_v_run(bool in_flight)
 {
 
@@ -325,7 +325,7 @@ void guidance_v_run(bool in_flight)
     case GUIDANCE_V_MODE_GUIDED:
       if (guidance_v_guided_vel_enabled) {
         gv_update_ref_from_zd_sp(guidance_v_zd_sp, stateGetPositionNed_i()->z);
-        run_hover_loop(in_flight);
+        run_hover_loop(in_flight);                     // run PID gives total force
         /* update z sp for telemetry/debuging */
         guidance_v_z_sp = guidance_v_z_ref;
       } else {
@@ -339,7 +339,7 @@ void guidance_v_run(bool in_flight)
         stabilization_cmd[COMMAND_THRUST] = Min(guidance_v_rc_delta_t, guidance_v_delta_t);
       } else
 #endif
-        stabilization_cmd[COMMAND_THRUST] = guidance_v_delta_t;
+        stabilization_cmd[COMMAND_THRUST] = guidance_v_delta_t;  // write the value to stabilization level
       break;
 
 #if GUIDANCE_V_MODE_MODULE_SETTING == GUIDANCE_V_MODE_MODULE

@@ -11,7 +11,7 @@
   <init fun="flight_plan_clock_init()"/>
   <periodic fun="flight_plan_clock_run()" freq="20"/>
   <periodic fun="flight_plan_run()" freq="10"/>
-  <periodic fun="display_information()" freq="1"/>
+  <periodic fun="display_information()" freq="2"/>
   <makefile>
     <file name="flight_plan_in_guided_mode.c"/>
     <file name="flight_plan_clock.c"/>

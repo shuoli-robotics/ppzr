@@ -5,7 +5,10 @@
 #ifndef PPRZ_ON_DESKTOP_FLIGHT_PLAN_CLOCK_H
 #define PPRZ_ON_DESKTOP_FLIGHT_PLAN_CLOCK_H
 
-extern uint8_t clock_mask;
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+#include "firmwares/rotorcraft/guidance/guidance_h.h"
+
+extern bool clock_mask[5];
 
 extern uint32_t counter_autopilot_mode; // start when autopilot mode is changed
 extern uint32_t counter_primitive;
