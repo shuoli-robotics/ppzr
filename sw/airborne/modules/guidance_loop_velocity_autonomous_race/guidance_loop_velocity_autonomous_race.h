@@ -31,8 +31,10 @@
 struct guidance_module_st {
     float phi_pgain;        ///< The roll P gain on the err_vx
     float phi_igain;        ///< The roll I gain on the err_vx_int
+    float phi_dgain;
     float theta_pgain;      ///< The pitch P gain on the err_vy
     float theta_igain;      ///< The pitch I gain on the err_vy_int
+    float theta_dgain;
     float desired_vx;         ///< The desired velocity in the x direction (cm/s)
     float desired_vy;         ///< The desired velocity in the y direction (cm/s)
     float desired_z;
@@ -40,6 +42,8 @@ struct guidance_module_st {
 
     float err_vx_int;         ///< The integrated velocity error in x direction (m/s)
     float err_vy_int;         ///< The integrated velocity error in y direction (m/s)
+    float err_vx_deri;
+    float err_vy_deri;
     struct Int32Eulers cmd;   ///< The commands that are send to the hover loop    It is INT!!!
 };
 

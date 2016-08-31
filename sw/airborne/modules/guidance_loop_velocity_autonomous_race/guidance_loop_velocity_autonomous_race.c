@@ -41,19 +41,29 @@
 PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
 
 #ifndef PHI_IGAIN
-#define PHI_IGAIN 0.1
+#define PHI_IGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
 
+#ifndef PHI_DGAIN
+#define PHI_DGAIN 0
+#endif
+PRINT_CONFIG_VAR(VISION_PHI_DGAIN)
+
 #ifndef THETA_PGAIN
-#define THETA_PGAIN 0.3
+#define THETA_PGAIN 0.4
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
-#ifndef HETA_IGAIN
-#define THETA_IGAIN 0.1
+#ifndef THETA_IGAIN
+#define THETA_IGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
+
+#ifndef THETA_DGAIN
+#define THETA_DGAIN 0
+#endif
+PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
 #ifndef DESIRED_VX
 #define DESIRED_VX 0
@@ -68,14 +78,18 @@ PRINT_CONFIG_VAR(VISION_DESIRED_VY)
 struct guidance_module_st guidance_module = {
         .phi_pgain = PHI_PGAIN,
         .phi_igain = PHI_IGAIN,
+        .phi_dgain = PHI_DGAIN,
         .theta_pgain = THETA_PGAIN,
         .theta_igain = THETA_IGAIN,
+        .theta_dgain = THETA_DGAIN,
         .desired_vx = DESIRED_VX,
         .desired_vy = DESIRED_VY
 };
 
 float guidance_h_module_speed_error_x;
 float guidance_h_module_speed_error_y;
+float guidance_h_module_speed_error_x_previous = 0;
+float guidance_h_module_speed_error_y_previous =0;
 float phi_desired_f;
 float theta_desired_f;
 
@@ -140,24 +154,29 @@ void guidance_loop_pid()
     guidance_module.err_vx_int += guidance_h_module_speed_error_x / 512;
     guidance_module.err_vy_int += guidance_h_module_speed_error_y / 512;
 
+    guidance_module.err_vx_deri = (guidance_h_module_speed_error_x - guidance_h_module_speed_error_x_previous)*512;
+    guidance_module.err_vy_deri = (guidance_h_module_speed_error_y - guidance_h_module_speed_error_y_previous)*512;
+
     struct FloatVect2 cmd_f;
     /* Calculate the commands */
     cmd_f.y   = guidance_module.phi_pgain * guidance_h_module_speed_error_y
-                               + guidance_module.phi_igain * guidance_module.err_vy_int;
+                               + guidance_module.phi_igain * guidance_module.err_vy_int
+                               + guidance_module.phi_dgain * guidance_module.err_vy_deri;
     cmd_f.x   = -(guidance_module.theta_pgain * guidance_h_module_speed_error_x
-                                 + guidance_module.theta_igain * guidance_module.err_vx_int);
+                                 + guidance_module.theta_igain * guidance_module.err_vx_int
+                                 +guidance_module.theta_dgain * guidance_module.err_vx_deri);
     float psi = stateGetNedToBodyEulers_f()->psi;
     float s_psi = sinf(psi);
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
-//    phi_desired_f = 0;
-//    theta_desired_f = 0;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
     /* Bound the roll and pitch commands */
     BoundAbs(guidance_module.cmd.phi, CMD_OF_SAT);
     BoundAbs(guidance_module.cmd.theta, CMD_OF_SAT);
+    guidance_h_module_speed_error_x_previous = guidance_h_module_speed_error_x;
+    guidance_h_module_speed_error_y_previous = guidance_h_module_speed_error_y;
 }
 
 void guidance_loop_set_heading(float heading){
