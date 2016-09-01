@@ -89,7 +89,7 @@ int32_t transition_theta_offset;
  */
 struct Int32Vect2 guidance_h_pos_err;
 struct Int32Vect2 guidance_h_speed_err;
-struct Int32Vect2 guidance_h_trim_att_integrator;
+struct Int32Vect2 guidance_h_trim_att_integrator;  // I of PID
 
 /** horizontal guidance command.
  * In north/east with #INT32_ANGLE_FRAC
@@ -370,7 +370,7 @@ void guidance_h_read_rc(bool  in_flight)
 //    2016.8.1 Shuo remarked
 //-------------------------------------
 
-void guidance_h_run(bool  in_flight)
+void guidance_h_run(bool  in_flight)     // automatically run in specific freq
 {
   switch (guidance_h.mode) {
 
@@ -411,9 +411,9 @@ void guidance_h_run(bool  in_flight)
       guidance_indi_run(in_flight, guidance_h.sp.heading);
 #else
       /* compute x,y earth commands */
-      guidance_h_traj_run(in_flight);
+      guidance_h_traj_run(in_flight);        // calculate attitude needed PID controller feed them to stabi...
       /* set final attitude setpoint */
-      stabilization_attitude_set_earth_cmd_i(&guidance_h_cmd_earth, guidance_h.sp.heading);
+      stabilization_attitude_set_earth_cmd_i(&guidance_h_cmd_earth, guidance_h.sp.heading);  // send the attitude needed to lower level
 #endif
       stabilization_attitude_run(in_flight);
       break;
@@ -483,13 +483,13 @@ void guidance_h_run(bool  in_flight)
   }
 }
 
-
+// 如果参考输入是pos则用二阶系统，如果是speed，则用一阶系统
 static void guidance_h_update_reference(void)    // important    //calculate ref according to current state and sp
 {
   /* compute reference even if usage temporarily disabled via guidance_h_use_ref */
 #if GUIDANCE_H_USE_REF
   if (bit_is_set(guidance_h.sp.mask, 5)) {                    // 速度预位
-    gh_update_ref_from_speed_sp(guidance_h.sp.speed);
+    gh_update_ref_from_speed_sp(guidance_h.sp.speed);      // 计算出来的ref储存在gh_ref中 ref 包括pos和vel 因为微分不好实现所以直接反馈速度进行做差
   } else {
     gh_update_ref_from_pos_sp(guidance_h.sp.pos);
   }
@@ -498,7 +498,7 @@ static void guidance_h_update_reference(void)    // important    //calculate ref
   /* either use the reference or simply copy the pos setpoint */
   if (guidance_h.use_ref) {
     /* convert our reference to generic representation */
-    INT32_VECT2_RSHIFT(guidance_h.ref.pos,   gh_ref.pos, (GH_POS_REF_FRAC - INT32_POS_FRAC));
+    INT32_VECT2_RSHIFT(guidance_h.ref.pos,   gh_ref.pos, (GH_POS_REF_FRAC - INT32_POS_FRAC));   // 将gh_ref导入guidance_ref中
     INT32_VECT2_LSHIFT(guidance_h.ref.speed, gh_ref.speed, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC));
     INT32_VECT2_LSHIFT(guidance_h.ref.accel, gh_ref.accel, (INT32_ACCEL_FRAC - GH_ACCEL_REF_FRAC));
   } else {
@@ -572,7 +572,7 @@ static void guidance_h_traj_run(bool in_flight)
    * Integrate twice as fast when not only POS but also SPEED are wrong,
    * but do not integrate POS errors when the SPEED is already catching up.
    */
-  if (in_flight) {
+  if (in_flight) {             // I of PID
     /* ANGLE_FRAC (12) * GAIN (8) * LOOP_FREQ (9) -> INTEGRATOR HIGH RES ANGLE_FRAX (28) */
     guidance_h_trim_att_integrator.x += (guidance_h.gains.i * pd_x);
     guidance_h_trim_att_integrator.y += (guidance_h.gains.i * pd_y);

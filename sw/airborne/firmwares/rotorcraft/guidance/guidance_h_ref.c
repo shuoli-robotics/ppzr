@@ -27,7 +27,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_h_ref.h"
 #include "generated/airframe.h"
 
-struct GuidanceHRef gh_ref;
+struct GuidanceHRef gh_ref;        // !!!!!!!!!!!!!!! structure
 
 static const int32_t gh_max_accel = BFP_OF_REAL(GUIDANCE_H_REF_MAX_ACCEL, GH_ACCEL_REF_FRAC);
 
@@ -63,7 +63,7 @@ void gh_ref_init(void)
 {
   gh_ref.omega = GUIDANCE_H_REF_OMEGA;
   gh_ref.zeta = GUIDANCE_H_REF_ZETA;
-  gh_ref.zeta_omega = BFP_OF_REAL((GUIDANCE_H_REF_ZETA * GUIDANCE_H_REF_OMEGA), GH_ZETA_OMEGA_FRAC);
+  gh_ref.zeta_omega = BFP_OF_REAL((GUIDANCE_H_REF_ZETA * GUIDANCE_H_REF_OMEGA), GH_ZETA_OMEGA_FRAC);  // int32
   gh_ref.omega_2 = BFP_OF_REAL((GUIDANCE_H_REF_OMEGA * GUIDANCE_H_REF_OMEGA), GH_OMEGA_2_FRAC);
   gh_set_tau(GUIDANCE_H_REF_TAU);
   gh_set_max_speed(GUIDANCE_H_REF_MAX_SPEED);
@@ -113,19 +113,19 @@ void gh_set_ref(struct Int32Vect2 pos, struct Int32Vect2 speed, struct Int32Vect
   INT32_VECT2_RSHIFT(gh_ref.accel, accel, (INT32_ACCEL_FRAC - GH_ACCEL_REF_FRAC));
 }
 
-void gh_update_ref_from_pos_sp(struct Int32Vect2 pos_sp)
+void gh_update_ref_from_pos_sp(struct Int32Vect2 pos_sp)   // 将setpoint送入二阶系统得到输出
 {
 
-  VECT2_ADD(gh_ref.pos, gh_ref.speed);
+  VECT2_ADD(gh_ref.pos, gh_ref.speed);    // 直接计算出来pos和speed
   VECT2_ADD(gh_ref.speed, gh_ref.accel);
 
-  // compute the "speed part" of accel = -2*zeta*omega*speed -omega^2(pos - pos_sp)
+  // compute the "speed part" of accel = -2*zeta*omega*speed -omega^2(pos - pos_sp)   ？？？
   struct Int32Vect2 speed;
-  INT32_VECT2_RSHIFT(speed, gh_ref.speed, (GH_SPEED_REF_FRAC - GH_ACCEL_REF_FRAC));
-  VECT2_SMUL(speed, speed, -2 * gh_ref.zeta_omega);
+  INT32_VECT2_RSHIFT(speed, gh_ref.speed, (GH_SPEED_REF_FRAC - GH_ACCEL_REF_FRAC));  //将gh_ref.speed 右移，放入speed中
+  VECT2_SMUL(speed, speed, -2 * gh_ref.zeta_omega);    // times
   INT32_VECT2_RSHIFT(speed, speed, GH_ZETA_OMEGA_FRAC);
   // compute pos error in pos_sp resolution
-  struct Int32Vect2 pos_err;
+  struct Int32Vect2 pos_err;   // 定点数运算前需要先进行统一小数点位数处理，运算之后再根据要求变换小数点位置！
   INT32_VECT2_RSHIFT(pos_err, gh_ref.pos, (GH_POS_REF_FRAC - INT32_POS_FRAC));
   VECT2_DIFF(pos_err, pos_err, pos_sp);
   // convert to accel resolution
@@ -145,7 +145,7 @@ void gh_update_ref_from_pos_sp(struct Int32Vect2 pos_sp)
 }
 
 //// important
-void gh_update_ref_from_speed_sp(struct Int32Vect2 speed_sp)
+void gh_update_ref_from_speed_sp(struct Int32Vect2 speed_sp)  // 将setpoint送入一阶系统得到输出
 {
   /* WARNING: SPEED SATURATION UNTESTED */
   VECT2_ADD(gh_ref.pos, gh_ref.speed);
@@ -153,7 +153,7 @@ void gh_update_ref_from_speed_sp(struct Int32Vect2 speed_sp)
 
   // compute speed error
   struct Int32Vect2 speed_err;
-  INT32_VECT2_RSHIFT(speed_err, speed_sp, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC)); // speed_sp/(INT32_SPEED_FRAC - GH_SPEED_REF_FRAC)
+  INT32_VECT2_RSHIFT(speed_err, speed_sp, (INT32_SPEED_FRAC - GH_SPEED_REF_FRAC));
   VECT2_DIFF(speed_err, gh_ref.speed, speed_err);
   // convert to accel resolution
   INT32_VECT2_RSHIFT(speed_err, speed_err, (GH_SPEED_REF_FRAC - GH_ACCEL_REF_FRAC));
