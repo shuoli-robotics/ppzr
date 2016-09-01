@@ -44,7 +44,7 @@ float omega_psi;
 float omega_gamma;
 float heading;
 float omega_circle;
-float body_velocity_y;
+float body_velocity_x;
 float vx_earth;
 float vy_earth;
 float psi;
@@ -137,7 +137,7 @@ void hover(float planned_time)
     if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,1);
-        set_bit_ls(primitive_mask,5);
+        set_bit_ls(primitive_mask,4);
         clear_bit_ls(clock_mask,2);
     }
 }
@@ -200,14 +200,15 @@ void circle(float radius, float planned_time){
     {
         set_bit_ls(clock_mask,2);
         counter_primitive = 0;
+        time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         omega_circle = 2*3.14/planned_time;
-        body_velocity_y = omega_circle*radius;
+        body_velocity_x = omega_circle*radius;
         psi0 = stateGetNedToBodyEulers_f()->psi;
         guidance_loop_set_heading(psi0);
-        vx_earth = cosf(psi0)*body_velocity_y;
-        vy_earth = sinf(psi0)*body_velocity_y;
+        vx_earth = cosf(psi0)*body_velocity_x;
+        vy_earth = sinf(psi0)*body_velocity_x;
         guidance_loop_set_velocity(vx_earth,vy_earth);
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
@@ -215,16 +216,16 @@ void circle(float radius, float planned_time){
     }
     else
     {
-        psi = psi0*omega_circle*time_primitive;
+        psi = psi0+omega_circle*time_primitive;
         guidance_loop_set_heading(psi);
-        vx_earth = cosf(psi)*body_velocity_y;
-        vy_earth = sinf(psi)*body_velocity_y;
+        vx_earth = cosf(psi)*body_velocity_x;
+        vy_earth = sinf(psi)*body_velocity_x;
         guidance_loop_set_velocity(vx_earth,vy_earth);
         guidance_v_set_guided_z(z0);
     }
     if(time_primitive > planned_time)      //(time_primitive>planned_time)
     {
-        clear_bit_ls(primitive_mask,2);
+        clear_bit_ls(primitive_mask,4);
         set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
     }
@@ -241,7 +242,7 @@ void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        guidance_loop_set_heading(0);
+        //guidance_loop_set_heading(0);
         guidance_loop_set_velocity(vx_earth_t,vy_earth_t);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
@@ -284,10 +285,15 @@ void flight_plan_run() {        // 10HZ
 
         change_heading_hover(90.0/180*3.14,4);
     }
+    if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,4))
+    {
+
+        circle(2, 10);
+    }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,5))
     {
 
-        set_velocity_test(0.5,0,10);
+        set_velocity_test(0.5,0.5,5);
     }
     previous_mode = current_mode;
 }
