@@ -20,31 +20,24 @@
 /**
  * @file "modules/computer_vision/cv_opencvdemo.h"
  * @author C. De Wagter
- * A simple module showing what you can do with opencv on the bebop.
+ * opencv
  */
 
-#ifndef OPENCV_EXAMPLE_H
-#define OPENCV_EXAMPLE_H
-#include "state.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern float stddev_colors;
-extern int mean_u;
-extern int mean_v;
-extern int loc_y;
-extern int super_roll;
-extern int too_close;
-extern int16_t distance_pixels;
-extern int16_t center_pixels;
-extern int16_t left_height;
-extern int16_t right_height;
+#ifndef CV_OPENCVDEMO_H
+#define CV_OPENCVDEMO_H
 
-int opencv_example(char *img, int width, int height);
-void opencv_init_rects(void);
-#ifdef __cplusplus
-}
-#endif
+extern enum DRONE_STATE{DETECT_WINDOW,GO_THROUGH_WINDOW,GO_SAFETY};
+extern enum DRONE_STATE dronerace_drone_state;
+extern uint8_t navigate_through_blue_window(void);
+extern uint8_t navigate_through_red_window(void);
+extern uint8_t make_turn_right_radians(float);
+extern void fly_through_gate_init(void);
+extern uint8_t start_fly_through(void);
+extern uint8_t guided_stay_wp(uint8_t);
+
+extern uint8_t should_go_safety();
+extern float getPosErrorMeters(uint8_t);
 
 #endif
+
 

@@ -24,7 +24,10 @@
 
 /** Dummy include of default actuators header
  */
+#ifdef BOARD_CONFIG
 #include BOARD_CONFIG
+#endif
+#ifdef DEFAULT_ACTUATORS
 #include DEFAULT_ACTUATORS
-
+#endif
 #endif /* ACTUATORS_DEFAULT_H */

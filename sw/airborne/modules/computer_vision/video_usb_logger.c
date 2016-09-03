@@ -40,7 +40,7 @@
 
 /** Set the default File logger path to the USB drive */
 #ifndef VIDEO_USB_LOGGER_PATH
-#define VIDEO_USB_LOGGER_PATH /data/video/usb
+#define VIDEO_USB_LOGGER_PATH /data/ftp/internal_000
 #endif
 
 /** The file pointer */
