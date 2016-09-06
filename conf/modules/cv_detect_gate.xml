@@ -1,11 +1,8 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="cv_opencvdemo" dir="computer_vision">
+<module name="cv_detect_gate" dir="computer_vision">
   <doc>
-    <description>This example shows how opencv can be used on (for example) the Bebop drone.
-    Important to know is that sw/ext/opencv_bebop must be downloaded, and made.
-    After this is done the folder sw/ext/opencv_bebop/install has a opencv.xml file.
-    The LDFLAGS in this file should be the same as in this conf file.
+    <description>
     </description>
 
     <define name="OPENCVDEMO_CAMERA" value="front_camera|bottom_camera" description="Video device to use"/>
@@ -23,13 +20,13 @@
     </dl_settings>
   </settings>
   <header>
-    <file name="cv_opencvdemo.h"/>
-    <file name="opencv_example.h"/>
+    <file name="fly_through_gate_demo.h"/>
+    <file name="opencv_detect_gate.h"/>
   </header>
-  <init fun="opencvdemo_init()"/>
+  <init fun="fly_through_gate_init()"/>
   <makefile target="ap">
-    <file name="cv_opencvdemo.c"/>
-    <file name="opencv_example.cpp"/>
+    <file name="fly_through_gate_demo.c"/>
+    <file name="opencv_detect_gate.cpp"/>
     <file name="opencv_image_functions.cpp"/>
     <flag name="CXXFLAGS" value="I$(PAPARAZZI_SRC)/sw/ext/opencv_bebop/install/include"/>
 

@@ -24,8 +24,8 @@
  */
 
 #include "modules/computer_vision/cv.h"
-#include "modules/computer_vision/cv_opencvdemo.h"
-#include "modules/computer_vision/opencv_example.h"
+#include "modules/computer_vision/fly_through_gate_demo.h"
+#include "modules/computer_vision/opencv_detect_gate.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "modules/computer_vision/lib/vision/image.h"
 #include "navigation.h"
@@ -69,6 +69,26 @@ uint8_t start_fly_through(){
 	return 0;
 }
 
+
+uint8_t navigate_through_red_window(){
+	set_red_window();
+	return FALSE;
+}
+uint8_t make_turn_right_radians(float radians){
+	 float yaw = stateGetNedToBodyEulers_f()->psi;
+	 printf("Yaw now %f\n",yaw);
+		 yaw+=radians;
+		 printf("Yaw set %f\n",yaw);
+		 guidance_h_set_guided_heading(yaw);
+
+		return FALSE;
+
+}
+uint8_t navigate_through_blue_window(){
+	set_blue_window();
+
+	return FALSE;
+}
 /* gets whether the drone is in state GO_SAFETY */
 uint8_t should_go_safety(){
 	if(dronerace_drone_state==GO_SAFETY){
@@ -78,20 +98,20 @@ uint8_t should_go_safety(){
 }
 // Function that calls the vision part of the drone race
 // Then does a little bit of control.
-struct image_t* opencv_func(struct image_t* img);
-struct image_t* opencv_func(struct image_t* img)
+struct image_t* gate_control_func(struct image_t* img);
+struct image_t* gate_control_func(struct image_t* img)
 {
   if (img->type == IMAGE_YUV422)
   {
     // Call OpenCV (C++ from paparazzi C function)
-    opencv_example((char*) img->buf, img->w, img->h);
+    opencv_gate_detect((char*) img->buf, img->w, img->h);   // call function to detect window, maybe return states of result
   }
 
-  DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
+  //DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
 
   float yaw = stateGetNedToBodyEulers_f()->psi;
   float diff = loc_y-(img->h/2);
-
+                                                               /* this part don't understand*/
   float unexplainedOffset=50.0;
   diff+=unexplainedOffset;
   double pixelsPerDegree = viewingAngle/img->h;
@@ -157,9 +177,9 @@ struct image_t* opencv_func(struct image_t* img)
   return img;
 }
 
-void opencvdemo_init(void)
+void fly_through_gate_init(void)
 {
-  cv_add_to_device(&OPENCVDEMO_CAMERA, opencv_func);
+  cv_add_to_device(&OPENCVDEMO_CAMERA, gate_control_func);
   opencv_init_rects();
 }
 

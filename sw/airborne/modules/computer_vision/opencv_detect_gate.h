@@ -18,13 +18,12 @@
  * <http://www.gnu.org/licenses/>.
  */
 /**
- * @file "modules/computer_vision/cv_opencvdemo.h"
- * @author C. De Wagter
- * A simple module showing what you can do with opencv on the bebop.
+ * @file "modules/computer_vision/opencv_detect_gate.h"
+ * @author R. Meertens
  */
 
-#ifndef OPENCV_EXAMPLE_H
-#define OPENCV_EXAMPLE_H
+#ifndef OPENCV_DETECT_GATE_H
+#define OPENCV_DETECT_GATE_H
 #include "state.h"
 #ifdef __cplusplus
 extern "C" {
@@ -39,8 +38,9 @@ extern int16_t distance_pixels;
 extern int16_t center_pixels;
 extern int16_t left_height;
 extern int16_t right_height;
-
-int opencv_example(char *img, int width, int height);
+void set_blue_window(void);
+void set_red_window(void);
+int opencv_gate_detect(char *img, int width, int height);
 void opencv_init_rects(void);
 #ifdef __cplusplus
 }

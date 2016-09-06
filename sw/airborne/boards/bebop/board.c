@@ -115,8 +115,13 @@ void board_init2(void)
     .row_speed_10_8 = 1,
 
     // Initial values
-    .target_fps = MT9F002_TARGET_FPS,
-    .target_exposure = MT9F002_TARGET_EXPOSURE,
+//<<<<<<< HEAD
+//    .target_fps = MT9F002_TARGET_FPS,
+//    .target_exposure = MT9F002_TARGET_EXPOSURE,
+//=======
+    .target_fps = 50,
+    .target_exposure = 70,
+//>>>>>>> Roland/race2
     .gain_green1 = 2.0,
     .gain_blue = 2.0,
     .gain_red = 2.0,

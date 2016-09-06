@@ -232,7 +232,7 @@ void circle(float radius, float planned_time){
     }
 }
 
-void arc(float radius, float derta_gamma,float time_planned){
+void arc(float radius, float derta_gamma,float planned_time){
     if (!bit_is_set_ls(clock_mask,2))
     {
         set_bit_ls(clock_mask,2);

@@ -155,6 +155,9 @@ PRINT_CONFIG_VAR(OPTICFLOW_DEROTATION)
 #endif
 PRINT_CONFIG_VAR(OPTICFLOW_MEDIAN_FILTER)
 
+//include state info for comparrison
+#include "state.h"
+
 //Include median filter
 #include "filters/median_filter.h"
 struct MedianFilterInt vel_x_filt, vel_y_filt;
@@ -164,6 +167,11 @@ struct MedianFilterInt vel_x_filt, vel_y_filt;
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
 static int cmp_flow(const void *a, const void *b);
 
+//FOR FILE LOGGING
+float vel_x = 0;
+float vel_y = 0;
+float body_v_x = 0;
+float body_v_y = 0;
 
 
 /**
@@ -358,15 +366,30 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
                   OPTICFLOW_FOV_H;// * img->h / OPTICFLOW_FOV_H;
   }
 
-  result->flow_der_x = result->flow_x - diff_flow_x * opticflow->subpixel_factor;
-  result->flow_der_y = result->flow_y - diff_flow_y * opticflow->subpixel_factor;
+  float correction_factor_x = 0.8;
+  float correction_factor_y = 0.85;
+  //diff_flow_y * opticflow->subpixel_factor * correction_factor_y;//
+  //result->flow_y;
+  result->flow_der_x = result->flow_x - diff_flow_x * opticflow->subpixel_factor * correction_factor_x;
+  result->flow_der_y = result->flow_y - diff_flow_y * opticflow->subpixel_factor * correction_factor_y;
   opticflow->prev_rates = state->rates;
 
   // Velocity calculation
   // Right now this formula is under assumption that the flow only exist in the center axis of the camera.
   // TODO Calculate the velocity more sophisticated, taking into account the drone's angle and the slope of the ground plane.
-  float vel_x = result->flow_der_x * result->fps * state->agl / opticflow->subpixel_factor  / OPTICFLOW_FX;
-  float vel_y = result->flow_der_y * result->fps * state->agl / opticflow->subpixel_factor  / OPTICFLOW_FY;
+   vel_x = result->flow_der_x * result->fps * state->agl / opticflow->subpixel_factor  / OPTICFLOW_FX;
+   vel_y = result->flow_der_y * result->fps * state->agl / opticflow->subpixel_factor  / OPTICFLOW_FY;
+   
+   //Compare with optitrack speeds (used in file logger)
+   float optitrack_vel_x = stateGetSpeedNed_f()->x;
+   float optitrack_vel_y = stateGetSpeedNed_f()->y;
+   
+    float psi = stateGetNedToBodyEulers_f()->psi;
+    float s_psi = sinf(psi);
+    float c_psi = cosf(psi);
+    body_v_x = s_psi * optitrack_vel_x + c_psi * optitrack_vel_y;
+    body_v_y = c_psi * optitrack_vel_x - s_psi * optitrack_vel_y;
+   
 
   //Apply a  median filter to the velocity if wanted
   if (opticflow->median_filter == true) {
