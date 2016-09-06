@@ -37,6 +37,12 @@
 #include "lib/vision/image.h"
 #include "lib/v4l/v4l2.h"
 
+//FOR FILE LOGGING
+float vel_x;
+float vel_y;
+float body_v_x;
+float body_v_y;
+
 struct opticflow_t {
   bool got_first_img;             ///< If we got a image to work with
   bool just_switched_method;
