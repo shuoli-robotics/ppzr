@@ -240,7 +240,7 @@ void arc(float radius, float derta_gamma,float time_planned){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        omega_arc = derta_gamma/planned_time;
+        omega_arc = derta_gamma/time_planned;
         body_velocity_x = omega_arc*radius;
         psi0 = stateGetNedToBodyEulers_f()->psi;
         guidance_loop_set_heading(psi0);
@@ -260,7 +260,7 @@ void arc(float radius, float derta_gamma,float time_planned){
         guidance_loop_set_velocity(vx_earth,vy_earth);
         guidance_v_set_guided_z(z0);
     }
-    if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    if(time_primitive > time_planned)      //(time_primitive>planned_time)
     {
         clear_bit_ls(primitive_mask,4);
         set_bit_ls(primitive_mask,1);
