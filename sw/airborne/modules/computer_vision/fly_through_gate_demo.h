@@ -35,7 +35,7 @@ extern void fly_through_gate_init(void);
 extern uint8_t start_fly_through(void);
 extern uint8_t guided_stay_wp(uint8_t);
 
-extern uint8_t should_go_safety();
+extern uint8_t should_go_safety(void);
 extern float getPosErrorMeters(uint8_t);
 
 #endif

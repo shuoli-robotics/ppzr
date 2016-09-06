@@ -104,14 +104,14 @@ struct image_t* gate_control_func(struct image_t* img)
   if (img->type == IMAGE_YUV422)
   {
     // Call OpenCV (C++ from paparazzi C function)
-    opencv_gate_detect((char*) img->buf, img->w, img->h);
+    opencv_gate_detect((char*) img->buf, img->w, img->h);   // call function to detect window, maybe return states of result
   }
 
   DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
 
   float yaw = stateGetNedToBodyEulers_f()->psi;
   float diff = loc_y-(img->h/2);
-
+                                                               /* this part don't understand*/
   float unexplainedOffset=50.0;
   diff+=unexplainedOffset;
   double pixelsPerDegree = viewingAngle/img->h;

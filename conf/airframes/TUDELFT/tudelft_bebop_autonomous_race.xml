@@ -64,7 +64,7 @@
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-    </module>-->
+    </module>
   </modules>
 
 
