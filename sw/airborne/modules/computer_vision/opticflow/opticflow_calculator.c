@@ -157,6 +157,7 @@ PRINT_CONFIG_VAR(OPTICFLOW_MEDIAN_FILTER)
 
 //include state info for comparrison
 #include "state.h"
+#include "subsystems/datalink/telemetry.h"
 
 //Include median filter
 #include "filters/median_filter.h"
@@ -172,6 +173,15 @@ float vel_x = 0;
 float vel_y = 0;
 float body_v_x = 0;
 float body_v_y = 0;
+float optitrack_vel_x = 0;
+float optitrack_vel_y = 0;   
+float psi = 0;
+
+
+static void opticflow_debug_send(struct transport_tx *trans, struct link_device *dev)
+    {
+    pprz_msg_send_OPTIC_FLOW_DEBUG(trans, dev, AC_ID,&optitrack_vel_x,&optitrack_vel_y,&body_v_x,&body_v_y,&vel_x,&vel_y,&psi);//
+    }  
 
 
 /**
@@ -183,6 +193,7 @@ float body_v_y = 0;
 void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
 {
 
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_OPTIC_FLOW_DEBUG, opticflow_debug_send);
   init_median_filter(&vel_x_filt);
   init_median_filter(&vel_y_filt);
 
@@ -381,15 +392,14 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
    vel_y = result->flow_der_y * result->fps * state->agl / opticflow->subpixel_factor  / OPTICFLOW_FY;
    
    //Compare with optitrack speeds (used in file logger)
-   float optitrack_vel_x = stateGetSpeedNed_f()->x;
-   float optitrack_vel_y = stateGetSpeedNed_f()->y;
+    optitrack_vel_x = stateGetSpeedNed_f()->x;
+    optitrack_vel_y = stateGetSpeedNed_f()->y;
    
-    float psi = stateGetNedToBodyEulers_f()->psi;
-    float s_psi = sinf(psi);
-    float c_psi = cosf(psi);
-    body_v_x = s_psi * optitrack_vel_x + c_psi * optitrack_vel_y;
-    body_v_y = c_psi * optitrack_vel_x - s_psi * optitrack_vel_y;
-   
+     psi = stateGetNedToBodyEulers_f()->psi;
+    float s_psi = sinf(-psi);
+    float c_psi = cosf(-psi);
+    body_v_y = (c_psi * optitrack_vel_x - s_psi * optitrack_vel_y);
+    body_v_x = -c_psi * optitrack_vel_y + s_psi * optitrack_vel_x; 
 
   //Apply a  median filter to the velocity if wanted
   if (opticflow->median_filter == true) {

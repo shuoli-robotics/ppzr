@@ -138,7 +138,7 @@ void hover(float planned_time)
     if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,1);
-        set_bit_ls(primitive_mask,4);
+        set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
     }
 }
@@ -187,11 +187,11 @@ void change_heading_hover(float derta_psi,float planned_time){
         guidance_loop_set_heading(psi0+omega_psi*time_primitive);
     }
     //printf("Time in primitive is %f \n", time_primitive);
-    if(fabs(stateGetNedToBodyEulers_f()->psi-(psi0+derta_psi))<1.0/180*3.14)      //(time_primitive>planned_time)
+    if(time_primitive>planned_time)      //(time_primitive>planned_time)
     {
         stateGetNedToBodyEulers_f()->psi;
         clear_bit_ls(primitive_mask,3);
-        set_bit_ls(primitive_mask,2);
+        set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
     }
 }
@@ -311,7 +311,7 @@ void flight_plan_run() {        // 10HZ
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT && bit_is_set_ls(primitive_mask,2))
     {
-        go_straight(3,1);
+        go_straight(3,0.5);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,3))
     {
@@ -321,7 +321,7 @@ void flight_plan_run() {        // 10HZ
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,4))
     {
 
-        circle(2, 10);
+        circle(2, 20);
     }
     if (autopilot_mode != AP_MODE_ATTITUDE_DIRECT &&  bit_is_set_ls(primitive_mask,5))
     {
