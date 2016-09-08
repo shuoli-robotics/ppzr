@@ -171,8 +171,8 @@ struct image_t *opticflow_module_calc(struct image_t *img)
   * ARdrone and Bebop, however this can be different for other quadcopters
   * ALWAYS double check!
   */
-  opticflow_result.vel_body_x = opticflow_result.vel_y;
-  opticflow_result.vel_body_y = - opticflow_result.vel_x;
+  //opticflow_result.vel_body_x = opticflow_result.vel_y;
+  //opticflow_result.vel_body_y = - opticflow_result.vel_x;
 
   // release the mutex as we are done with editing the opticflow result
   pthread_mutex_unlock(&opticflow_mutex);

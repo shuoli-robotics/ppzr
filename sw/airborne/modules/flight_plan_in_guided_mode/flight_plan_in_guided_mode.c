@@ -128,7 +128,7 @@ void hover(float planned_time)
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
         guidance_loop_set_velocity(0,0);
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
