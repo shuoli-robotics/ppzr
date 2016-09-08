@@ -53,9 +53,9 @@
     </module>
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-    <module name="cv_detect_gate">
+    <!--module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
-    </module>
+    </module-->
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>

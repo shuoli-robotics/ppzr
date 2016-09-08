@@ -62,7 +62,7 @@ void file_logger_start(void)
   if (file_logger != NULL) {
     fprintf(
       file_logger,
-      "counter,gyro_unscaled_p,gyro_unscaled_q,gyro_unscaled_r,accel_unscaled_x,accel_unscaled_y,accel_unscaled_z,mag_unscaled_x,mag_unscaled_y,mag_unscaled_z,COMMAND_THRUST,COMMAND_ROLL,COMMAND_PITCH,COMMAND_YAW,qi,qx,qy,qz,flow_v_x,flow_v_y,body_v_x,body_v_y\n"
+      "counter,x,y,z,v_x,v_y,v_z,phi,theta,psi\n"
     );
   }
 }
@@ -85,29 +85,20 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y
-  fprintf(file_logger, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f,%f,%f\n",
+  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d\n",
           counter,
-          imu.gyro_unscaled.p,
-          imu.gyro_unscaled.q,
-          imu.gyro_unscaled.r,
-          imu.accel_unscaled.x,
-          imu.accel_unscaled.y,
-          imu.accel_unscaled.z,
-          imu.mag_unscaled.x,
-          imu.mag_unscaled.y,
-          imu.mag_unscaled.z,
-          stabilization_cmd[COMMAND_THRUST],
-          stabilization_cmd[COMMAND_ROLL],
-          stabilization_cmd[COMMAND_PITCH],
-          stabilization_cmd[COMMAND_YAW],
-          quat->qi,
-          quat->qx,
-          quat->qy,
-          quat->qz,
-	  vel_x,
-	  vel_y,
-	  body_v_x,
-	  body_v_y
+          stateGetPositionNed_f()->x,
+          stateGetPositionNed_f()->y,
+          stateGetPositionNed_f()->z,
+          stateGetSpeedNed_f()->x,
+          stateGetSpeedNed_f()->y,
+          stateGetSpeedNed_f()->z,
+          stateGetNedToBodyEulers_f()->phi,
+          stateGetNedToBodyEulers_f()->theta,
+          stateGetNedToBodyEulers_f()->psi,
+          stateGetNedToBodyEulers_i()->phi,
+          stateGetNedToBodyEulers_i()->theta,
+          stateGetNedToBodyEulers_i()->psi
          );
   counter++;
 }

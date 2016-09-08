@@ -293,8 +293,11 @@ void flight_plan_run() {        // 10HZ
     //current_guidance_h_mode = guidance_h.mode;
     if (current_mode != previous_mode)
     {
+        guidance_module.err_vx_int = 0;
+        guidance_module.err_vy_int = 0;
         counter_autopilot_mode = 0;
         clear_bit_ls(clock_mask,2);
+        clear_all_bit(primitive_mask,5);
         set_bit_ls(primitive_mask,1);
     }
 
@@ -342,4 +345,10 @@ void clear_bit_ls(bool *mask,int bit){
 
 bool bit_is_set_ls(bool *mask,int bit){
     return(mask[bit]);
+}
+
+void clear_all_bit(int * mask,int num){
+    for (int i = 0;i<num;i++){
+        mask[i] = 0;
+    }
 }

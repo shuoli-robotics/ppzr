@@ -92,6 +92,8 @@ float guidance_h_module_speed_error_x_previous = 0;
 float guidance_h_module_speed_error_y_previous =0;
 float phi_desired_f;
 float theta_desired_f;
+uint8_t previous_mode;
+uint8_t current_mode;
 
 void guidance_h_module_init(void) {
     guidance_module.err_vx_int = 0;
@@ -99,6 +101,8 @@ void guidance_h_module_init(void) {
     guidance_module.cmd.phi = 0;
     guidance_module.cmd.theta = 0;
     guidance_module.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+    previous_mode = autopilot_mode;
+    current_mode =  autopilot_mode;
 }
 
 void guidance_h_module_enter(void)
@@ -121,7 +125,7 @@ void guidance_h_module_read_rc(void)
     // TODO: change the desired vx/vy
 }
 
-void guidance_h_module_run(bool in_flight)
+void guidance_h_module_run(bool in_flight)    // this function is called in higher level in guidance_h.c
 {
     /* Update the setpoint */
     //stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
@@ -139,6 +143,13 @@ void guidance_h_module_run(bool in_flight)
  */
 void guidance_loop_pid()
 {
+    current_mode = autopilot_mode;
+    //current_guidance_h_mode = guidance_h.mode;
+    if (current_mode != previous_mode)
+    {
+        guidance_module.err_vx_int = 0;
+        guidance_module.err_vy_int = 0;
+    }
     //printf("My guidance loop PID is running!\n");
     /* Check if we are in the correct AP_MODE before setting commands */
     if (autopilot_mode != AP_MODE_MODULE) {
@@ -177,6 +188,7 @@ void guidance_loop_pid()
     BoundAbs(guidance_module.cmd.theta, CMD_OF_SAT);
     guidance_h_module_speed_error_x_previous = guidance_h_module_speed_error_x;
     guidance_h_module_speed_error_y_previous = guidance_h_module_speed_error_y;
+    previous_mode = current_mode;
 }
 
 void guidance_loop_set_heading(float heading){

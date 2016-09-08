@@ -33,6 +33,7 @@
  extern void set_bit_ls(bool *mask,int bit);
  extern void clear_bit_ls(bool *mask,int bit);
  extern bool bit_is_set_ls(bool *mask,int bit);
+ extern void clear_all_bit(int * mask,int num);
 
 #endif
 
