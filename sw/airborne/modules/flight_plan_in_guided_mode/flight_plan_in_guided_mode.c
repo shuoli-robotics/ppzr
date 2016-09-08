@@ -138,7 +138,7 @@ void hover(float planned_time)
     if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,1);
-        set_bit_ls(primitive_mask,1);
+        set_bit_ls(primitive_mask,2);
         clear_bit_ls(clock_mask,2);
     }
 }
@@ -160,7 +160,7 @@ void go_straight(float planned_time, float velocity){
     if(time_primitive > planned_time)
     {
         clear_bit_ls(primitive_mask,2);
-        set_bit_ls(primitive_mask,3);
+        set_bit_ls(primitive_mask,1);
         clear_bit_ls(clock_mask,2);
     }
 }

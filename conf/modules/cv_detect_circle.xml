@@ -1,0 +1,50 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="cv_detect_circle" dir="computer_vision">
+  <doc>
+    <description>
+    </description>
+
+    <define name="OPENCVDEMO_CAMERA" value="front_camera|bottom_camera" description="Video device to use"/>
+  </doc>
+
+  <settings>
+	<dl_settings NAME="opencv demo settings">
+
+      	<!-- Optical flow calculations parameters -->
+      <dl_settings name="opencv" >
+          <dl_setting var="stddev_colors"  min="0" step="0.5" max="70"  module="computer_vision/opencv_example"/>
+          <dl_setting var="mean_u"  min="0" step="1" max="255"  />
+          <dl_setting var="mean_v"  min="0" step="1" max="255"  />
+      </dl_settings>
+    </dl_settings>
+  </settings>
+  <header>
+    <file name="fly_through_circle_gate.h"/>
+    <file name="opencv_detect_circle.h"/>
+  </header>
+  <init fun="fly_through_gate_init()"/>
+  <makefile target="ap">
+    <file name="fly_through_circle_gate.c"/>
+    <file name="opencv_detect_circle.cpp"/>
+    <file name="opencv_image_functions.cpp"/>
+    <flag name="CXXFLAGS" value="I$(PAPARAZZI_SRC)/sw/ext/opencv_bebop/install/include"/>
+
+      <flag name="LDFLAGS" value="L$(PAPARAZZI_HOME)/sw/ext/opencv_bebop/install/lib" />
+        <flag name="LDFLAGS" value="lopencv_video" />
+        <flag name="LDFLAGS" value="lopencv_videoio" />
+        <flag name="LDFLAGS" value="lopencv_imgcodecs" />
+        <flag name="LDFLAGS" value="lopencv_imgproc" />
+        <flag name="LDFLAGS" value="lopencv_core" />
+        <flag name="LDFLAGS" value="L$(PAPARAZZI_HOME)/sw/ext/opencv_bebop/install/share/OpenCV/3rdparty/lib" />
+        <flag name="LDFLAGS" value="lzlib" />
+        <flag name="LDFLAGS" value="llibpng" />
+        <flag name="LDFLAGS" value="lstdc++" />
+        <flag name="LDFLAGS" value="ldl" />
+        <flag name="LDFLAGS" value="lm" />
+        <flag name="LDFLAGS" value="lpthread" />
+        <flag name="LDFLAGS" value="lrt" />
+
+
+  </makefile>
+</module>
