@@ -233,39 +233,39 @@ void circle(float radius, float planned_time){
 }
 
 void arc(float radius, float derta_gamma,float planned_time){
-    if (!bit_is_set_ls(clock_mask,2))
-    {
-        set_bit_ls(clock_mask,2);
-        counter_primitive = 0;
-        time_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        omega_arc = derta_gamma/time_planned;
-        body_velocity_x = omega_arc*radius;
-        psi0 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_heading(psi0);
-        vx_earth = cosf(psi0)*body_velocity_x;
-        vy_earth = sinf(psi0)*body_velocity_x;
-        guidance_loop_set_velocity(vx_earth,vy_earth);
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
-
-    }
-    else
-    {
-        psi = psi0+omega_arc*time_primitive;
-        guidance_loop_set_heading(psi);
-        vx_earth = cosf(psi)*body_velocity_x;
-        vy_earth = sinf(psi)*body_velocity_x;
-        guidance_loop_set_velocity(vx_earth,vy_earth);
-        guidance_v_set_guided_z(z0);
-    }
-    if(time_primitive > time_planned)      //(time_primitive>planned_time)
-    {
-        clear_bit_ls(primitive_mask,4);
-        set_bit_ls(primitive_mask,1);
-        clear_bit_ls(clock_mask,2);
-    }
+//    if (!bit_is_set_ls(clock_mask,2))
+//    {
+//        set_bit_ls(clock_mask,2);
+//        counter_primitive = 0;
+//        time_primitive = 0;
+//        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+//        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+//        omega_arc = derta_gamma/time_planned;
+//        body_velocity_x = omega_arc*radius;
+//        psi0 = stateGetNedToBodyEulers_f()->psi;
+//        guidance_loop_set_heading(psi0);
+//        vx_earth = cosf(psi0)*body_velocity_x;
+//        vy_earth = sinf(psi0)*body_velocity_x;
+//        guidance_loop_set_velocity(vx_earth,vy_earth);
+//        z0 = stateGetPositionNed_f()->z;
+//        guidance_v_set_guided_z(z0);
+//
+//    }
+//    else
+//    {
+//        psi = psi0+omega_arc*time_primitive;
+//        guidance_loop_set_heading(psi);
+//        vx_earth = cosf(psi)*body_velocity_x;
+//        vy_earth = sinf(psi)*body_velocity_x;
+//        guidance_loop_set_velocity(vx_earth,vy_earth);
+//        guidance_v_set_guided_z(z0);
+//    }
+//    if(time_primitive > time_planned)      //(time_primitive>planned_time)
+//    {
+//        clear_bit_ls(primitive_mask,4);
+//        set_bit_ls(primitive_mask,1);
+//        clear_bit_ls(clock_mask,2);
+//    }
 }
 
 void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time){
