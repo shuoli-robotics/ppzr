@@ -23,6 +23,7 @@
  * This module is the highest level
  */
 
+#include <stdio.h>
 #include "modules/command_level_iros/command_level_iros.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
@@ -35,12 +36,30 @@
 
 int temp_primive_chosen;
 
+uint8_t previous_mode;
+uint8_t current_mode;
+uint8_t previous_guidance_h_mode;
+uint8_t current_guidance_h_mode;
+
+void command_init(){
+    previous_mode = autopilot_mode;
+    current_mode = autopilot_mode;
+}
+
 void command_run() {
+    current_mode = autopilot_mode;
+    if (previous_mode != current_mode)
+    {
+        primitive_in_use = NO_PRIMITIVE;
+        printf("!!!!!!!!!");
+    }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
 
-    temp_primive_chosen = TEMP_HOVER;
+
+
+    temp_primive_chosen = TEMP_CIRCLE ;
 
     switch (temp_primive_chosen){
         case TEMP_HOVER: hover();
@@ -53,7 +72,7 @@ void command_run() {
             break;
         default: hover();
     }
-
+    previous_mode = current_mode;
 }
 
 

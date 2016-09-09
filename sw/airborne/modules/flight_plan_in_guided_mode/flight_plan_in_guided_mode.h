@@ -27,12 +27,21 @@
 #define FLIGHT_PLAN_IN_GUIDED_MODE_H
 #include "flight_plan_clock.h"
 
+#define NO_PRIMITIVE             0
+#define HOVER                    1
+#define GO_STRAIGHT              2
+#define CHANGE_HEADING_HOVER     3
+#define CIRCLE                   4
+#define GO_LEFT_RIGHT            5
+
+ extern int primitive_in_use;
  extern void flight_plan_in_guided_mode_init(void);
  extern void display_information(void);
  extern void hover(void);
  extern void go_straight(float velocity);
  extern void change_heading_hover(float derta_psi,float planned_time);
  extern void circle(float radius, float planned_time);
+ extern void go_left_right(float velocity);
 //void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 
 #endif

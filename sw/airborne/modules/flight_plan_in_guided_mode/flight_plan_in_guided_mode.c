@@ -36,13 +36,6 @@
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 
-#define NO_PRIMITIVE             0
-#define HOVER                    1
-#define GO_STRAIGHT              2
-#define CHANGE_HEADING_HOVER     3
-#define CIRCLE                   4
-
-
 
 float psi0;//
 float psi1;
@@ -58,17 +51,10 @@ float vy_earth;
 float psi;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
-// 4 circle 5 test velocity
-uint8_t previous_mode;
-uint8_t current_mode;
-uint8_t previous_guidance_h_mode;
-uint8_t current_guidance_h_mode;
+
+
 
 void flight_plan_in_guided_mode_init() {
-    previous_mode = autopilot_mode;
-    current_mode = autopilot_mode;
-    previous_guidance_h_mode = guidance_h.mode;
-    current_guidance_h_mode = guidance_h.mode;
     primitive_in_use = NO_PRIMITIVE;
 }
 
@@ -76,6 +62,7 @@ void flight_plan_in_guided_mode_init() {
 void display_information()
 {
     if (autopilot_mode == AP_MODE_MODULE) {
+        printf("z0 is %f\n",z0);
         printf("\n");
         printf("\n");
         printf("\n");
@@ -199,3 +186,19 @@ void circle(float radius, float planned_time){
 //        clear_bit_ls(clock_mask,2);
 //    }
 //}
+
+void go_left_right(float velocity){
+    if(primitive_in_use != GO_LEFT_RIGHT){
+        primitive_in_use = GO_LEFT_RIGHT;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        vx_earth = cosf(psi0)*velocity;
+        vy_earth = sinf(psi0)*velocity;
+        guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0);
+    }
+}

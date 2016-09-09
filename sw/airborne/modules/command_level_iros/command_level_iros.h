@@ -27,6 +27,7 @@
 #define COMMAND_LEVEL_IROS_H
 
 extern void command_run(void);  // 20HZ
+extern void command_init(void);
 
 #endif
 
