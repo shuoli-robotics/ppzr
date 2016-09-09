@@ -28,6 +28,7 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+#include "modules/computer_vision/fly_through_gate_demo.h"
 
 #define TEMP_HOVER                   1
 #define TEMP_GO_STRAIGHT             2
@@ -58,26 +59,15 @@ void command_run() {
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-    if (time_autopilot<5)
+    if (time_autopilot_mode<3)
         hover();
-    else if (time_autopilot<10)
-        change_heading_hover(90.0/180.0*3.14,5);
+    else if (time_autopilot_mode<4)
+        change_heading_hover(desired_yaw,1);
+    else if (time_autopilot_mode <8)
+        go_straight(0.5);
     else
-        hover();
+      hover();
 
     previous_mode = current_mode;
-}
-
-void find_gate_state()
-{
-  /*
-  float yaw = stateGetNedToBodyEulers_f()->psi;
-  float diff = loc_y-(img->h/2);
-                                                               // this part don't understand/
-  float unexplainedOffset=50.0;
-  diff+=unexplainedOffset;
-  double pixelsPerDegree = viewingAngle/img->h;
-  yaw += pixelsPerDegree * diff;
-  */
 }
 

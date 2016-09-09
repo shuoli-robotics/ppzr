@@ -14,7 +14,7 @@
       <module name="udp"/>
     </target>
 
-    <define name="USE_SONAR" value="TRUE"/>
+    <define name="USE_SONAR" value="FALSE"/>
 
 	<define name="MT9F002_OUTPUT_WIDTH" value="128"/>
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>

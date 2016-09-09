@@ -38,6 +38,7 @@ extern uint8_t guided_stay_wp(uint8_t);
 extern uint8_t should_go_safety(void);
 extern float getPosErrorMeters(uint8_t);
 
+
 #endif
 
 
