@@ -14,8 +14,6 @@
       <module name="udp"/>
     </target>
 
-    <!--define name="USE_SONAR" value="TRUE"/-->
-
 	<define name="MT9F002_OUTPUT_WIDTH" value="128"/>
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 
@@ -29,7 +27,6 @@
     <module name="motor_mixing"/>
     <module name="actuators" type="bebop"/>
     <module name="imu" type="bebop"/>
-    <!--module name="gps" type="datalink"/-->
     <module name="gps" type="optitrack"/><!--datalink-->
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
@@ -44,34 +41,16 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <module name="logger_file">
+    <!--module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-    </module>
+    </module-->
     <module name="guidance_loop_velocity_autonomous_race"/>
     <module name="send_imu_mag_current"/>
+    <module name="command_level_iros"/>
     <module name="video_thread">
     </module>
     <module name="sonar_bebop"/>
-    <module name="pose_history"/>
-    <module name="cv_detect_gate">
-	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
-    </module>
-    <module name="cv_opticflow">
-       <define name="OPTICFLOW_METHOD" value="0"/>
-       <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
- <!--define name="CAMERA_ROTATED_180" value="1"/-->
-      <!--define name="OPTICFLOW_DEROTATION" value="0"/-->
-      <define name="OPTICFLOW_FX" value="347.22222222"/> <!-- 2.5 / (3.6 * 2.0) * 1000 -->
-      <define name="OPTICFLOW_FY" value="347.22222222"/> <!-- 2.5 / (3.6 * 2.0) * 1000 -->
-      <define name="OPTICFLOW_FOV_W" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
-      <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
-    </module>
-
-    <module name="video_rtp_stream">
-       <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
-	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
-	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-    </module>
+    <!--module name="pose_history"/-->
   </modules>
 
 

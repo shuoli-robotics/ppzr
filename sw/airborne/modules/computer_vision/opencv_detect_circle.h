@@ -38,6 +38,18 @@ extern int16_t distance_pixels;
 extern int16_t center_pixels;
 extern int16_t left_height;
 extern int16_t right_height;
+
+extern uint8_t h_color_u;
+extern uint8_t s_color_u;
+extern uint8_t v_color_u;
+extern uint8_t h_color_l;
+extern uint8_t s_color_l;
+extern uint8_t v_color_l;
+
+double dp;
+double param1;
+double param2;
+
 void set_blue_window(void);
 void set_red_window(void);
 int opencv_gate_detect(char *img, int width, int height);

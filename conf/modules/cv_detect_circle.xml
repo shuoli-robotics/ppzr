@@ -16,6 +16,15 @@
           <dl_setting var="stddev_colors"  min="0" step="0.5" max="70"  module="computer_vision/opencv_example"/>
           <dl_setting var="mean_u"  min="0" step="1" max="255"  />
           <dl_setting var="mean_v"  min="0" step="1" max="255"  />
+	  <dl_setting var="h_color_u"  min="0" step="1" max="255"  />
+	  <dl_setting var="s_color_u"  min="0" step="1" max="255"  />
+	  <dl_setting var="v_color_u"  min="0" step="1" max="255"  />
+	  <dl_setting var="h_color_l"  min="0" step="1" max="255"  />
+	  <dl_setting var="s_color_l"  min="0" step="1" max="255"  />
+	  <dl_setting var="v_color_l"  min="0" step="1" max="255"  />
+	  <dl_setting var="dp"  min="0" step="0.1" max="5"  />
+	  <dl_setting var="param1"  min="0" step="1" max="200"  />
+	  <dl_setting var="param2"  min="0" step="1" max="200"  />
       </dl_settings>
     </dl_settings>
   </settings>

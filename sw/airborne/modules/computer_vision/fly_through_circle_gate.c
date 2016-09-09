@@ -107,7 +107,7 @@ struct image_t* gate_control_func(struct image_t* img)
     opencv_gate_detect((char*) img->buf, img->w, img->h);   // call function to detect window, maybe return states of result
   }
 
-  //DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
+  //DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height,&y_loc);
 
   float yaw = stateGetNedToBodyEulers_f()->psi;
   float diff = loc_y-(img->h/2);

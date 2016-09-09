@@ -61,6 +61,17 @@ uint8_t only_uv_u_lookup[256];
 uint8_t only_uv_v_lookup[256];
 uint8_t h_lookup[256];
 
+uint8_t h_color_u = 20;
+uint8_t s_color_u = 255;
+uint8_t v_color_u  = 255;
+uint8_t h_color_l = 0;
+uint8_t s_color_l = 30;
+uint8_t v_color_l  = 10;
+
+double dp = 1;
+double param1 = 10;
+double param2 = 100;
+
 /** Functions for measuring some time */
 inline void start_clock() {
 	begin = clock();
@@ -348,20 +359,38 @@ int opencv_gate_detect(char *img, int width, int height) {
 	Mat M(height, width, CV_8UC2, img); // original
 	Mat hsvImage;
 	Mat rgbImage;
+	Mat enhancedImage;
 	Mat grayImage;
+	Mat red_1;
+	//Mat red_2;
 	cvtColor(M, rgbImage, CV_YUV2BGR_Y422);
-	cvtColor(rgbImage, grayImage, CV_BGR2GRAY);
-	//cvtColor(rgbImage, hsvImage, CV_BGR2HSV);
+	//cvtColor(rgbImage, grayImage, CV_BGR2GRAY);
+	cvtColor(rgbImage, hsvImage, CV_BGR2HSV);
 	
 	//HERE CIRCLE DETECTION
 	
 	/// Reduce the noise so we avoid false circle detection
 	//GaussianBlur( grayImage, grayImage, Size(9, 9), 2, 2 );
 
+	//rgbImage.convertTo(enhancedImage,-1,1,0);
+	
 	vector<Vec3f> circles;
+	
+	//inRange(hsvImage,Scalar(0,30,10),Scalar(20,255,255),red_1);
+	inRange(hsvImage,Scalar(h_color_l,s_color_l,v_color_l),Scalar(h_color_u,s_color_u,v_color_u),red_1);
+	
+	//inRange(hsvImage,Scalar(230,50,50),Scalar(255,255,255),red_2);
+	
+	//GaussianBlur( enhancedImage, enhancedImage, Size(9, 9), 2, 2 );
 
 	/// Apply the Hough Transform to find the circles //200 100
-	HoughCircles( grayImage, circles, CV_HOUGH_GRADIENT, 1, grayImage.rows/8, 20, 100, 0, 0 );
+	//HoughCircles( grayImage, circles, CV_HOUGH_GRADIENT, 0.5, grayImage.rows/8, 10, 100, 0, 0 );
+	
+	//HoughCircles( red_1, circles, CV_HOUGH_GRADIENT, 2, grayImage.rows/8, 10, 100, 0, 0 );
+	HoughCircles( red_1, circles, CV_HOUGH_GRADIENT, dp, grayImage.rows/8, param1, param2, 0, 0 );
+	
+	
+	
 
 	/// Draw the circles detected
 	for( size_t i = 0; i < circles.size(); i++ )
@@ -371,17 +400,19 @@ int opencv_gate_detect(char *img, int width, int height) {
 	    // circle center
 	    //circle( grayImage, center, 3, 255, -1, 8, 0 );
 	    // circle outline
-	    circle( grayImage, center, radius, 10, 4, 8, 0 );
+	    circle( red_1, center, radius, 200, 4, 8, 0 );
 	}
 	
 	Point center(20, 20);
 	//circle test      center radius 
-	circle( grayImage, center, 30, 10, 4, 8, 0 );
+	circle( red_1, center, 30, 200, 4, 8, 0 );
 	
 	//Mat probImage(height, width, CV_8UC1); // prob projected
 	//hsv_set_color_intensity(probImage, hsvImage);
 	//guidoMethod(probImage);
 	//grayscale_opencv_to_yuv422(probImage, img, width, height);
-	grayscale_opencv_to_yuv422(grayImage, img, width, height);
+	//grayscale_opencv_to_yuv422(grayImage, img, width, height);
+	grayscale_opencv_to_yuv422(red_1, img, width, height);
+	//colorrgb_opencv_to_yuv422(enhancedImage, img, width, height);
 	return 0;
 }

@@ -96,6 +96,12 @@ uint8_t should_go_safety(){
 	}
 	return 0;
 }
+
+static void race_debug_send(struct transport_tx *trans, struct link_device *dev)
+    {
+    pprz_msg_send_OBSTACLE_RACE_INFO(trans, dev, AC_ID,&loc_y, &distance_pixels,&center_pixels,&left_height,&right_height);
+    }  
+
 // Function that calls the vision part of the drone race
 // Then does a little bit of control.
 struct image_t* gate_control_func(struct image_t* img);
@@ -107,7 +113,7 @@ struct image_t* gate_control_func(struct image_t* img)
     opencv_gate_detect((char*) img->buf, img->w, img->h);   // call function to detect window, maybe return states of result
   }
 
-  //DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &distance_pixels,&center_pixels,&left_height,&right_height);
+  //DOWNLINK_SEND_OBSTACLE_RACE_INFO(DefaultChannel, DefaultDevice, &loc_y, &distance_pixels,&center_pixels,&left_height,&right_height);
 
   float yaw = stateGetNedToBodyEulers_f()->psi;
   float diff = loc_y-(img->h/2);
@@ -179,6 +185,7 @@ struct image_t* gate_control_func(struct image_t* img)
 
 void fly_through_gate_init(void)
 {
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_OBSTACLE_RACE_INFO, race_debug_send);
   cv_add_to_device(&OPENCVDEMO_CAMERA, gate_control_func);
   opencv_init_rects();
 }
