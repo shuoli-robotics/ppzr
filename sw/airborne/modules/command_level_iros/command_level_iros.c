@@ -29,7 +29,6 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 
-
 #define TEMP_HOVER                   1
 #define TEMP_GO_STRAIGHT             2
 #define TEMP_CHAGE_HEADING_HOVER     3
@@ -39,8 +38,7 @@ int temp_primive_chosen;
 
 uint8_t previous_mode;
 uint8_t current_mode;
-uint8_t previous_guidance_h_mode;
-uint8_t current_guidance_h_mode;
+
 
 void command_init(){
     previous_mode = autopilot_mode;
@@ -53,28 +51,20 @@ void command_run() {
     if (previous_mode != current_mode)
     {
         counter_autopilot_mode = 0;
+        time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
         printf("!!!!!!!!!");
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
+    if (time_autopilot<5)
+        hover();
+    else if (time_autopilot<10)
+        change_heading_hover(90.0/180.0*3.14,5);
+    else
+        hover();
 
-
-
-    temp_primive_chosen = TEMP_CIRCLE ;
-
-    switch (temp_primive_chosen){
-        case TEMP_HOVER: hover();
-            break;
-        case TEMP_GO_STRAIGHT: go_straight(0.5);
-            break;
-        case TEMP_CHAGE_HEADING_HOVER: change_heading_hover(90.0/180.0*3.14,5);
-            break;
-        case TEMP_CIRCLE: circle(2,10);
-            break;
-        default: hover();
-    }
     previous_mode = current_mode;
 }
 
