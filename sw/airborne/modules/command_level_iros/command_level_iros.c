@@ -27,6 +27,7 @@
 #include "modules/command_level_iros/command_level_iros.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 
 
 #define TEMP_HOVER                   1
@@ -47,9 +48,11 @@ void command_init(){
 }
 
 void command_run() {
+  
     current_mode = autopilot_mode;
     if (previous_mode != current_mode)
     {
+        counter_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
         printf("!!!!!!!!!");
     }
@@ -75,4 +78,16 @@ void command_run() {
     previous_mode = current_mode;
 }
 
+void find_gate_state()
+{
+  /*
+  float yaw = stateGetNedToBodyEulers_f()->psi;
+  float diff = loc_y-(img->h/2);
+                                                               // this part don't understand/
+  float unexplainedOffset=50.0;
+  diff+=unexplainedOffset;
+  double pixelsPerDegree = viewingAngle/img->h;
+  yaw += pixelsPerDegree * diff;
+  */
+}
 

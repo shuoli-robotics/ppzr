@@ -45,6 +45,9 @@ float ratio_wanted = 0.44; // ratio between left and right to be enough in front
 int distance_pixels_between_just_go=125; // distance in pixels between the left and right pole of the window
 float viewingAngle=0.45;//radians
 
+//debugging
+int16_t direction_pix = 0;
+
 /* Sets the guided mode goal to a waypoint */
 uint8_t guided_stay_wp(uint8_t wp){
 	struct EnuCoor_f enu_i_wp = waypoints[wp].enu_f;
@@ -99,7 +102,7 @@ uint8_t should_go_safety(){
 
 static void race_debug_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_OBSTACLE_RACE_INFO(trans, dev, AC_ID,&loc_y, &distance_pixels,&center_pixels,&left_height,&right_height);
+    pprz_msg_send_OBSTACLE_RACE_INFO(trans, dev, AC_ID,&direction_pix, &distance_pixels,&center_pixels,&left_height,&right_height);
     }  
 
 // Function that calls the vision part of the drone race
@@ -120,6 +123,7 @@ struct image_t* gate_control_func(struct image_t* img)
                                                                /* this part don't understand*/
   float unexplainedOffset=50.0;
   diff+=unexplainedOffset;
+  direction_pix = (int16_t)diff;
   double pixelsPerDegree = viewingAngle/img->h;
   yaw += pixelsPerDegree * diff;
   float totalHeight = left_height + right_height;
