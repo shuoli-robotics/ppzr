@@ -24,7 +24,6 @@ float time_temp2;
 float time_temp3;
 
 void flight_plan_clock_init(){
-    set_bit_ls(clock_mask,0);
     counter_global = 0;
     counter_autopilot_mode = 0;
     counter_primitive = 0;
@@ -41,10 +40,8 @@ void flight_plan_clock_run() {
     counter_temp1++;
     counter_temp2++;
     counter_temp3++;
-
     time_global = counter_global/20.0;
     time_autopilot_mode = counter_autopilot_mode/20.0;
-    //time_primitive = counter_primitive/20.0;
     time_temp1 = counter_temp1/20.0;
     time_temp2 = counter_temp2/20.0;
     time_temp3 = counter_temp3/20.0;
