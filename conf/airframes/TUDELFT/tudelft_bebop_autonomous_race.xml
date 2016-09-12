@@ -48,6 +48,7 @@
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
     </module>
     <module name="guidance_loop_velocity_autonomous_race"/>
+    <module name="command_level_iros"/>
     <module name="send_imu_mag_current"/>
     <module name="video_thread">
     </module>

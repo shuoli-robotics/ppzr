@@ -61,10 +61,8 @@ void command_run() {
     }
     if (time_autopilot_mode<3)
         hover();
-    else if (time_autopilot_mode<4)
-        change_heading_hover(desired_yaw,1);
-    else if (time_autopilot_mode <8)
-        go_straight(0.5);
+    else if (time_autopilot_mode<23)
+        circle(2,20);
     else
       hover();
 

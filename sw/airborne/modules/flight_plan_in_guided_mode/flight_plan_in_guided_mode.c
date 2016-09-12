@@ -168,25 +168,19 @@ void circle(float radius, float planned_time){
 }
 
 
-//void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time){
-//    if (!bit_is_set_ls(clock_mask,2)){
-//        set_bit_ls(clock_mask,2);
-//        counter_primitive = 0;
-//        time_primitive = 0;
-//        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-//        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-//        //guidance_loop_set_heading(0);
-//        guidance_loop_set_velocity(vx_earth_t,vy_earth_t);   // earth coordinate
-//        z0 = stateGetPositionNed_f()->z;
-//        guidance_v_set_guided_z(z0);
-//    }
-//    if(time_primitive > planned_time)
-//    {
-//        clear_bit_ls(primitive_mask,5);
-//        set_bit_ls(primitive_mask,1);
-//        clear_bit_ls(clock_mask,2);
-//    }
-//}
+void set_velocity_test(float vx_earth_t,float vy_earth_t){
+    if(primitive_in_use != SET_VELOCITY_TEST){
+        primitive_in_use = SET_VELOCITY_TEST;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+	guidance_loop_set_heading(0);
+        guidance_loop_set_velocity(vx_earth_t,vy_earth_t);   // earth coordinate
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0);
+    }
+}
 
 void go_left_right(float velocity){
     if(primitive_in_use != GO_LEFT_RIGHT){
