@@ -84,17 +84,17 @@ void stereocam_to_state(void)
 	measured_y_gate = measured_distance_gate * cos(deg2rad(measured_angle_gate));
 	measured_z_gate = measured_distance_gate * sin(deg2rad(measured_angle_vert));
 	
-  /*
+  
   //State filter 
 	
-
+/*
 	
     // predict the new location:
 	float gate_turn_rate = -(turn_rate); 
 	printf("Gate turn rate = %f\n", gate_turn_rate);
 	float current_distance = sqrtf(current_x_gate*current_x_gate + current_y_gate*current_y_gate);
-	float dx_gate = dt * (cos(current_angle_gate) * gate_turn_rate * current_distance);
-	float dy_gate = dt * (velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
+	float dx_gate = dt * body_v_x;//(cos(current_angle_gate) * gate_turn_rate * current_distance);
+	float dy_gate = dt * body_v_y; //(velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
 	predicted_x_gate = previous_x_gate + dx_gate;
 	predicted_y_gate = previous_y_gate + dy_gate;
 	
@@ -128,6 +128,6 @@ void stereocam_to_state(void)
 	// set the previous state for the next time:
 	previous_x_gate = current_x_gate;
 	previous_y_gate = current_y_gate;
-  */
+ */ 
 }
 
