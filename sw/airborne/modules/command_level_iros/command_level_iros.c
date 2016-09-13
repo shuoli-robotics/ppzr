@@ -30,13 +30,6 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/computer_vision/fly_through_gate_demo.h"
 
-#define TEMP_HOVER                   1
-#define TEMP_GO_STRAIGHT             2
-#define TEMP_CHAGE_HEADING_HOVER     3
-#define TEMP_CIRCLE                  4
-
-int temp_primive_chosen;
-
 uint8_t previous_mode;
 uint8_t current_mode;
 
@@ -54,18 +47,24 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        printf("!!!!!!!!!");
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-    if (time_autopilot_mode<3)
-        hover();
-    else if (time_autopilot_mode<23)
-        circle(1.5,20);
-    else
-      hover();
 
+    if (time_autopilot_mode<5)
+        hover();
+//    else if (time_autopilot_mode<10)
+//        go_left_right(-0.5);
+//    else if (time_autopilot_mode<12)
+//        hover();
+//    else if (time_autopilot_mode<15)
+//        go_up_down(-1.0);
+        else if(time_autopilot_mode<9)
+        go_straight(0.5);
+    else
+        hover();
+    
     previous_mode = current_mode;
 }
 
