@@ -49,15 +49,16 @@ float body_velocity_x;
 float vx_earth;
 float vy_earth;
 float psi;
-
+float heading;
 bool altitude_is_arrived;
-
+bool adjust_position_mask;
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
 
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
+    bool adjust_position_mask = 0;
 }
 
 
@@ -98,7 +99,7 @@ void go_straight(float velocity){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        psi0 = stateGetNedToBodyEulers_f()->psi;
+        //psi0 = stateGetNedToBodyEulers_f()->psi;
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
@@ -192,18 +193,18 @@ void go_left_right(float velocity){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        psi0 = stateGetNedToBodyEulers_f()->psi;
+        //psi0 = stateGetNedToBodyEulers_f()->psi;
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
-        guidance_loop_set_heading(psi0);
+        //guidance_loop_set_heading(psi0);
     }
 }
 
 void go_up_down(float derta_altitude){
-    if(1){
+    if(primitive_in_use != GO_UP_DOWN){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
         time_primitive = 0;
@@ -220,13 +221,20 @@ void go_up_down(float derta_altitude){
 }
 
 void adjust_position(float derta_altitude){
+    if (adjust_position_mask == 0)
+    {
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0 - derta_altitude);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        adjust_position_mask = 1;
+    }
 
-    go_up_down(derta_altitude);
-
-    if (fabs(measured_x_gate)<0.1)
+    if (fabs(measured_x_gate)<0.2)
         go_left_right(0);
-    else if (measured_x_gate>0.1)
+    else if (measured_x_gate>0.2)
         go_left_right(0.2);
-    else if (measured_x_gate<-0.1)
+    else if (measured_x_gate<-0.2)
         go_left_right(-0.2);
 }
