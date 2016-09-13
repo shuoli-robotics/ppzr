@@ -49,16 +49,16 @@ void command_run() {
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-    if (time_autopilot_mode<3)
+    if (time_autopilot_mode<5)
         hover();
-    else if (time_autopilot_mode<6)
-        go_left_right(-1);
-    else if (time_autopilot_mode<9)
-        hover();
-    else if (time_autopilot_mode<12)
-        go_up_down(-1.0);
-        else if(time_autopilot_mode<15)
-        go_straight(-1);
+//    else if (time_autopilot_mode<10)
+//        go_left_right(-0.5);
+//    else if (time_autopilot_mode<12)
+//        hover();
+//    else if (time_autopilot_mode<15)
+//        go_up_down(-1.0);
+        else if(time_autopilot_mode<9)
+        go_straight(0.5);
     else
         hover();
     previous_mode = current_mode;
