@@ -24,7 +24,6 @@
  */
 
 #include <stdio.h>
-//#include <std.h>
 #include "flight_plan_in_guided_mode.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
@@ -50,6 +49,8 @@ float vx_earth;
 float vy_earth;
 float psi;
 
+bool altitude_is_arrived;
+
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
 
@@ -63,6 +64,7 @@ void display_information()
 {
     if (autopilot_mode == AP_MODE_MODULE) {
         printf("z0 is %f\n",z0);
+        printf("Altitude is arrived %d\n",altitude_is_arrived);
         printf("\n");
         printf("\n");
         printf("\n");
@@ -200,7 +202,7 @@ void go_left_right(float velocity){
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
-        guidance_loop_set_heading(psi);
+        guidance_loop_set_heading(psi0);
     }
 }
 
@@ -209,11 +211,13 @@ void go_up_down(float derta_altitude){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
         time_primitive = 0;
+        altitude_is_arrived = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0+derta_altitude);
-        guidance_loop_set_heading(psi);
+        guidance_v_set_guided_z(z0 - derta_altitude);
     }
+    if (fabs(stateGetPositionNed_f()->z-(z0 - derta_altitude))<0.1)
+        altitude_is_arrived = 1;
 }
