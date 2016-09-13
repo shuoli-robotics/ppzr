@@ -11,9 +11,10 @@
  */
 
 #include <math.h>
+#include <sys/time.h>
 #include "subsystems/datalink/telemetry.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
-
+#include "state.h"
 
 #define PI 3.1415926
 
@@ -32,10 +33,26 @@ float measured_x_gate = 0;
 float measured_y_gate = 0;
 float measured_z_gate = 0;
 
+float predicted_x_gate = 0;
+float predicted_y_gate = 0;
+
+float current_x_gate = 0;
+float current_y_gate = 0;
+
+float previous_x_gate = 0;
+float previous_y_gate = 0;
 // Settings:
 float FOV_width = 57.4f;
 float FOV_height = 44.5f;
 float gate_size_meters = 1.0f;
+
+int uncertainty_gate = 0;
+
+
+struct timeval stop, start;
+
+
+
 
 float deg2rad(float deg)
 {
@@ -44,12 +61,13 @@ float deg2rad(float deg)
 
 static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,&fitness,&fps,&measured_x_gate,&measured_y_gate,&measured_z_gate);
+    pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,&fitness,&fps,&current_x_gate,&current_y_gate,&measured_z_gate);
     }  
 
  void stereo_gate_position_init(void)
  {
    register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_STEREO_GATE_INFO, stereo_gate_send);
+   gettimeofday(&start, NULL);
  }
  
  void get_stereo_data_periodic(void) 
@@ -87,12 +105,22 @@ void stereocam_to_state(void)
   
   //State filter 
 	
-/*
+
+	//convert earth velocity to body x y velocity
+	float v_x_earth =stateGetSpeedNed_f()->x;
+	float v_y_earth = stateGetSpeedNed_f()->y;
+	float psi = stateGetNedToBodyEulers_f()->psi;
+	float body_v_x = cosf(psi)*v_x_earth + sinf(psi)*v_y_earth;
+	float body_v_y = -sinf(psi)*v_x_earth+cosf(psi)*v_y_earth;
+	
+	
+	
+	gettimeofday(&stop, NULL);
+	printf("took %lu\n", stop.tv_usec - start.tv_usec);
+	double dt = (stop.tv_usec - start.tv_usec)/1000000;
+	gettimeofday(&start, NULL);
 	
     // predict the new location:
-	float gate_turn_rate = -(turn_rate); 
-	printf("Gate turn rate = %f\n", gate_turn_rate);
-	float current_distance = sqrtf(current_x_gate*current_x_gate + current_y_gate*current_y_gate);
 	float dx_gate = dt * body_v_x;//(cos(current_angle_gate) * gate_turn_rate * current_distance);
 	float dy_gate = dt * body_v_y; //(velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
 	predicted_x_gate = previous_x_gate + dx_gate;
@@ -106,11 +134,11 @@ void stereocam_to_state(void)
 		if (uncertainty_gate > 30)
 			weight_measurement = 1.0f;
 		else
-			weight_measurement = (*color_fitness);
+			weight_measurement = (8-fitness)/8.0;
 
 		current_x_gate = weight_measurement * measured_x_gate + (1.0f - weight_measurement) * predicted_x_gate;
 		current_y_gate = weight_measurement * measured_y_gate + (1.0f - weight_measurement) * predicted_y_gate;
-		current_angle_gate = atan2f(current_x_gate, current_y_gate);
+		
 
 		// reset uncertainty:
 		uncertainty_gate = 0;
@@ -120,7 +148,6 @@ void stereocam_to_state(void)
 		// just the prediction
 		current_x_gate = predicted_x_gate;
 		current_y_gate = predicted_y_gate;
-		current_angle_gate = atan2f(current_x_gate, current_y_gate);
 
 		// increase uncertainty
 		uncertainty_gate++;
@@ -128,6 +155,6 @@ void stereocam_to_state(void)
 	// set the previous state for the next time:
 	previous_x_gate = current_x_gate;
 	previous_y_gate = current_y_gate;
- */ 
+  
 }
 

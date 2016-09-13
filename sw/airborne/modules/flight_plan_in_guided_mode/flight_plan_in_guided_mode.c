@@ -197,8 +197,8 @@ void go_left_right(float velocity){
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
+        //z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_z(z0);
         //guidance_loop_set_heading(psi0);
     }
 }
@@ -232,9 +232,14 @@ void adjust_position(float derta_altitude){
     }
 
     if (fabs(measured_x_gate)<0.2)
-        go_left_right(0);
-    else if (measured_x_gate>0.2)
-        go_left_right(0.2);
-    else if (measured_x_gate<-0.2)
-        go_left_right(-0.2);
+    {go_left_right(0);
+    printf("stop\n");}
+    else if (measured_x_gate>0.2){
+      go_left_right(0.1);
+      printf("right\n");
+    }
+    else if (measured_x_gate<-0.2){
+        go_left_right(-0.1);
+	printf("left\n");
+    }
 }
