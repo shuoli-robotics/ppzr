@@ -19,5 +19,11 @@
 extern void stereo_gate_position_init(void);
 extern void get_stereo_data_periodic(void);
 
+extern float measured_x_gate;
+extern float measured_y_gate;
+extern float measured_z_gate;
+
+extern char fitness;
+
 #endif
 

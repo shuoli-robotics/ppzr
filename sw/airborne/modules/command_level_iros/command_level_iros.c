@@ -29,6 +29,7 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/computer_vision/fly_through_gate_demo.h"
+#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 
 uint8_t previous_mode;
 uint8_t current_mode;
@@ -52,18 +53,21 @@ void command_run() {
         return;
     }
 
-    if (time_autopilot_mode<5)
-        hover();
-//    else if (time_autopilot_mode<10)
-//        go_left_right(-0.5);
-//    else if (time_autopilot_mode<12)
-//        hover();
-//    else if (time_autopilot_mode<15)
-//        go_up_down(-1.0);
-        else if(time_autopilot_mode<9)
-        go_straight(0.5);
+    if (fitness < 8)
+    {
+      if(fabs(measured_z_gate)>0.05)
+      {
+	go_up_down(-measured_z_gate);
+	return;
+      }
+      else
+	hover();
+      
+    }
     else
-        hover();
+    {
+     // hover();
+    }
     
     previous_mode = current_mode;
 }

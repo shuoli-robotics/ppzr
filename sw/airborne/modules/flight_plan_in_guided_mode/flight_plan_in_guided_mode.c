@@ -202,7 +202,7 @@ void go_left_right(float velocity){
 }
 
 void go_up_down(float derta_altitude){
-    if(primitive_in_use != GO_UP_DOWN){
+    if(1){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
         time_primitive = 0;

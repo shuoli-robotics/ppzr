@@ -52,21 +52,28 @@
     <module name="send_imu_mag_current"/>
     <module name="video_thread">
     </module>
-    <module name="sonar_bebop"/>
+    <!--module name="sonar_bebop"/-->
     <module name="pose_history"/>
-    <module name="cv_detect_gate">
+    <!--module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
-    </module>
-    <module name="cv_opticflow">
+    </module-->
+    <!--module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-    </module>
+    </module-->
 
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
     </module>
+
+    <module name="stereocam">
+	<configure name="STEREO_UART" value="UART2"/>
+	<configure name="STEREO_BAUD" value="B9600"/>
+    </module> 
+    <module name="stereo_gate_position"/>
+
   </modules>
 
 
