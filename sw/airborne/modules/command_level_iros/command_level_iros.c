@@ -55,14 +55,7 @@ void command_run() {
 
     if (fitness < 8)
     {
-      if(fabs(measured_z_gate)>0.05)
-      {
-	go_up_down(-measured_z_gate);
-	return;
-      }
-      else
-	hover();
-      
+     adjust_position(measured_z_gate);
     }
     else
     {

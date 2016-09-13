@@ -34,6 +34,7 @@
 #include <math.h>
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
+#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 
 
 float psi0;//
@@ -185,7 +186,7 @@ void set_velocity_test(float vx_earth_t,float vy_earth_t){
 }
 
 void go_left_right(float velocity){
-    if(primitive_in_use != GO_LEFT_RIGHT){
+    if(1){
         primitive_in_use = GO_LEFT_RIGHT;
         counter_primitive = 0;
         time_primitive = 0;
@@ -216,5 +217,16 @@ void go_up_down(float derta_altitude){
 
     if (fabs(stateGetPositionNed_f()->z-(z0 - derta_altitude))<0.1)
         altitude_is_arrived = 1;
+}
 
+void adjust_position(float derta_altitude){
+
+    go_up_down(derta_altitude);
+
+    if (fabs(measured_x_gate)<0.1)
+        go_left_right(0);
+    else if (measured_x_gate>0.1)
+        go_left_right(0.2);
+    else if (measured_x_gate<-0.1)
+        go_left_right(-0.2);
 }

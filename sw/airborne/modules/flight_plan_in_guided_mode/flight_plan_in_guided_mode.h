@@ -35,6 +35,7 @@
 #define GO_LEFT_RIGHT            5
 #define SET_VELOCITY_TEST        6
 #define GO_UP_DOWN               7
+#define ADJUST_POSITION          8
 
 
  extern int primitive_in_use;
@@ -47,6 +48,7 @@
  extern void go_left_right(float velocity);
  extern void set_velocity_test(float vx_earth_t,float vy_earth_t);
  extern void go_up_down(float derta_altitude);
+ extern void adjust_position(float derta_altitude);
 
 //void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 
