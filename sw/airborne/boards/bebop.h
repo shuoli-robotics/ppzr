@@ -102,6 +102,8 @@
 /** uart connected to GPS internally */
 #define UART1_DEV /dev/ttyPA1
 
+#define UART2_DEV /dev/ttyUSB0
+
 /* Default actuators driver */
 #define DEFAULT_ACTUATORS "boards/bebop/actuators.h"
 #define ActuatorDefaultSet(_x,_y) ActuatorsBebopSet(_x,_y)

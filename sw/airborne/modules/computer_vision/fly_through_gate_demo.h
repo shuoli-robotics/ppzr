@@ -39,6 +39,7 @@ extern uint8_t should_go_safety(void);
 extern float getPosErrorMeters(uint8_t);
 
 extern float desired_yaw;
+extern float ratio;
 
 #endif
 

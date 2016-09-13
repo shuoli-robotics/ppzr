@@ -62,7 +62,7 @@ void command_run() {
     if (time_autopilot_mode<3)
         hover();
     else if (time_autopilot_mode<23)
-        circle(2,20);
+        circle(1.5,20);
     else
       hover();
 

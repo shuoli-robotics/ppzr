@@ -47,9 +47,11 @@ float viewingAngle=0.45;//radians
 
 float desired_yaw = 0;
 float current_yaw = 0;
+float ratio = 0;
 
 //debugging
 int16_t direction_pix = 0;
+
 
 /* Sets the guided mode goal to a waypoint */
 uint8_t guided_stay_wp(uint8_t wp){
@@ -105,7 +107,7 @@ uint8_t should_go_safety(){
 
 static void race_debug_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_OBSTACLE_RACE_INFO(trans, dev, AC_ID,&direction_pix, &distance_pixels,&center_pixels,&left_height,&right_height,&desired_yaw,&current_yaw);
+    pprz_msg_send_OBSTACLE_RACE_INFO(trans, dev, AC_ID,&direction_pix, &distance_pixels,&center_pixels,&left_height,&right_height,&desired_yaw,&current_yaw,&ratio);
     }  
 
 // Function that calls the vision part of the drone race
@@ -132,7 +134,7 @@ struct image_t* gate_control_func(struct image_t* img)
   yaw += pixelsPerDegree * diff * 4;
   desired_yaw = pixelsPerDegree * diff * 4;//yaw;
   float totalHeight = left_height + right_height;
-  float ratio = left_height/totalHeight;
+  ratio = left_height/totalHeight;
 
   totalHeight/=100.0;
 

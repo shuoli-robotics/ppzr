@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="stereo_gate_position" dir="stereocam/stereo_gate_position">
+  <doc>
+    <description>based on stereo vision module data  gate detection is fused with optic flow velocity.</description>
+  </doc>
+  <header>
+    <file name="stereo_gate_position.h"/>
+  </header>
+  <init fun="stereo_gate_position_init()"/>
+  <periodic fun="get_stereo_data_periodic()" freq="20" autorun="TRUE"/>
+  <makefile>
+    <file name="stereo_gate_position.c"/>
+  </makefile>
+</module>
+

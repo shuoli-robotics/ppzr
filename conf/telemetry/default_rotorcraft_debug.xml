@@ -32,6 +32,8 @@
       <message name="INS_Z"             period=".05"/>
       <message name="VERT_LOOP"             period=".05"/>
       <message name="TUNE_VERT"             period=".05"/>
+      <message name="STEREO_GATE_INFO"             period=".05"/>
+      <message name="STEREO_DATA_INFO"             period=".05"/>
     </mode>
 
     <mode name="ppm">

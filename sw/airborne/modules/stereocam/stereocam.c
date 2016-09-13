@@ -28,6 +28,7 @@
 
 #include "modules/stereocam/stereocam.h"
 #include "mcu_periph/uart.h"
+//#include "arch/linux/mcu_periph/uart_arch.h"
 #include "mcu_periph/sys_time.h"
 #include "subsystems/datalink/telemetry.h"
 #include "modules/stereocam/stereoprotocol.h"
@@ -45,7 +46,7 @@ MsgProperties msgProperties;
 
 
 uint16_t freq_counter = 0;
-uint8_t frequency = 0;
+uint8_t frequency = 1;//0;
 uint32_t previous_time = 0;
 
 #ifndef STEREO_BUF_SIZE
@@ -58,6 +59,11 @@ uint8array stereocam_data = {.len = 0, .data = msg_buf, .fresh = 0, .matrix_widt
 
 #define BASELINE_STEREO_MM 60.0
 #define BRANDSPUNTSAFSTAND_STEREO 118.0*6
+
+static void stereo_data_send(struct transport_tx *trans, struct link_device *dev)
+    {
+    pprz_msg_send_STEREO_DATA_INFO(trans, dev, AC_ID,&stereocam_data.len, &frequency,&frequency);
+    }  
 
 extern void stereocam_disparity_to_meters(uint8_t *disparity, float *distancesMeters, int lengthArray)
 {
@@ -89,6 +95,9 @@ extern void stereocam_start(void)
   previous_time = sys_time.nb_tick;
 
   stereocam_data.fresh = 0;
+  
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_STEREO_DATA_INFO, stereo_data_send);
+  
 }
 
 extern void stereocam_stop(void)
@@ -109,11 +118,11 @@ extern void stereocam_periodic(void)
       }
 #if SEND_STEREO
       if (stereocam_data.len > 100) {
-        DOWNLINK_SEND_STEREO_IMG(DefaultChannel, DefaultDevice, &frequency, &(stereocam_data.len), 100, stereocam_data.data);
+       // DOWNLINK_SEND_STEREO_IMG(DefaultChannel, DefaultDevice, &frequency, &(stereocam_data.len), 100, stereocam_data.data);
 
       } else {
-        DOWNLINK_SEND_STEREO_IMG(DefaultChannel, DefaultDevice, &frequency, &(stereocam_data.len), stereocam_data.len,
-                                 stereocam_data.data);
+        //DOWNLINK_SEND_STEREO_IMG(DefaultChannel, DefaultDevice, &frequency, &(stereocam_data.len), stereocam_data.len,
+                                 //stereocam_data.data);
 
       }
 #endif
