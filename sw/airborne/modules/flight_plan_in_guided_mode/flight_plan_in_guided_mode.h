@@ -34,7 +34,7 @@
 #define CIRCLE                   4
 #define GO_LEFT_RIGHT            5
 #define GO_UP_DOWN               6
-
+#define ADJUST_POSITION          7
  extern int primitive_in_use;
  extern void flight_plan_in_guided_mode_init(void);
  extern void display_information(void);

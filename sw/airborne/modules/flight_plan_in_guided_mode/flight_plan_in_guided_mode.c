@@ -190,7 +190,7 @@ void circle(float radius, float planned_time){
 //}
 
 void go_left_right(float velocity){
-    if(primitive_in_use != GO_LEFT_RIGHT){
+    if(1){
         primitive_in_use = GO_LEFT_RIGHT;
         counter_primitive = 0;
         time_primitive = 0;
@@ -207,7 +207,7 @@ void go_left_right(float velocity){
 }
 
 void go_up_down(float derta_altitude){
-    if(primitive_in_use != GO_UP_DOWN){
+    if(1){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
         time_primitive = 0;
@@ -220,4 +220,16 @@ void go_up_down(float derta_altitude){
     }
     if (fabs(stateGetPositionNed_f()->z-(z0 - derta_altitude))<0.1)
         altitude_is_arrived = 1;
+}
+
+void adjust_position(float derta_altitude,float dis_y){
+
+    go_up_down(-derta_altitude);
+
+    if (fabs(measured_x_gate)<0.1)
+        go_left_right(0);
+    else if (measured_x_gate>0.1)
+        go_left_right(0.5);
+    else if (measured_x_gate<-0.1)
+        go_left_right(-0.5);
 }
