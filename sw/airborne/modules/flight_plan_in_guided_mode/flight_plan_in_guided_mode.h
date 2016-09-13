@@ -33,6 +33,7 @@
 #define CHANGE_HEADING_HOVER     3
 #define CIRCLE                   4
 #define GO_LEFT_RIGHT            5
+#define GO_UP_DOWN               6
 
  extern int primitive_in_use;
  extern void flight_plan_in_guided_mode_init(void);
@@ -42,6 +43,7 @@
  extern void change_heading_hover(float derta_psi,float planned_time);
  extern void circle(float radius, float planned_time);
  extern void go_left_right(float velocity);
+ extern void go_up_down(float derta_altitude);
 //void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 
 #endif

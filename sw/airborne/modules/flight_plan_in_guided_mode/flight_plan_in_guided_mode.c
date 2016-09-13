@@ -195,10 +195,25 @@ void go_left_right(float velocity){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        vx_earth = cosf(psi0)*velocity;
-        vy_earth = sinf(psi0)*velocity;
+        vx_earth = -sinf(psi0)*velocity;
+        vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
+        guidance_loop_set_heading(psi);
+    }
+}
+
+void go_up_down(float derta_altitude){
+    if(primitive_in_use != GO_UP_DOWN){
+        primitive_in_use = GO_UP_DOWN;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        guidance_loop_set_velocity(0,0);   // earth coordinate
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0+derta_altitude);
+        guidance_loop_set_heading(psi);
     }
 }

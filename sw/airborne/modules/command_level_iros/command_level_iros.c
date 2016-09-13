@@ -57,10 +57,12 @@ void command_run() {
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-    if (time_autopilot<5)
+    if (time_autopilot_mode<3)
         hover();
-    else if (time_autopilot<10)
-        change_heading_hover(90.0/180.0*3.14,5);
+    else if (time_autopilot_mode<6)
+        go_left_right(1);
+    else if (time_autopilot_mode<8)
+        go_up_down(0.5);
     else
         hover();
 
