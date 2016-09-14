@@ -111,8 +111,11 @@ void stereocam_to_state(void)
   
   
   // Determine the measurement:
+  
+      
 	float alpha = (radius / 128.0f) * FOV_width;
-	float measured_distance_gate = (0.5f * gate_size_meters) / tan(deg2rad(alpha));
+	if(alpha < 0.001) alpha = 0.001;
+	float measured_distance_gate = (0.5f * gate_size_meters) / tanf(deg2rad(alpha));
 	float measured_angle_gate = ((x_center - 64.0f) / (128.0f)) * FOV_width;
 	float measured_angle_vert = ((y_center - 48.0f) / (96.0f)) * FOV_height;
 	
