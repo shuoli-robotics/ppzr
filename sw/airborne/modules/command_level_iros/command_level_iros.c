@@ -34,6 +34,8 @@
 uint8_t previous_mode;
 uint8_t current_mode;
 
+int detect_green_light = 0;
+
 
 void command_init(){
     previous_mode = autopilot_mode;
@@ -48,12 +50,31 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
+	adjust_position_mask = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
 
-    if (fitness < 8)
+
+    if (fitness > 3)
+    {
+        counter_temp1 = 0;    // detection is not good enough
+        time_temp1 = 0;
+    }
+
+    if (time_temp1 > 3)
+    {
+        detect_green_light = 1;  // we have green light to adjust position
+    }
+
+    // first hover to keep stable
+    if (time_autopilot_mode < 3)
+    {
+        hover();
+    }
+
+    if (detect_green_light == 1 && time_autopilot_mode > 3)
     {
      adjust_position(measured_z_gate);
     }

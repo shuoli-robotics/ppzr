@@ -253,6 +253,6 @@ void adjust_position(float derta_altitude){
 
     velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
     velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
-
     guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+
 }

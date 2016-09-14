@@ -44,14 +44,14 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <module name="logger_file">
+    <!--module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-    </module>
+    </module-->
     <module name="guidance_loop_velocity_autonomous_race"/>
     <module name="command_level_iros"/>
     <module name="send_imu_mag_current"/>
-    <module name="video_thread">
-    </module>
+    <!--module name="video_thread">
+    </module-->
     <!--module name="sonar_bebop"/-->
     <module name="pose_history"/>
     <!--module name="cv_detect_gate">
@@ -62,11 +62,11 @@
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
     </module-->
 
-    <module name="video_rtp_stream">
+    <!--module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-    </module>
+    </module-->
 
     <module name="stereocam">
 	<configure name="STEREO_UART" value="UART2"/>
