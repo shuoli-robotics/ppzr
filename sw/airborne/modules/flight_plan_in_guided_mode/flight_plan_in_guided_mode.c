@@ -50,6 +50,10 @@ float vx_earth;
 float vy_earth;
 float psi;
 float heading;
+float velocity_body_x;
+float velocity_body_y;
+float velocity_earth_x;
+float velocity_earth_y;
 bool altitude_is_arrived;
 bool adjust_position_mask;
 int primitive_in_use; // This variable is used for showing which primitive is used now;
@@ -103,8 +107,8 @@ void go_straight(float velocity){
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
+        //z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_z(z0);
     }
 
 }
@@ -221,6 +225,8 @@ void go_up_down(float derta_altitude){
 }
 
 void adjust_position(float derta_altitude){
+
+    // set z
     if (adjust_position_mask == 0)
     {
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
@@ -230,7 +236,25 @@ void adjust_position(float derta_altitude){
         psi0 = stateGetNedToBodyEulers_f()->psi;
         adjust_position_mask = 1;
     }
+    // set vx and vy
+    if (fabs(current_x_gate)<0.2)
+        velocity_body_y = 0;
+    else if (current_x_gate>0.2)
+        velocity_body_y = 0.2;
+    else if (current_x_gate<-0.2)
+        velocity_body_y = -0.2;
 
+    if (fabs(current_y_gate-1.2)<0.2)
+        velocity_body_x = 0;
+    else if (current_y_gate-1.2>0.2)
+        velocity_body_x = 0.2;
+    else if (current_y_gate-1.2<-0.2)
+        velocity_body_x = -0.2;
+
+    velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
+    velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
+
+<<<<<<< HEAD
     if (fabs(current_x_gate)<0.1)
     {go_left_right(0);
     printf("stop\n");}
@@ -242,4 +266,7 @@ void adjust_position(float derta_altitude){
         go_left_right(-0.1);
 	printf("left\n");
     }
+=======
+    guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+>>>>>>> Shuo/addCommandLevel
 }
