@@ -103,8 +103,8 @@ void go_straight(float velocity){
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
+        //z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_z(z0);
     }
 
 }
@@ -197,8 +197,8 @@ void go_left_right(float velocity){
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
+        //z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_z(z0);
         //guidance_loop_set_heading(psi0);
     }
 }
@@ -221,7 +221,8 @@ void go_up_down(float derta_altitude){
 }
 
 void adjust_position(float derta_altitude){
-    if (adjust_position_mask == 0)
+    // set altitude first
+    if (1)
     {
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
