@@ -231,14 +231,14 @@ void adjust_position(float derta_altitude){
         adjust_position_mask = 1;
     }
 
-    if (fabs(measured_x_gate)<0.2)
+    if (fabs(current_x_gate)<0.1)
     {go_left_right(0);
     printf("stop\n");}
-    else if (measured_x_gate>0.2){
+    else if (current_x_gate>0.1){
       go_left_right(0.1);
       printf("right\n");
     }
-    else if (measured_x_gate<-0.2){
+    else if (current_x_gate<-0.1){
         go_left_right(-0.1);
 	printf("left\n");
     }
