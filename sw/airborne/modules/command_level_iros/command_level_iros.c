@@ -56,7 +56,7 @@ void command_run() {
 
     if (fitness < 8)
     {
-     adjust_position(measured_z_gate);
+     adjust_position(-delta_z_gate);
     }
     else
     {

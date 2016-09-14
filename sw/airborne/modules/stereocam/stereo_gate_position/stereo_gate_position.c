@@ -42,12 +42,16 @@ float body_filter_y = 0;
 
 float predicted_x_gate = 0;
 float predicted_y_gate = 0;
+float predicted_z_gate = 0;
 
 float current_x_gate = 0;
 float current_y_gate = 0;
+float current_z_gate = 0;
+float delta_z_gate   = 0;
 
 float previous_x_gate = 0;
 float previous_y_gate = 0;
+float previous_z_gate = 0;
 
 // Settings:
 float FOV_width = 57.4f;
@@ -73,7 +77,7 @@ static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev
     {
     pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,&fitness,&fps,
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
-				   &current_x_gate,&current_y_gate,&fps_filter,
+				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
 				   &body_filter_x,&body_filter_y,&uncertainty_gate,
 				   &predicted_x_gate,&predicted_y_gate);
     }  
@@ -153,6 +157,9 @@ void stereocam_to_state(void)
 	float dy_gate = dt * body_filter_y; //(velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
 	predicted_x_gate = previous_x_gate + dx_gate;
 	predicted_y_gate = previous_y_gate + dy_gate;
+	predicted_z_gate = previous_z_gate;
+	
+	float sonar_alt = stateGetPositionNed_f()->z;
 	
        if (fitness < GOOD_FIT)
 	{
@@ -169,6 +176,7 @@ void stereocam_to_state(void)
 
 		current_x_gate = weight_measurement * measured_x_gate + (1.0f - weight_measurement) * predicted_x_gate;
 		current_y_gate = weight_measurement * measured_y_gate + (1.0f - weight_measurement) * predicted_y_gate;
+		current_z_gate = weight_measurement * (measured_z_gate + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
 		
 
 		// reset uncertainty:
@@ -179,6 +187,7 @@ void stereocam_to_state(void)
 		// just the prediction
 		current_x_gate = predicted_x_gate;
 		current_y_gate = predicted_y_gate;
+		current_z_gate = predicted_z_gate;
 
 		// increase uncertainty
 		uncertainty_gate++;
@@ -186,6 +195,8 @@ void stereocam_to_state(void)
 	// set the previous state for the next time:
 	previous_x_gate = current_x_gate;
 	previous_y_gate = current_y_gate;
+	previous_z_gate = current_z_gate;
+	delta_z_gate = current_z_gate - sonar_alt;
   
 }
 

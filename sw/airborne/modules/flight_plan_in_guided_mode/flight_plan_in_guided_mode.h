@@ -38,6 +38,8 @@
 #define ADJUST_POSITION          8
 
 
+
+
  extern int primitive_in_use;
  extern bool adjust_position_mask;
  extern void flight_plan_in_guided_mode_init(void);

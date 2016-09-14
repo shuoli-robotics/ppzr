@@ -37,6 +37,9 @@
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 
 
+#define p_x_position 0.5
+#define p_y_position 0.3
+
 float psi0;//
 float psi1;
 float z0;
@@ -58,7 +61,7 @@ bool altitude_is_arrived;
 bool adjust_position_mask;
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
-
+#define Z_BIAS 0.2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
@@ -227,46 +230,32 @@ void go_up_down(float derta_altitude){
 void adjust_position(float derta_altitude){
 
     // set z
-    if (adjust_position_mask == 0)
+    if (1)
     {
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0 - derta_altitude);
+        guidance_v_set_guided_z(z0 - derta_altitude+Z_BIAS);
         psi0 = stateGetNedToBodyEulers_f()->psi;
         adjust_position_mask = 1;
     }
     // set vx and vy
-    if (fabs(current_x_gate)<0.2)
+    if (fabs(current_x_gate)<0.1)
         velocity_body_y = 0;
-    else if (current_x_gate>0.2)
-        velocity_body_y = 0.2;
-    else if (current_x_gate<-0.2)
-        velocity_body_y = -0.2;
+    else if (current_x_gate>0.1)
+        velocity_body_y = p_x_position * current_x_gate;
+    else if (current_x_gate<-0.1)
+        velocity_body_y = p_x_position * current_x_gate;
 
-    if (fabs(current_y_gate-1.2)<0.2)
+    if (fabs(current_y_gate-2)<0.2)
         velocity_body_x = 0;
-    else if (current_y_gate-1.2>0.2)
+    else if (current_y_gate-2>0.2)
         velocity_body_x = 0.2;
-    else if (current_y_gate-1.2<-0.2)
-        velocity_body_x = -0.2;
+    else if (current_y_gate-2<-0.2)
+        velocity_body_x =  -0.2;
 
     velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
     velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
 
-<<<<<<< HEAD
-    if (fabs(current_x_gate)<0.1)
-    {go_left_right(0);
-    printf("stop\n");}
-    else if (current_x_gate>0.1){
-      go_left_right(0.1);
-      printf("right\n");
-    }
-    else if (current_x_gate<-0.1){
-        go_left_right(-0.1);
-	printf("left\n");
-    }
-=======
     guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
->>>>>>> Shuo/addCommandLevel
 }
