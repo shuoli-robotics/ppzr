@@ -21,6 +21,10 @@
 
 #define GOOD_FIT 7//8
 
+//initial position after gate pass
+#define INITIAL_X 0
+#define INITIAL_Y 2
+
 
 void stereocam_to_state(void);
 void read_stereo_board(void);
@@ -61,6 +65,7 @@ float gate_size_meters = 1.0f;
 
 int uncertainty_gate = 0;
 int gate_detected = 0;
+int init_pos_filter = 0;
 
 float fps_filter = 0;
 
@@ -112,11 +117,11 @@ void read_stereo_board(void)
 
 void stereocam_to_state(void)
 {
-  //message of length 5 with the x_center (image coord), y_center, radius, fitness (<4 is good, > 10 bad),
-  //and frame rate of the calculations.
-  
-  
-  // Determine the measurement:
+	//message of length 5 with the x_center (image coord), y_center, radius, fitness (<4 is good, > 10 bad),
+	//and frame rate of the calculations.
+	
+	
+	// Determine the measurement:
   
       
 	float alpha = (radius / 128.0f) * FOV_width;
@@ -138,13 +143,25 @@ void stereocam_to_state(void)
 	{
 	  gate_detected = 0;
 	}
-  //State filter 
+	
+	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
+	if(init_pos_filter == 1)
+	{
+	  init_pos_filter = 0;
+	  //assumed initial position at other end of the gate
+	  predicted_x_gate = 0;
+	  predicted_y_gate = 2.0;
+	  
+	}
+	
+        //State filter 
 	
 
 	//convert earth velocity to body x y velocity
 	float v_x_earth =stateGetSpeedNed_f()->x;
 	float v_y_earth = stateGetSpeedNed_f()->y;
 	float psi = stateGetNedToBodyEulers_f()->psi;
+	//When using optitrack
 	//body_v_x = cosf(psi)*v_x_earth + sinf(psi)*v_y_earth;
 	//body_v_y = -sinf(psi)*v_x_earth+cosf(psi)*v_y_earth;
 	
@@ -155,8 +172,6 @@ void stereocam_to_state(void)
 	body_filter_x = -body_v_y;
 	body_filter_y = -body_v_x;
 	
-	
-	
 	gettimeofday(&stop, 0);
 	double curr_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
 	double elapsed = curr_time - (double)(start.tv_sec + start.tv_usec / 1000000.0);
@@ -165,7 +180,7 @@ void stereocam_to_state(void)
 	
 	fps_filter = (float)1.0/dt;
 	
-    // predict the new location:
+        // predict the new location:
 	float dx_gate = dt * body_filter_x;//(cos(current_angle_gate) * gate_turn_rate * current_distance);
 	float dy_gate = dt * body_filter_y; //(velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
 	predicted_x_gate = previous_x_gate + dx_gate;
@@ -174,7 +189,7 @@ void stereocam_to_state(void)
 	
 	float sonar_alt = stateGetPositionNed_f()->z;
 	
-       if (gate_detected == 1)
+        if (gate_detected == 1)
 	{
 	
 		// Mix the measurement with the prediction:
