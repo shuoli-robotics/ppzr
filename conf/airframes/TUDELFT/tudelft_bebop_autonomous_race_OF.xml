@@ -61,20 +61,7 @@
     </module>
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-    <module name="cv_detect_gate">
-	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
-    </module>
-    <!--module name="cv_detect_contour">
-	<define name="DETECT_CONTOUR_CAMERA" value="front_camera"/>
-    </module-->
-    <!--module name="cv_opencvdemo">
-	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
-    </module-->
-    <!--module name="cv_detect_circle">
-	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
-    </module-->
-
-
+   
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
@@ -86,11 +73,12 @@
       <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
     </module>
 
-    <module name="video_rtp_stream">
-       <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
-	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
-	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-    </module>
+   <module name="stereocam">
+	<configure name="STEREO_UART" value="UART2"/>
+	<configure name="STEREO_BAUD" value="B9600"/>
+    </module> 
+    <module name="stereo_gate_position"/>
+
   </modules>
 
 

@@ -15,10 +15,11 @@
 #include "subsystems/datalink/telemetry.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "state.h"
+#include "modules/computer_vision/opticflow/opticflow_calculator.h"
 
 #define PI 3.1415926
 
-#define GOOD_FIT 4//8
+#define GOOD_FIT 7//8
 
 
 void stereocam_to_state(void);
@@ -79,7 +80,7 @@ static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev
     pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,&fitness,&fps,
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
 				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
-				   &body_filter_x,&body_filter_y,&uncertainty_gate,
+				   &body_v_x,&body_v_y,&uncertainty_gate,
 				   &predicted_x_gate,&predicted_y_gate,&gate_detected);
     }  
 
@@ -144,8 +145,11 @@ void stereocam_to_state(void)
 	float v_x_earth =stateGetSpeedNed_f()->x;
 	float v_y_earth = stateGetSpeedNed_f()->y;
 	float psi = stateGetNedToBodyEulers_f()->psi;
-	body_v_x = cosf(psi)*v_x_earth + sinf(psi)*v_y_earth;
-	body_v_y = -sinf(psi)*v_x_earth+cosf(psi)*v_y_earth;
+	//body_v_x = cosf(psi)*v_x_earth + sinf(psi)*v_y_earth;
+	//body_v_y = -sinf(psi)*v_x_earth+cosf(psi)*v_y_earth;
+	
+	body_v_x = opt_body_v_x;
+	body_v_y = opt_body_v_y;
 	
 	//body velocity in filter frame
 	body_filter_x = -body_v_y;
