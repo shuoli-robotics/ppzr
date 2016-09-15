@@ -34,7 +34,6 @@
 uint8_t previous_mode;
 uint8_t current_mode;
 
-int detect_green_light = 0;
 
 
 void command_init(){
@@ -61,11 +60,6 @@ void command_run() {
     {
         counter_temp1 = 0;    // detection is not good enough
         time_temp1 = 0;
-    }
-
-    if (time_temp1 > 3)
-    {
-        detect_green_light = 1;  // we have green light to adjust position
     }
 
     // first hover to keep stable
