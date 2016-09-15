@@ -18,7 +18,7 @@
 
 #define PI 3.1415926
 
-#define GOOD_FIT 8
+#define GOOD_FIT 4//8
 
 
 void stereocam_to_state(void);
@@ -59,6 +59,7 @@ float FOV_height = 44.5f;
 float gate_size_meters = 1.0f;
 
 int uncertainty_gate = 0;
+int gate_detected = 0;
 
 float fps_filter = 0;
 
@@ -79,7 +80,7 @@ static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
 				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
 				   &body_filter_x,&body_filter_y,&uncertainty_gate,
-				   &predicted_x_gate,&predicted_y_gate);
+				   &predicted_x_gate,&predicted_y_gate,&gate_detected);
     }  
 
  void stereo_gate_position_init(void)
@@ -127,7 +128,15 @@ void stereocam_to_state(void)
 	measured_y_gate = measured_distance_gate * cos(deg2rad(measured_angle_gate));
 	measured_z_gate = measured_distance_gate * sin(deg2rad(measured_angle_vert));
 	
-  
+	//SAFETY 
+	if(measured_y_gate > 1.0 && measured_y_gate < 3.5 && fitness < GOOD_FIT)
+	{
+	  gate_detected = 1;
+	}
+	else
+	{
+	  gate_detected = 0;
+	}
   //State filter 
 	
 
@@ -150,7 +159,7 @@ void stereocam_to_state(void)
 	gettimeofday(&start, 0);
 	float dt = elapsed;
 	
-	if(dt > 10000 || dt < -10000)fps_filter +=1;// (float)1.0/dt;
+	fps_filter = (float)1.0/dt;
 	
     // predict the new location:
 	float dx_gate = dt * body_filter_x;//(cos(current_angle_gate) * gate_turn_rate * current_distance);
@@ -161,7 +170,7 @@ void stereocam_to_state(void)
 	
 	float sonar_alt = stateGetPositionNed_f()->z;
 	
-       if (fitness < GOOD_FIT)
+       if (gate_detected == 1)
 	{
 	
 		// Mix the measurement with the prediction:
@@ -172,7 +181,7 @@ void stereocam_to_state(void)
 			uncertainty_gate = 151;//max
 		}
 		else
-			weight_measurement = (8.0-(float)fitness)/8.0;//check constant weight 
+			weight_measurement = (GOOD_FIT-(float)fitness)/GOOD_FIT;//check constant weight 
 
 		current_x_gate = weight_measurement * measured_x_gate + (1.0f - weight_measurement) * predicted_x_gate;
 		current_y_gate = weight_measurement * measured_y_gate + (1.0f - weight_measurement) * predicted_y_gate;
@@ -197,6 +206,7 @@ void stereocam_to_state(void)
 	previous_y_gate = current_y_gate;
 	previous_z_gate = current_z_gate;
 	delta_z_gate = current_z_gate - sonar_alt;
+	
   
 }
 

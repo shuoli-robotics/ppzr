@@ -27,6 +27,7 @@ extern float delta_z_gate;
 extern float current_x_gate;
 extern float current_y_gate;
 extern char fitness;
+extern int gate_detected;
 
 #endif
 
