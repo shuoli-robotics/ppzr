@@ -37,8 +37,10 @@
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 
 
-#define p_x_position 0.5
-#define p_y_position 0.3
+#define p_x_position 0.2
+#define p_y_position 0.2
+
+# define Z_SETPOINT -1.5
 
 float psi0;//
 float psi1;
@@ -61,7 +63,7 @@ bool altitude_is_arrived;
 bool adjust_position_mask;
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
-#define Z_BIAS 0.2
+#define Z_BIAS 0.3//was .2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
@@ -93,7 +95,7 @@ void hover()
         guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
         guidance_loop_set_velocity(0,0);
         z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
+        guidance_v_set_guided_z(Z_SETPOINT);
         psi1 = stateGetNedToBodyEulers_f()->psi;
         guidance_loop_set_heading(psi1);
     }
@@ -116,7 +118,7 @@ void go_straight(float velocity){
 
 }
 
-void change_heading_hover(float derta_psi,float planned_time){
+void change_heading_hover(float derta_psi){
     if(primitive_in_use != CHANGE_HEADING_HOVER)
     {
         primitive_in_use = CHANGE_HEADING_HOVER;
@@ -125,13 +127,9 @@ void change_heading_hover(float derta_psi,float planned_time){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        omega_psi = derta_psi/planned_time;
-        guidance_loop_set_velocity(0,0);
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
-        guidance_loop_set_heading(psi0);
+	guidance_loop_set_heading(psi0+derta_psi);
     }
-    else
+    /*else
     {
         guidance_loop_set_velocity(0,0);
         guidance_v_set_guided_z(z0);
@@ -141,7 +139,7 @@ void change_heading_hover(float derta_psi,float planned_time){
     {
         return;
 
-    }
+    }*/
 }
 
 void circle(float radius, float planned_time){
@@ -235,7 +233,12 @@ void adjust_position(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0 - derta_altitude+Z_BIAS);
+	float z_setpoint = z0 - derta_altitude+Z_BIAS;
+	if (z_setpoint>-1)
+	  z_setpoint = -1;
+	else if (z_setpoint<-1.9)
+	  z_setpoint = -1.9;
+        guidance_v_set_guided_z(z_setpoint);
         psi0 = stateGetNedToBodyEulers_f()->psi;
         adjust_position_mask = 1;
     }
@@ -247,12 +250,12 @@ void adjust_position(float derta_altitude){
     else if (current_x_gate<-0.1)
         velocity_body_y = p_x_position * current_x_gate;
 
-    if (fabs(current_y_gate-2)<0.2)
+    if (fabs(current_y_gate-1.5)<0.2)
         velocity_body_x = 0;
-    else if (current_y_gate-2>0.2)
-        velocity_body_x = 0.2;
-    else if (current_y_gate-2<-0.2)
-        velocity_body_x =  -0.2;
+    else if (current_y_gate-1.5>0.2)
+        velocity_body_x = 0.15;
+    else if (current_y_gate-1.5<-0.2)
+        velocity_body_x =  -0.15;
 
     velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
     velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;

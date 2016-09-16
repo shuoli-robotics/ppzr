@@ -46,7 +46,7 @@
  extern void display_information(void);
  extern void hover(void);
  extern void go_straight(float velocity);
- extern void change_heading_hover(float derta_psi,float planned_time);
+ extern void change_heading_hover(float derta_psi);
  extern void circle(float radius, float planned_time);
  extern void go_left_right(float velocity);
  extern void set_velocity_test(float vx_earth_t,float vy_earth_t);

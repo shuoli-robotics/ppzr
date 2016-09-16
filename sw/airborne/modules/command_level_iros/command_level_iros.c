@@ -73,17 +73,26 @@ void command_run() {
     {
         hover();
     }
-
-    else if (time_autopilot_mode < 13)
+    else if (time_autopilot_mode < 8)
     {
      adjust_position(-delta_z_gate);
     }
-    else if (time_autopilot_mode < 18)
+    else if (time_autopilot_mode < 11)
     {
      go_straight(0.8);
     }
-    else
+    else if (time_autopilot_mode < 14)
       hover();
+    else if (time_autopilot_mode < 15)
+      {
+	change_heading_hover(-3.14/2);
+        init_pos_filter = 1;
+      }
+      else if (time_autopilot_mode < 16)
+      {
+	counter_autopilot_mode= 0;
+        time_autopilot_mode = 0;
+      }
     
     previous_mode = current_mode;
 }

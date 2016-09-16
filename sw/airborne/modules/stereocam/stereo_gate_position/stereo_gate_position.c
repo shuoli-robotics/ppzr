@@ -23,7 +23,7 @@
 
 //initial position after gate pass
 #define INITIAL_X 0
-#define INITIAL_Y 2
+#define INITIAL_Y 1.5
 
 
 void stereocam_to_state(void);

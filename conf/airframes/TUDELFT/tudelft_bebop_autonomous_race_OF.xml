@@ -33,7 +33,7 @@
     <module name="gps" type="datalink"/><!--datalink-->
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="TRUE"/> <!--TRUE-->
+      <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
     </module>
     <module name="ins" type="extended"/><!--extended-->
@@ -120,13 +120,21 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-    <!-- Magneto calibration -->
+    <!-- Magneto calibration >
 	<define name="MAG_X_NEUTRAL" value="-12"/>
         <define name="MAG_Y_NEUTRAL" value="-47"/>
 	<define name="MAG_Z_NEUTRAL" value="101"/>
 	<define name="MAG_X_SENS" value="6.48683589744" integer="16"/>
 	<define name="MAG_Y_SENS" value="6.88931574557" integer="16"/>
-	<define name="MAG_Z_SENS" value="6.51731492056" integer="16"/>
+	<define name="MAG_Z_SENS" value="6.51731492056" integer="16"/-->
+
+        <define name="MAG_X_NEUTRAL" value="136"/>
+	<define name="MAG_Y_NEUTRAL" value="60"/>
+	<define name="MAG_Z_NEUTRAL" value="233"/>
+	<define name="MAG_X_SENS" value="6.20593629495" integer="16"/>
+	<define name="MAG_Y_SENS" value="6.80783514212" integer="16"/>
+	<define name="MAG_Z_SENS" value="7.8793006146" integer="16"/>
+
 
 
 
@@ -197,7 +205,7 @@
     <define name="THETA_DGAIN" value="425"/>
     <define name="THETA_IGAIN" value="0"/>
 
-    <define name="PSI_PGAIN" value="8000"/>
+    <define name="PSI_PGAIN" value="4000"/><!--8000-->
     <define name="PSI_DGAIN" value="700"/>
     <define name="PSI_IGAIN" value="0"/>
 
