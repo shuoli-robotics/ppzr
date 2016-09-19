@@ -54,28 +54,23 @@ float body_velocity_x;
 float vx_earth;
 float vy_earth;
 float psi;
-float heading;
 float velocity_body_x;
 float velocity_body_y;
 float velocity_earth_x;
 float velocity_earth_y;
-bool altitude_is_arrived;
-bool adjust_position_mask;
+
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
 #define Z_BIAS 0.3//was .2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
-    bool adjust_position_mask = 0;
 }
 
 
 void display_information()
 {
     if (autopilot_mode == AP_MODE_MODULE) {
-        printf("z0 is %f\n",z0);
-        printf("Altitude is arrived %d\n",altitude_is_arrived);
         printf("\n");
         printf("\n");
         printf("\n");
@@ -213,17 +208,14 @@ void go_up_down(float derta_altitude){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
         time_primitive = 0;
-        altitude_is_arrived = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0 - derta_altitude);
     }
-
-    if (fabs(stateGetPositionNed_f()->z-(z0 - derta_altitude))<0.1)
-        altitude_is_arrived = 1;
 }
+
 
 void adjust_position(float derta_altitude){
 
@@ -240,7 +232,7 @@ void adjust_position(float derta_altitude){
 	  z_setpoint = -1.9;
         guidance_v_set_guided_z(z_setpoint);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        adjust_position_mask = 1;
+        //adjust_position_mask = 1;
     }
     // set vx and vy
     if (fabs(current_x_gate)<0.1)
@@ -263,3 +255,4 @@ void adjust_position(float derta_altitude){
     guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
 
 }
+

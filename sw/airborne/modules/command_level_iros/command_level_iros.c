@@ -50,11 +50,14 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-	adjust_position_mask = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
+
+   if (time_autopilot_mode<3)
+	   hover();
+   else
 
 
     if (fitness > 3)

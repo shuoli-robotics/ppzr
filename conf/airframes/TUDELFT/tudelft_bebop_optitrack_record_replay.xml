@@ -14,8 +14,6 @@
       <module name="udp"/>
     </target>
 
-    <define name="USE_SONAR" value="TRUE"/>
-
 	<define name="MT9F002_OUTPUT_WIDTH" value="128"/>
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 
@@ -29,14 +27,13 @@
     <module name="motor_mixing"/>
     <module name="actuators" type="bebop"/>
     <module name="imu" type="bebop"/>
-    <!--module name="gps" type="datalink"/-->
-    <module name="gps" type="datalink"/><!--datalink-->
+    <module name="gps" type="optitrack"/><!--datalink-->
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
-      <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
+      <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
     </module>
-    <module name="ins" type="extended"/><!--extended-->
+    <module name="ins" type="gps_passthrough"/><!--extended-->
   </firmware>
 
   <modules main_freq="512">
@@ -44,36 +41,27 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <!--module name="logger_file">
+    <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-    </module-->
-    <module name="guidance_loop_velocity_autonomous_race">
-     	<define name="PHI_PGAIN" value="0.5"/>
-	<define name="PHI_IGAIN" value="0.1"/>
-	<define name="PHI_DGAIN" value="1.0"/>
-	<define name="THETA_PGAIN" value="0.5"/>
-	<define name="THETA_IGAIN" value="0.1"/>
-	<define name="THETA_DGAIN" value="1.0"/>
-   </module>
+    </module>
+    <module name="guidance_loop_velocity_autonomous_race"/>
     <module name="send_imu_mag_current"/>
     <module name="command_level_iros"/>
-    <module name="video_thread">
-    </module>
+    <module name="video_thread"/>
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
     <module name="replay_commands"/>
-   
-    <module name="cv_opticflow">
-       <define name="OPTICFLOW_METHOD" value="0"/>
-       <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-       <!--define name="CAMERA_ROTATED_180" value="1"/-->
-      <!--define name="OPTICFLOW_DEROTATION" value="0"/-->
-      <define name="OPTICFLOW_FX" value="347.22222222"/> <!-- 2.5 / (3.6 * 2.0) * 1000 -->
-      <define name="OPTICFLOW_FY" value="347.22222222"/> <!-- 2.5 / (3.6 * 2.0) * 1000 -->
-      <define name="OPTICFLOW_FOV_W" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
-      <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
-    </module>
 
+    <!--module name="cv_opticflow">
+      <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
+      <define name="MAX_HORIZON" value="2"/>
+      <!--define name="CAMERA_ROTATED_180" value="1"/-->
+      <!--define name="OPTICFLOW_DEROTATION" value="0"/-->
+      <!--define name="OPTICFLOW_FX" value="347.22222222"/> <!-- 2.5 / (3.6 * 2.0) * 1000 -->
+      <!--define name="OPTICFLOW_FY" value="347.22222222"/> <!-- 2.5 / (3.6 * 2.0) * 1000 -->
+      <!--define name="OPTICFLOW_FOV_W" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
+      <!--define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
+    <!--/module-->
    <module name="stereocam">
 	<configure name="STEREO_UART" value="UART2"/>
 	<configure name="STEREO_BAUD" value="B9600"/>
@@ -121,21 +109,13 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-    <!-- Magneto calibration >
+    <!-- Magneto calibration -->
 	<define name="MAG_X_NEUTRAL" value="-12"/>
         <define name="MAG_Y_NEUTRAL" value="-47"/>
 	<define name="MAG_Z_NEUTRAL" value="101"/>
 	<define name="MAG_X_SENS" value="6.48683589744" integer="16"/>
 	<define name="MAG_Y_SENS" value="6.88931574557" integer="16"/>
-	<define name="MAG_Z_SENS" value="6.51731492056" integer="16"/-->
-
-        <define name="MAG_X_NEUTRAL" value="136"/>
-	<define name="MAG_Y_NEUTRAL" value="60"/>
-	<define name="MAG_Z_NEUTRAL" value="233"/>
-	<define name="MAG_X_SENS" value="6.20593629495" integer="16"/>
-	<define name="MAG_Y_SENS" value="6.80783514212" integer="16"/>
-	<define name="MAG_Z_SENS" value="7.8793006146" integer="16"/>
-
+	<define name="MAG_Z_SENS" value="6.51731492056" integer="16"/>
 
 
 
@@ -206,7 +186,7 @@
     <define name="THETA_DGAIN" value="425"/>
     <define name="THETA_IGAIN" value="0"/>
 
-    <define name="PSI_PGAIN" value="4000"/><!--8000-->
+    <define name="PSI_PGAIN" value="8000"/>
     <define name="PSI_DGAIN" value="700"/>
     <define name="PSI_IGAIN" value="0"/>
 
@@ -221,8 +201,8 @@
     <define name="HOVER_KP" value="550"/>
     <define name="HOVER_KD" value="82"/>
     <define name="HOVER_KI" value="1"/>  <!-- 13 -->
-    <define name="NOMINAL_HOVER_THROTTLE" value="0.6"/><!-- 0.655 -->
-    <define name="ADAPT_THROTTLE_ENABLED" value="TRUE"/><!--TRUE-->
+    <define name="NOMINAL_HOVER_THROTTLE" value="0.655"/>
+    <define name="ADAPT_THROTTLE_ENABLED" value="TRUE"/>
   </section>
 
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
@@ -250,7 +230,7 @@
   <section name="AUTOPILOT">
     <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
-    <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
+    <define name="MODE_AUTO1" value="AP_MODE_ATTITUDE_Z_HOLD"/>
     <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
     <!--define name="NO_RC_THRUST_LIMIT" value = "FALSE"/-->
   </section>

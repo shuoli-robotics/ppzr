@@ -24,10 +24,12 @@
  */
 
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
+#include "modules/replay_commands/replay_commands.h"
 #include "state.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
+
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 
 
@@ -129,10 +131,16 @@ void guidance_h_module_read_rc(void)
 
 void guidance_h_module_run(bool in_flight)    // this function is called in higher level in guidance_h.c
 {
+	if(replay == 1)
+	{
+		stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);
+	}
+	else{
     /* Update the setpoint */
     //stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
     //printf("My guidance module is running\n");
     stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
+	}
 //    stab_att_sp_euler.phi = phi_desired_f;
 //    stab_att_sp_euler.theta = theta_desired_f;
     /* Run the default attitude stabilization */

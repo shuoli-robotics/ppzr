@@ -180,7 +180,7 @@ float opt_body_v_x = 0;
 float opt_body_v_y = 0;
 float optitrack_vel_x = 0;
 float optitrack_vel_y = 0;   
-float psi = 0;
+float psi_ = 0;
 
 struct timeval stop, start;
 int16_t frame_counter = 0;
@@ -188,7 +188,7 @@ int16_t frame_counter = 0;
 
 static void opticflow_debug_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_OPTIC_FLOW_DEBUG(trans, dev, AC_ID,&optitrack_vel_x,&optitrack_vel_y,&body_vel_x,&body_vel_y,&vel_x,&vel_y,&psi);//
+    pprz_msg_send_OPTIC_FLOW_DEBUG(trans, dev, AC_ID,&optitrack_vel_x,&optitrack_vel_y,&body_vel_x,&body_vel_y,&vel_x,&vel_y,&psi_);//
     }  
 
 
@@ -413,9 +413,9 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
     optitrack_vel_x = stateGetSpeedNed_f()->x;
     optitrack_vel_y = stateGetSpeedNed_f()->y;
    
-     psi = stateGetNedToBodyEulers_f()->psi;
-    float s_psi = sinf(-psi);
-    float c_psi = cosf(-psi);
+     psi_ = stateGetNedToBodyEulers_f()->psi;
+    float s_psi = sinf(-psi_);
+    float c_psi = cosf(-psi_);
     body_vel_y = (c_psi * optitrack_vel_x - s_psi * optitrack_vel_y);
     body_vel_x = -c_psi * optitrack_vel_y + s_psi * optitrack_vel_x; 
 
