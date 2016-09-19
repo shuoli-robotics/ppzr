@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="replay_commands">
+  <doc>
+    <description>will replay the commands recorded by the logger</description>
+  </doc>
+  <header>
+    <file name="replay_commands.h"/>
+  </header>
+  <init fun="replay_commands_init()"/>
+  <periodic fun="replay_commands_periodic()" start="replay_commands_start()" stop="replay_commands_stop()" autorun="TRUE" freq="512"/>
+  <makefile>
+    <file name="replay_commands.c"/>
+  </makefile>
+</module>
+

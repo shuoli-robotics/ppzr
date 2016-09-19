@@ -50,40 +50,16 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-	adjust_position_mask = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
 
+   if (time_autopilot_mode<3)
+	   hover();
+   else
 
-    if (fitness > 3)
-    {
-        counter_temp1 = 0;    // detection is not good enough
-        time_temp1 = 0;
-    }
-
-    if (time_temp1 > 3)
-    {
-        detect_green_light = 1;  // we have green light to adjust position
-    }
-
-    // first hover to keep stable
-    if (time_autopilot_mode < 3)
-    {
-        hover();
-    }
-
-    else if (time_autopilot_mode < 13)
-    {
-     adjust_position(-delta_z_gate);
-    }
-    else if (time_autopilot_mode < 18)
-    {
-     go_straight(0.8);
-    }
-    else
-      hover();
+	   //circle(2,10);
     
     previous_mode = current_mode;
 }

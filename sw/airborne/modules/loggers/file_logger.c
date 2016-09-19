@@ -33,6 +33,7 @@
 #include "firmwares/rotorcraft/stabilization.h"
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
+#include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -62,7 +63,7 @@ void file_logger_start(void)
   if (file_logger != NULL) {
     fprintf(
       file_logger,
-      "counter,x,y,z,v_x,v_y,v_z,phi,theta,psi\n"
+      "counter,x,y,z,v_x,v_y,v_z,phi,theta,psi,phi_int,theta_int,psi_int\n"
     );
   }
 }
@@ -85,7 +86,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y
-  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d\n",
+  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
           counter,
           stateGetPositionNed_f()->x,
           stateGetPositionNed_f()->y,
@@ -98,7 +99,14 @@ void file_logger_periodic(void)
           stateGetNedToBodyEulers_f()->psi,
           stateGetNedToBodyEulers_i()->phi,
           stateGetNedToBodyEulers_i()->theta,
-          stateGetNedToBodyEulers_i()->psi
+          stateGetNedToBodyEulers_i()->psi,
+          guidance_module.cmd.phi,
+          guidance_module.cmd.theta,
+          guidance_module.cmd.psi,
+	      //stabilization_cmd[COMMAND_THRUST],
+	      //stabilization_cmd[COMMAND_ROLL],
+	      //stabilization_cmd[COMMAND_PITCH],
+	      //stabilization_cmd[COMMAND_YAW],
          );
   counter++;
 }
