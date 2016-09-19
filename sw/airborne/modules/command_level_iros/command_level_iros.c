@@ -74,7 +74,7 @@ void command_run() {
     }
     else if (time_autopilot_mode < 18)
     {
-     go_straight(0.5);
+     go_straight(0.8);
     }
     else
       hover();

@@ -50,17 +50,17 @@
     <module name="guidance_loop_velocity_autonomous_race"/>
     <module name="command_level_iros"/>
     <module name="send_imu_mag_current"/>
-    <!--module name="video_thread">
-    </module-->
-    <!--module name="sonar_bebop"/-->
+    <module name="video_thread">
+    </module>
+    <module name="sonar_bebop"/>
     <module name="pose_history"/>
     <!--module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
     </module-->
-    <!--module name="cv_opticflow">
+    <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-    </module-->
+    </module>
 
     <!--module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>

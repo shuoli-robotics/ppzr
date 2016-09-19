@@ -28,6 +28,7 @@ extern float current_x_gate;
 extern float current_y_gate;
 extern char fitness;
 extern int gate_detected;
+extern int init_pos_filter;
 
 #endif
 

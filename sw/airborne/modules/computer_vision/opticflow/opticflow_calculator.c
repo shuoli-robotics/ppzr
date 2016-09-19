@@ -174,8 +174,10 @@ static int cmp_flow(const void *a, const void *b);
 //FOR FILE LOGGING
 float vel_x = 0;
 float vel_y = 0;
-float body_v_x = 0;
-float body_v_y = 0;
+float body_vel_x = 0;
+float body_vel_y = 0;
+float opt_body_v_x = 0;
+float opt_body_v_y = 0;
 float optitrack_vel_x = 0;
 float optitrack_vel_y = 0;   
 float psi = 0;
@@ -183,7 +185,7 @@ float psi = 0;
 
 static void opticflow_debug_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_OPTIC_FLOW_DEBUG(trans, dev, AC_ID,&optitrack_vel_x,&optitrack_vel_y,&body_v_x,&body_v_y,&vel_x,&vel_y,&psi);//
+    pprz_msg_send_OPTIC_FLOW_DEBUG(trans, dev, AC_ID,&optitrack_vel_x,&optitrack_vel_y,&body_vel_x,&body_vel_y,&vel_x,&vel_y,&psi);//
     }  
 
 
@@ -401,8 +403,8 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
      psi = stateGetNedToBodyEulers_f()->psi;
     float s_psi = sinf(-psi);
     float c_psi = cosf(-psi);
-    body_v_y = (c_psi * optitrack_vel_x - s_psi * optitrack_vel_y);
-    body_v_x = -c_psi * optitrack_vel_y + s_psi * optitrack_vel_x; 
+    body_vel_y = (c_psi * optitrack_vel_x - s_psi * optitrack_vel_y);
+    body_vel_x = -c_psi * optitrack_vel_y + s_psi * optitrack_vel_x; 
 
   //Apply a  median filter to the velocity if wanted
   if (opticflow->median_filter == true) {
@@ -681,6 +683,9 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
 
     result->vel_body_x = previous_state_x[0];
     result->vel_body_y =  previous_state_y[0];
+    
+    opt_body_v_x  = previous_state_x[0];
+    opt_body_v_y  = previous_state_y[0];
 
 
   } else {
