@@ -182,6 +182,8 @@ float optitrack_vel_x = 0;
 float optitrack_vel_y = 0;   
 float psi = 0;
 
+struct timeval stop, start;
+
 
 static void opticflow_debug_send(struct transport_tx *trans, struct link_device *dev)
     {
@@ -253,6 +255,11 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
   float error_threshold;
   int n_iterations_RANSAC, n_samples_RANSAC, success_fit;
   struct linear_flow_fit_info fit_info;
+  
+  /*gettimeofday(&stop, 0);
+  double curr_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+  double elapsed = curr_time - (double)(start.tv_sec + start.tv_usec / 1000000.0);
+  gettimeofday(&start, 0);*/
 
   // Update FPS for information
   result->fps = 1 / (timeval_diff(&opticflow->prev_timestamp, &img->ts) / 1000.);
@@ -686,6 +693,8 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
     
     opt_body_v_x  = previous_state_x[0];
     opt_body_v_y  = previous_state_y[0];
+    
+    //TIMING HERE
 
 
   } else {
