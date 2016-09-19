@@ -183,6 +183,7 @@ float optitrack_vel_y = 0;
 float psi = 0;
 
 struct timeval stop, start;
+int16_t frame_counter = 0;
 
 
 static void opticflow_debug_send(struct transport_tx *trans, struct link_device *dev)
@@ -232,6 +233,9 @@ void opticflow_calc_init(struct opticflow_t *opticflow, uint16_t w, uint16_t h)
   opticflow->fast9_padding = OPTICFLOW_FAST9_PADDING;
   opticflow->fast9_rsize = 512;
   opticflow->fast9_ret_corners = malloc(sizeof(struct point_t) * opticflow->fast9_rsize);
+  
+  //temporary for timing
+  gettimeofday(&start, 0);
 
 }
 /**
@@ -256,13 +260,15 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
   int n_iterations_RANSAC, n_samples_RANSAC, success_fit;
   struct linear_flow_fit_info fit_info;
   
-  /*gettimeofday(&stop, 0);
+  gettimeofday(&stop, 0);
   double curr_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
   double elapsed = curr_time - (double)(start.tv_sec + start.tv_usec / 1000000.0);
-  gettimeofday(&start, 0);*/
+  gettimeofday(&start, 0);
 
   // Update FPS for information
-  result->fps = 1 / (timeval_diff(&opticflow->prev_timestamp, &img->ts) / 1000.);
+  frame_counter += 1;
+  img->ts.tv_sec + img->ts.tv_usec / 1000000.0;
+  result->fps =  1 /(timeval_diff(&opticflow->prev_timestamp, &img->ts) / 1000.);
   opticflow->prev_timestamp = img->ts;
 
   // Convert image to grayscale
@@ -431,6 +437,9 @@ void calc_fast9_lukas_kanade(struct opticflow_t *opticflow, struct opticflow_sta
 
   float noise_measurement_temp = (1 - ((float)result->tracked_cnt / ((float)opticflow->max_track_corners * 1.25)));
   result->noise_measurement = noise_measurement_temp;
+  
+  //DEBUFGGING
+  //result->tracked_cnt = frame_counter;
 
   // *************************************************************************************
   // Next Loop Preparation
