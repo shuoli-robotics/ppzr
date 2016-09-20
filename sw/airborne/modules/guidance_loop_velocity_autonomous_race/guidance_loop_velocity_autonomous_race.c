@@ -131,16 +131,16 @@ void guidance_h_module_read_rc(void)
 
 void guidance_h_module_run(bool in_flight)    // this function is called in higher level in guidance_h.c
 {
-	if(replay == 1)
-	{
-		stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);
-	}
-	else{
+	//if(replay == 1)
+	//{
+		//stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);
+	//}
+	//else{
     /* Update the setpoint */
     //stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
     //printf("My guidance module is running\n");
     stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
-	}
+	//}
 //    stab_att_sp_euler.phi = phi_desired_f;
 //    stab_att_sp_euler.theta = theta_desired_f;
     /* Run the default attitude stabilization */
