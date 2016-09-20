@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="state_autonomous_race">
+  <doc>
+    <description>The module is used to store all states in the competition</description>
+  </doc>
+  <header>
+    <file name="state_autonomous_race.h"/>
+  </header>
+  <init fun="state_autonomous_race_init()"/>
+  <periodic fun="display_states()" freq="2"/>
+  <makefile>
+    <file name="state_autonomous_race.c"/>
+  </makefile>
+</module>
+

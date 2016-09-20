@@ -679,7 +679,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
     measurements_y[0] = result->vel_body_y;
     measurements_y[1] = ACCEL_FLOAT_OF_BFP(acc_meas_body.y);
 
-    printf("measurements %f\n",ACCEL_FLOAT_OF_BFP(acc_meas_body.y));
+    //printf("measurements %f\n",ACCEL_FLOAT_OF_BFP(acc_meas_body.y));
 
 
     kalman_filter(measurements_x, covariance_x,
