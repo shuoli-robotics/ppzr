@@ -34,7 +34,6 @@
 uint8_t previous_mode;
 uint8_t current_mode;
 
-int detect_green_light = 0;
 
 
 void command_init(){
@@ -66,11 +65,6 @@ void command_run() {
         time_temp1 = 0;
     }
 
-    if (time_temp1 > 3)
-    {
-        detect_green_light = 1;  // we have green light to adjust position
-    }
-
     // first hover to keep stable
     if (time_autopilot_mode < 3)
     {
@@ -88,7 +82,7 @@ void command_run() {
       hover();
     else if (time_autopilot_mode < 15)
       {
-	change_heading_hover(-3.14/2);
+	change_heading_hover(-3.14);
         init_pos_filter = 1;
       }
       else if (time_autopilot_mode < 16)
