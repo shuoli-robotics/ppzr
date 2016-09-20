@@ -35,6 +35,7 @@
 #include "filters/low_pass_filter.h"
 #include "state.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 #ifdef SITL
 #include "state.h"
 #endif
@@ -53,6 +54,7 @@ float previous_distance;
 float current_distance;
 float z0;
 bool through_gate_green_light;
+bool conunt_gate_green_light;
 float diff_pre_cur;
 
 struct FirstOrderLowPass sonar_low_pass_filter;
@@ -149,7 +151,7 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
     if(peek_distance > 0)
     {
       // Send ABI message
-      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_before_filter);
+      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_after_filter);
 
 #ifdef SENSOR_SYNC_SEND_SONAR
       // Send Telemetry report
@@ -177,8 +179,19 @@ float sonar_filter_gate(float distance_sonar){
         counter_temp2 = 0;
         time_temp2 = 0;
     }
-    if (diff_pre_cur > 0.3 || time_temp2 > 0.5)
+
+    if (diff_pre_cur < -0.6 && conunt_gate_green_light == 0){
+        conunt_gate_green_light = 1;
+    }
+    if (diff_pre_cur > 0.6 && conunt_gate_green_light == 1)
+    {
+        states_race.gate_counter++;
+        conunt_gate_green_light = 0;
+    }
+    if (diff_pre_cur > 0.3 || time_temp2 > 0.5){
+
         through_gate_green_light = 0;
+    }
 
     if (through_gate_green_light == 1)
     {

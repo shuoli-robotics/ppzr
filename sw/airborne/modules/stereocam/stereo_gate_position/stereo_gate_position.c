@@ -73,7 +73,6 @@ float gate_size_meters = 1.0f;
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
 int gate_detected = 0;
-int ready_pass_trough = 0;
 int init_pos_filter = 0;
 
 float fps_filter = 0;
@@ -95,7 +94,7 @@ static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
 				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
 				   &body_v_x,&body_v_y,&uncertainty_gate,
-				   &predicted_x_gate,&predicted_y_gate,&gate_detected,&ready_pass_trough);
+				   &predicted_x_gate,&predicted_y_gate,&gate_detected,&states_race.ready_pass_through);
     }  
 
  void stereo_gate_position_init(void)
@@ -154,11 +153,11 @@ void stereocam_to_state(void)
 	//SAFETY ready_pass_trough
 	if(gate_detected == 1 && fabs(measured_x_gate-INITIAL_X) < X_POS_MARGIN && fabs(measured_y_gate-INITIAL_Y) < Y_POS_MARGIN
 	  && fabs(measured_z_gate-INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN ){
-	  ready_pass_trough = 1;
+	 states_race.ready_pass_through = 1;
 	}
-	else{
-	  ready_pass_trough = 0;
-	}
+	//else{
+	 //states_race.ready_pass_through = 0;
+	//}
 	  
 	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)

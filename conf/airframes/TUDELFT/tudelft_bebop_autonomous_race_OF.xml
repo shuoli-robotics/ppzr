@@ -46,7 +46,9 @@
     <module name="flight_plan_in_guided_mode"/>
     <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-    </module>
+   </module>
+    <module name="state_autonomous_race"/>
+
     <module name="guidance_loop_velocity_autonomous_race">
      	<define name="PHI_PGAIN" value="0.5"/>
 	<define name="PHI_IGAIN" value="0.1"/>
