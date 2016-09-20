@@ -32,8 +32,9 @@
 #include <pthread.h>
 #include "subsystems/datalink/downlink.h"
 #include "subsystems/datalink/telemetry.h"
-#include ""
-
+#include "filters/low_pass_filter.h"
+#include "state.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #ifdef SITL
 #include "state.h"
 #endif
@@ -45,7 +46,16 @@ static struct spi_transaction sonar_bebop_spi_t;
 static pthread_t sonar_bebop_thread;
 static void *sonar_bebop_read(void *data);
 static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev);
+float sonar_filter_gate(float distance_sonar);
+float distance_after_filter = 0;
+float distance_before_filter = 0;
+float previous_distance;
+float current_distance;
+float z0;
+bool through_gate_green_light;
+float diff_pre_cur;
 
+struct FirstOrderLowPass sonar_low_pass_filter;
 void sonar_bebop_init(void)
 {
   sonar_bebop.meas = 0;
@@ -59,8 +69,12 @@ void sonar_bebop_init(void)
   sonar_bebop_spi_t.input_buf     = NULL;
   sonar_bebop_spi_t.input_length  = 0;
 
+    previous_distance = 0;
+
     register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SONAR_BEBOP_INFO, sonar_bebop_send);
   int rc = pthread_create(&sonar_bebop_thread, NULL, sonar_bebop_read, NULL);
+    init_first_order_low_pass(&sonar_low_pass_filter,0.1,0.01,0);
+
   if (rc < 0) {
     return;
   }
@@ -120,6 +134,10 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
       peek_distance = 0;
 
     sonar_bebop.distance = peek_distance / 1000.0;
+      distance_before_filter = sonar_bebop.distance;
+      distance_after_filter = sonar_filter_gate(distance_before_filter);
+
+
 #else // SITL
     sonar_bebop.distance = stateGetPositionEnu_f()->z;
     Bound(sonar_bebop.distance, 0.1f, 7.0f);
@@ -131,7 +149,7 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
     if(peek_distance > 0)
     {
       // Send ABI message
-      AbiSendMsgAGL(AGL_SONAR_ADC_ID, sonar_bebop.distance);
+      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_before_filter);
 
 #ifdef SENSOR_SYNC_SEND_SONAR
       // Send Telemetry report
@@ -145,6 +163,31 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
 
 static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev)
 {
-    pprz_msg_send_SONAR_BEBOP_INFO(trans, dev, AC_ID,&sonar_bebop.distance);
+    pprz_msg_send_SONAR_BEBOP_INFO(trans, dev, AC_ID,&distance_after_filter,&distance_before_filter,&diff_pre_cur);
 
+}
+
+float sonar_filter_gate(float distance_sonar){
+    float distance;
+    current_distance = distance_sonar;
+    diff_pre_cur = current_distance - previous_distance;
+    if (diff_pre_cur < -0.3) {
+        z0 = previous_distance;
+        through_gate_green_light = 1;
+        counter_temp2 = 0;
+        time_temp2 = 0;
+    }
+    if (diff_pre_cur > 0.3 || time_temp2 > 0.5)
+        through_gate_green_light = 0;
+
+    if (through_gate_green_light == 1)
+    {
+        distance = z0;
+    }
+    else
+    {
+        distance = distance_sonar;
+    }
+    previous_distance = current_distance;
+    return distance;
 }
