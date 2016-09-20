@@ -31,6 +31,8 @@
 #include "subsystems/abi.h"
 #include <pthread.h>
 #include "subsystems/datalink/downlink.h"
+#include "subsystems/datalink/telemetry.h"
+#include ""
 
 #ifdef SITL
 #include "state.h"
@@ -42,6 +44,7 @@ static uint8_t sonar_bebop_spi_d[16] = { 0xF0,0xF0,0xF0,0xF0,0xF0,0x00,0x00,0x00
 static struct spi_transaction sonar_bebop_spi_t;
 static pthread_t sonar_bebop_thread;
 static void *sonar_bebop_read(void *data);
+static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev);
 
 void sonar_bebop_init(void)
 {
@@ -56,6 +59,7 @@ void sonar_bebop_init(void)
   sonar_bebop_spi_t.input_buf     = NULL;
   sonar_bebop_spi_t.input_length  = 0;
 
+    register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SONAR_BEBOP_INFO, sonar_bebop_send);
   int rc = pthread_create(&sonar_bebop_thread, NULL, sonar_bebop_read, NULL);
   if (rc < 0) {
     return;
@@ -139,3 +143,8 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
   return NULL;
 }
 
+static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev)
+{
+    pprz_msg_send_SONAR_BEBOP_INFO(trans, dev, AC_ID,&sonar_bebop.distance);
+
+}

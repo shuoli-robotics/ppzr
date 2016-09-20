@@ -79,7 +79,7 @@ void command_run() {
       hover();
     else if (time_autopilot_mode < 15)
       {
-	change_heading_hover(-3.14/2);
+	change_heading_hover(-3.14);
         init_pos_filter = 1;
       }
       else if (time_autopilot_mode < 16)
