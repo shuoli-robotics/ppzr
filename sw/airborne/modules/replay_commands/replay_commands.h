@@ -30,13 +30,8 @@ extern void replay_commands_init();
 extern void replay_commands_periodic();
 extern void replay_commands_start();
 extern void replay_commands_stop();
-
-#endif
-
 extern int n; //maximum number of characters in the line
 extern char str[105];
-
-
 extern int counter;
 extern double x;
 extern double y;
@@ -51,4 +46,9 @@ extern int phi_i;
 extern int theta_i;
 extern int psi_i;
 extern int replay;
+
+extern struct guidance_module_st guidance_module;
+extern struct Int32Eulers guidance_replay;
+
+#endif
 

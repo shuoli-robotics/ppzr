@@ -55,11 +55,13 @@ void command_run() {
         return;
     }
 
-   if (time_autopilot_mode<3)
+   if (time_autopilot_mode<5)
 	   hover();
-   else
+   //else if(time_autopilot_mode<15)
+	  // circle(2,10);
+  // else
+	   //hover();
 
-	   //circle(2,10);
     
     previous_mode = current_mode;
 }

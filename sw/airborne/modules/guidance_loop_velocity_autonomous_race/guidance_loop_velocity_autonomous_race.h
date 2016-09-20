@@ -48,8 +48,13 @@ struct guidance_module_st {
 };
 
 extern struct guidance_module_st guidance_module;
+extern struct Int32Eulers guidance_replay;
+
 extern float guidance_h_module_speed_error_x;
 extern float guidance_h_module_speed_error_y;
+extern int replay;
+extern float phi_desired_f;
+extern float theta_desired_f;
 
 extern void guidance_h_module_init(void);
 extern void guidance_loop_pid(void);
@@ -58,7 +63,6 @@ extern void guidance_loop_set_velocity(float vx, float vy);
 extern void guidance_h_module_run(bool in_flight);
 extern void guidance_h_module_read_rc(void);
 extern void guidance_h_module_enter(void);
-extern float phi_desired_f;
-extern float theta_desired_f;
 #endif
+
 
