@@ -95,7 +95,7 @@ static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
 				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
 				   &body_v_x,&body_v_y,&uncertainty_gate,
-				   &predicted_x_gate,&predicted_y_gate,&gate_detected);
+				   &predicted_x_gate,&predicted_y_gate,&gate_detected,&ready_pass_trough);
     }  
 
  void stereo_gate_position_init(void)
