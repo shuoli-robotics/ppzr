@@ -24,7 +24,14 @@
 //initial position after gate pass
 #define INITIAL_X 0
 #define INITIAL_Y 1.5
+#define INITIAL_Z 0
 
+//initial position and speed safety margins
+#define X_POS_MARGIN 0.2//m
+#define Y_POS_MARGIN 0.3//m
+#define Z_POS_MARGIN 0.2//m
+#define X_SPEED_MARGIN 0.2//m/s
+#define Y_SPEED_MARGIN 0.2//m/s
 
 void stereocam_to_state(void);
 void read_stereo_board(void);
@@ -63,8 +70,10 @@ float FOV_width = 57.4f;
 float FOV_height = 44.5f;
 float gate_size_meters = 1.0f;
 
+//SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
 int gate_detected = 0;
+int ready_pass_trough = 0;
 int init_pos_filter = 0;
 
 float fps_filter = 0;
@@ -134,23 +143,31 @@ void stereocam_to_state(void)
 	measured_y_gate = measured_distance_gate * cos(deg2rad(measured_angle_gate));
 	measured_z_gate = measured_distance_gate * sin(deg2rad(measured_angle_vert));
 	
-	//SAFETY 
-	if(measured_y_gate > 1.0 && measured_y_gate < 3.5 && fitness < GOOD_FIT)
-	{
+	//SAFETY  gate_detected
+	if(measured_y_gate > 1.0 && measured_y_gate < 3.5 && fitness < GOOD_FIT){
 	  gate_detected = 1;
 	}
-	else
-	{
+	else{
 	  gate_detected = 0;
 	}
+	
+	//SAFETY ready_pass_trough
+	if(gate_detected == 1 && fabs(measured_x_gate-INITIAL_X) < X_POS_MARGIN && fabs(measured_y_gate-INITIAL_Y) < Y_POS_MARGIN
+	  && fabs(measured_z_gate-INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN ){
+	  ready_pass_trough = 1;
+	}
+	else{
+	  ready_pass_trough = 0;
+	}
+	  
 	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
 	if(init_pos_filter == 1)
 	{
 	  init_pos_filter = 0;
 	  //assumed initial position at other end of the gate
-	  predicted_x_gate = 0;
-	  predicted_y_gate = 2.0;
+	  predicted_x_gate = INITIAL_X;//0;
+	  predicted_y_gate = INITIAL_Y;//1.5;
 	  
 	}
 	
