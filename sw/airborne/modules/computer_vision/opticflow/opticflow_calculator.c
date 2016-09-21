@@ -165,6 +165,7 @@ struct MedianFilterInt vel_x_filt, vel_y_filt;
 
 //for kalman
 #include "subsystems/imu.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 
 /* Functions only used here */
@@ -689,7 +690,9 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
     measurements_y[1] = ACCEL_FLOAT_OF_BFP(acc_meas_body.y);
 
     //printf("measurements %f\n",ACCEL_FLOAT_OF_BFP(acc_meas_body.y));
-
+    
+    //Adaptive measurement noise when turning flag is set from guidance module
+    if(states_race.turning == 1)measurement_noise[1] = 5;//random large value so kalman filter wont use the distorted opticflow velocity
 
     kalman_filter(measurements_x, covariance_x,
                   previous_state_x, process_noise, measurement_noise, result->fps);

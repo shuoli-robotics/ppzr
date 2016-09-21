@@ -29,6 +29,7 @@
 struct state_autonomous_race{
     int gate_counter;
     int ready_pass_through;
+    int turning;
 };
 
 extern struct state_autonomous_race states_race;

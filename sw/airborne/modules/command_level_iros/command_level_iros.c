@@ -30,6 +30,7 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/computer_vision/fly_through_gate_demo.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 uint8_t previous_mode;
 uint8_t current_mode;
@@ -70,30 +71,29 @@ void command_run() {
     {
         hover();
     }
-    else if (time_autopilot_mode < 7)
-        go_straight(0.8);
-    else
-        hover();
-//    else if (time_autopilot_mode < 8)
-//    {
-//     adjust_position(-delta_z_gate);
-//    }
-//    else if (time_autopilot_mode < 11)
-//    {
-//     go_straight(0.8);
-//    }
-//    else if (time_autopilot_mode < 14)
-//      hover();
-//    else if (time_autopilot_mode < 15)
-//      {
-//	change_heading_hover(-3.14);
-//        init_pos_filter = 1;
-//      }
-//      else if (time_autopilot_mode < 16)
-//      {
-//	counter_autopilot_mode= 0;
-//        time_autopilot_mode = 0;
-//      }
+    
+   else if (time_autopilot_mode < 8)
+   {
+    adjust_position(-delta_z_gate);
+   }
+   else if (time_autopilot_mode < 11)
+   {
+    go_straight(0.8);
+   }
+   else if (time_autopilot_mode < 14)
+     hover();
+   else if (time_autopilot_mode < 15)
+     {
+       states_race.turning = 1;//disable optic flow while turning
+	change_heading_hover(-3.14);
+       init_pos_filter = 1;
+     }
+     else if (time_autopilot_mode < 16)
+     {
+       states_race.turning = 0;//enable optic flow again
+	counter_autopilot_mode= 0;
+       time_autopilot_mode = 0;
+     }
     
     previous_mode = current_mode;
 }
