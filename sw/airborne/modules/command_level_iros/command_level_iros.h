@@ -29,7 +29,7 @@
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
-enum states_lower_level{WAIT_FOR_DETECTION,ADJUST_POSITION,GO_THROUGH,HOVER};
+enum states_lower_level{WAIT_FOR_DETECTION,ADJUST_POSITION_,GO_THROUGH,HOVER_};
 enum states_upper_level{HALF_GATE,SQUARE};
 
 #endif

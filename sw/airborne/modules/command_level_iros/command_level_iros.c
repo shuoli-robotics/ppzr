@@ -65,11 +65,11 @@ void command_run() {
            }
            else
            {
-               state_lower_level = ADJUST_POSITION;
+               state_lower_level = ADJUST_POSITION_;
            }
 
            break;
-       case ADJUST_POSITION:
+       case ADJUST_POSITION_:
            if(states_race.ready_pass_through == 0)
                adjust_position(-delta_z_gate);
            else
@@ -84,10 +84,10 @@ void command_run() {
            go_straight(0.8);
            if (time_primitive > 4)
            {
-               state_lower_level = HOVER;
+               state_lower_level = HOVER_;
            }
            break;
-       case HOVER:
+       case HOVER_:
            hover();
            break;
 
