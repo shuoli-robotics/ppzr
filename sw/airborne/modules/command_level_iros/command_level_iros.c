@@ -56,16 +56,40 @@ void command_run() {
         return;
     }
 
-   switch (state_lower_level){
+   switch (state_lower_level)
+   {
        case WAIT_FOR_DETECTION:
            if(gate_detected == 0)
+           {
                hover();
+           }
            else
            {
                state_lower_level = ADJUST_POSITION;
            }
 
-               break;
+           break;
+       case ADJUST_POSITION:
+           if(states_race.ready_pass_through == 0)
+               adjust_position(-delta_z_gate);
+           else
+           {
+               states_race.ready_pass_through = 0;
+               //todo:clear flags
+               state_lower_level = GO_THROUGH;
+           }
+           break;
+
+       case GO_THROUGH:
+           go_straight(0.8);
+           if (time_primitive > 4)
+           {
+               state_lower_level = HOVER;
+           }
+           break;
+       case HOVER:
+           hover();
+           break;
 
    }
 
