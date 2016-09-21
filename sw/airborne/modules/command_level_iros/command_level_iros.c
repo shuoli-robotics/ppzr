@@ -35,7 +35,8 @@
 uint8_t previous_mode;
 uint8_t current_mode;
 
-
+enum states_lower_level state_lower_level = WAIT_FOR_DETECTION;
+enum states_upper_level state_upper_level = SQUARE;
 
 void command_init(){
     previous_mode = autopilot_mode;
@@ -55,45 +56,44 @@ void command_run() {
         return;
     }
 
-   if (time_autopilot_mode<3)
-	   hover();
-   else
-
-
-    if (fitness > 3)
-    {
-        counter_temp1 = 0;    // detection is not good enough
-        time_temp1 = 0;
-    }
-
-    // first hover to keep stable
-    if (time_autopilot_mode < 3)
-    {
-        hover();
-    }
-    
-   else if (time_autopilot_mode < 8)
+   switch (state_lower_level)
    {
-    adjust_position(-delta_z_gate);
+       case WAIT_FOR_DETECTION:
+           if(gate_detected == 0)
+           {
+               hover();
+           }
+           else
+           {
+               state_lower_level = ADJUST_POSITION_;
+           }
+
+           break;
+       case ADJUST_POSITION_:
+           if(states_race.ready_pass_through == 0)
+               adjust_position(-delta_z_gate);
+           else
+           {
+               states_race.ready_pass_through = 0;
+               //todo:clear flags
+               state_lower_level = GO_THROUGH;
+           }
+           break;
+
+       case GO_THROUGH:
+           go_straight(0.8);
+           if (time_primitive > 4)
+           {
+               state_lower_level = HOVER_;
+           }
+           break;
+       case HOVER_:
+           hover();
+           break;
+
    }
-   else if (time_autopilot_mode < 11)
-   {
-    go_straight(0.8);
-   }
-   else if (time_autopilot_mode < 14)
-     hover();
-   else if (time_autopilot_mode < 15)
-     {
-       states_race.turning = 1;//disable optic flow while turning
-	change_heading_hover(-3.14);
-       init_pos_filter = 1;
-     }
-     else if (time_autopilot_mode < 16)
-     {
-       states_race.turning = 0;//enable optic flow again
-	counter_autopilot_mode= 0;
-       time_autopilot_mode = 0;
-     }
+
+
     
     previous_mode = current_mode;
 }
