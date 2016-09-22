@@ -35,13 +35,28 @@
 uint8_t previous_mode;
 uint8_t current_mode;
 
-enum states_lower_level state_lower_level = WAIT_FOR_DETECTION;
-enum states_upper_level state_upper_level = SQUARE;
+float time_to_go_straight;
+float distance_after_gate;
+float distance_before_gate;
+int   gate_counter_second_part;
+
+void first_part_logic();
+void second_part_logic();
+void third_part_logic();
+
+
+enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
+enum states_upper_level state_upper_level = FIRST_PART;
 
 void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
+    time_to_go_straight = 0;
+    distance_after_gate = 2;
+    distance_before_gate = 1.5;
+    gate_counter_second_part = 0;
 }
+
 
 void command_run() {
   
@@ -51,50 +66,107 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
+        state_lower_level = WAIT_FOR_DETECTION_CM;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
 
-   switch (state_lower_level)
-   {
-       case WAIT_FOR_DETECTION:
-           if(gate_detected == 0)
-           {
-               hover();
-           }
-           else
-           {
-               state_lower_level = ADJUST_POSITION_;
-           }
+    if(state_upper_level  == FIRST_PART)
+    {
+        //todo:take off and open loop control to go through half gate
+        first_part_logic();
+    }
 
-           break;
-       case ADJUST_POSITION_:
-           if(states_race.ready_pass_through == 0)
-               adjust_position(-delta_z_gate);
-           else
-           {
-               states_race.ready_pass_through = 0;
-               //todo:clear flags
-               state_lower_level = GO_THROUGH;
-           }
-           break;
+    if(state_upper_level  == SECOND_PART)
+    {
+        second_part_logic();
+    }
 
-       case GO_THROUGH:
-           go_straight(0.8);
-           if (time_primitive > 4)
-           {
-               state_lower_level = HOVER_;
-           }
-           break;
-       case HOVER_:
-           hover();
-           break;
-
-   }
+    if(state_upper_level  == THIRD_PART)
+    {
+        third_part_logic();
+    }
 
 
-    
     previous_mode = current_mode;
 }
 
+
+
+
+
+
+
+
+void first_part_logic()
+{
+    state_upper_level = SECOND_PART;
+}
+
+
+
+void second_part_logic()
+{
+    if (gate_counter_second_part == 2)
+    {
+        state_upper_level = THIRD_PART;
+        return;
+    }
+    
+    switch (state_lower_level)
+    {
+        case WAIT_FOR_DETECTION_CM:
+            hover();
+            if(time_primitive < 1)
+                break;
+            if(gate_detected == 0)
+            {
+                hover();
+            }
+            else
+            {
+                state_lower_level = ADJUST_POSITION_CM;
+            }
+
+            break;
+        case ADJUST_POSITION_CM:
+            if(states_race.ready_pass_through == 0)
+                adjust_position(-delta_z_gate);
+            else
+            {
+                distance_before_gate = current_y_gate;
+                state_lower_level = GO_THROUGH_CM;
+            }
+            break;
+
+        case GO_THROUGH_CM:
+            time_to_go_straight = (distance_before_gate + distance_after_gate)/(CONSTANT_VELOCITY_STRAIGHT*1.2);
+            go_straight(CONSTANT_VELOCITY_STRAIGHT);
+            if (time_primitive > time_to_go_straight)
+            {
+                state_lower_level = HOVER_CM;
+            }
+            break;
+        case HOVER_CM:
+            hover();
+            if (time_primitive > 2)
+            {
+                state_lower_level = TURN_CM;
+            }
+            break;
+        case TURN_CM:
+            change_heading_hover(3.14/2.0);
+            if (states_race.turning == 0)
+            {
+                state_lower_level = WAIT_FOR_DETECTION_CM;
+                gate_counter_second_part ++;
+            }
+            break;
+    }
+}
+
+void third_part_logic()
+{
+    hover();
+}

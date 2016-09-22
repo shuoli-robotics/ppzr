@@ -35,6 +35,7 @@
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 
 #define p_x_position 0.2
@@ -122,19 +123,14 @@ void change_heading_hover(float derta_psi){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-	guidance_loop_set_heading(psi0+derta_psi);
+	    guidance_loop_set_heading(psi0+derta_psi);
+        states_race.turning = 1;
     }
-    /*else
-    {
-        guidance_loop_set_velocity(0,0);
-        guidance_v_set_guided_z(z0);
-        guidance_loop_set_heading(psi0+omega_psi*time_primitive);
-    }
-    if(time_primitive>planned_time)
-    {
-        return;
 
-    }*/
+    if (fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.02)
+    {
+        states_race.turning = 0;
+    }
 }
 
 void circle(float radius, float planned_time){

@@ -27,11 +27,11 @@
 #define INITIAL_Z 0
 
 //initial position and speed safety margins
-#define X_POS_MARGIN 0.2//m
+#define X_POS_MARGIN 0.15//m
 #define Y_POS_MARGIN 0.3//m
 #define Z_POS_MARGIN 0.2//m
-#define X_SPEED_MARGIN 0.2//m/s
-#define Y_SPEED_MARGIN 0.2//m/s
+#define X_SPEED_MARGIN 0.15//m/s
+#define Y_SPEED_MARGIN 0.15//m/s
 
 void stereocam_to_state(void);
 void read_stereo_board(void);
@@ -41,6 +41,8 @@ char y_center = 0;
 char radius   = 0;
 char fitness  = 0;
 char fps      = 0;
+char x_center_p = 0;
+char y_center_p = 0;
 
 float measured_x_gate = 0;
 float measured_y_gate = 0;
@@ -74,6 +76,7 @@ float gate_size_meters = 1.0f;
 int uncertainty_gate = 0;
 int gate_detected = 0;
 int init_pos_filter = 0;
+int safe_pass_counter = 0;
 
 float fps_filter = 0;
 
@@ -120,6 +123,8 @@ void read_stereo_board(void)
   radius   = stereocam_data.data[2];
   fitness  = stereocam_data.data[3];
   fps      = stereocam_data.data[4];
+    x_center_p = stereocam_data.data[5];
+    y_center_p = stereocam_data.data[6];
 }
 
 
@@ -153,11 +158,18 @@ void stereocam_to_state(void)
 	//SAFETY ready_pass_trough
 	if(gate_detected == 1 && fabs(measured_x_gate-INITIAL_X) < X_POS_MARGIN && fabs(measured_y_gate-INITIAL_Y) < Y_POS_MARGIN
 	  && fabs(measured_z_gate-INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN ){
-	 states_race.ready_pass_through = 1;
+        safe_pass_counter += 1;
 	}
-	//else{
-	 //states_race.ready_pass_through = 0;
-	//}
+	else{
+        safe_pass_counter = 0;
+	 states_race.ready_pass_through = 0;
+	}
+
+    if(safe_pass_counter > 20)
+    {
+        safe_pass_counter = 0;
+        states_race.ready_pass_through = 1;
+    }
 	  
 	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)

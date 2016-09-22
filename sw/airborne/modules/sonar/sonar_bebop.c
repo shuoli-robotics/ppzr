@@ -202,5 +202,7 @@ float sonar_filter_gate(float distance_sonar){
         distance = distance_sonar;
     }
     previous_distance = current_distance;
+    if (distance > 3)
+        distance = 3;
     return distance;
 }
