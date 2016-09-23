@@ -77,6 +77,7 @@ void command_run() {
         return;
     }
 
+
     if (record_command == 1)
     {
         if (time_autopilot_mode<2)
@@ -86,7 +87,6 @@ void command_run() {
         else
             hover();
         return;
-
     }
 
     if(state_upper_level  == FIRST_PART)

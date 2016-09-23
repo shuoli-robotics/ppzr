@@ -28,11 +28,13 @@
 #define INITIAL_Z 0
 
 //initial position and speed safety margins
+
 #define X_POS_MARGIN 0.15//m
 #define Y_POS_MARGIN 0.3//m
 #define Z_POS_MARGIN 0.2//m
 #define X_SPEED_MARGIN 0.15//m/s
 #define Y_SPEED_MARGIN 0.15//m/s
+
 
 void stereocam_to_state(void);
 void read_stereo_board(void);
@@ -45,9 +47,17 @@ char fps      = 0;
 char x_center_p = 0;
 char y_center_p = 0;
 
+char disperity = 0;
+
+
 float measured_x_gate = 0;
 float measured_y_gate = 0;
 float measured_z_gate = 0;
+
+//possible gate locations
+float x_gate_p = 0;
+float y_gate_p = 0;
+float z_gate_p = 0;
 
 float body_v_x = 0;
 float body_v_y = 0;
@@ -68,10 +78,12 @@ float previous_x_gate = 0;
 float previous_y_gate = 0;
 float previous_z_gate = 0;
 
-// Settings:
+// Parameters:
 float FOV_width = 57.4f;
+float FOV_rad   = 1.001819;
 float FOV_height = 44.5f;
 float gate_size_meters = 1.0f;
+float camera_separation = 0.06;//in meters
 
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
@@ -124,8 +136,9 @@ void read_stereo_board(void)
   radius   = stereocam_data.data[2];
   fitness  = stereocam_data.data[3];
   fps      = stereocam_data.data[4];
-    x_center_p = stereocam_data.data[5];
-    y_center_p = stereocam_data.data[6];
+  x_center_p = stereocam_data.data[5];
+  y_center_p = stereocam_data.data[6];
+  disperity = stereocam_data.data[7];
 }
 
 
@@ -143,10 +156,17 @@ void stereocam_to_state(void)
 	float measured_distance_gate = (0.5f * gate_size_meters) / tanf(deg2rad(alpha));
 	float measured_angle_gate = ((x_center - 64.0f) / (128.0f)) * FOV_width;
 	float measured_angle_vert = ((y_center - 48.0f) / (96.0f)) * FOV_height;
+	float possible_angle_gate = ((x_center_p - 64.0f) / (128.0f)) * FOV_width;
+	float possible_angle_vert = ((y_center_p - 48.0f) / (96.0f)) * FOV_height;
 	
 	measured_x_gate = measured_distance_gate * sin(deg2rad(measured_angle_gate));
 	measured_y_gate = measured_distance_gate * cos(deg2rad(measured_angle_gate));
 	measured_z_gate = measured_distance_gate * sin(deg2rad(measured_angle_vert));
+	
+	float distance_possible_gate =  (camera_separation*128)/(FOV_rad*disperity);
+	x_gate_p = distance_possible_gate * sin(deg2rad(possible_angle_gate));
+	y_gate_p = distance_possible_gate * cos(deg2rad(possible_angle_gate));
+	z_gate_p = distance_possible_gate * sin(deg2rad(possible_angle_vert));
 	
 	//SAFETY  gate_detected
 	if(measured_y_gate > 1.0 && measured_y_gate < 3.5 && fitness < GOOD_FIT){
@@ -175,6 +195,7 @@ void stereocam_to_state(void)
         safe_pass_counter = 0;
         states_race.ready_pass_through = 1;
     }
+
 	  
 	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
