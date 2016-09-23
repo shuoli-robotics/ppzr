@@ -73,6 +73,7 @@ void command_run() {
         return;
     }
 
+<<<<<<< HEAD
     if(state_upper_level  == FIRST_PART)
     {
         //todo:take off and open loop control to go through half gate
@@ -88,7 +89,6 @@ void command_run() {
     {
         third_part_logic();
     }
-
 
     previous_mode = current_mode;
 }

@@ -36,6 +36,7 @@
 #define SET_VELOCITY_TEST        6
 #define GO_UP_DOWN               7
 #define ADJUST_POSITION          8
+#define ARC                      9
 
 
 
@@ -52,6 +53,7 @@
  extern void set_velocity_test(float vx_earth_t,float vy_earth_t);
  extern void go_up_down(float derta_altitude);
  extern void adjust_position(float derta_altitude);
+ extern void arc(float radius, float planned_time, float desired_angle_change);
 
 //void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 

@@ -22,29 +22,38 @@
  * @author Isabelle
  * will replay the commands recorded by the logger
  */
-
-#include "modules/replay_commands/replay_commands.h"
-#include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
 #include<stdlib.h>
 #include<string.h>
 #include<stdio.h>
-//#include<conio.h>
+
+#include"std.h"
+//#include<conio.>
+#include "modules/replay_commands/replay_commands.h"
+#include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
+#include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_int.h"
 #include "modules/command_level_iros/command_level_iros.h"
 #include "modules/loggers/file_logger.h"
 #include "math/pprz_algebra_int.h"
 #include "firmwares/rotorcraft/autopilot.h"
+#include "subsystems/datalink/telemetry.h"
+#include "state.h"
+
+struct guidance_module_st guidance_module;
+struct Int32Eulers guidance_replay;
 
 
-
-#define NULL 0
+int replay = 0;
+int counter, phi_i, theta_i, psi_i, cmd_phi, cmd_theta, cmd_psi;
+double x, y, z, vx, vy, vz, phi, theta, psi;
+int32_t phi_euler = 0;
+int32_t theta_euler = 0;
+int32_t psi_euler = 0;
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
 #define FILE_LOGGER_PATH /data/video/usb
 #endif
-
-int replay = 0;
 struct Int32Eulers guidance_replay;
 FILE * file;
 
@@ -72,38 +81,35 @@ void replay_commands_start(void){
 
 void replay_commands_init(void){
 
-
-
-
 }
 
-void replay_commands_periodic(void){
-	int n = 105; //maximum number of characters in the line
-	char str[105];
 
-	int counter,phi_i,theta_i,psi_i, cmd_phi, cmd_theta, cmd_psi;
-	double x,y,z,vx,vy,vz,phi,theta,psi;
+static void replay_cmd_send(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_REPLAY_CMD_INFO(trans, dev, AC_ID, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi, &phi_euler, &theta_euler, &psi_euler);
+}
 
-	int file_end = feof(file);
 
-	if(file_end == 1)
-		{
-		 replay = 0;
-		 fclose(file);
+void replay_commands_start(void)
+{
+  //command_run();
+  replay = 1;
 
-		}
+  guidance_replay.phi = 0;
+  guidance_replay.theta = 0;
+  guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
+  int primitive_number = 26; //set the primitive number manually for now.
 
-	if(replay == 1 && autopilot_mode == AP_MODE_MODULE){ //while(fgets(str,n,file)!=NULL){
-			printf("Here is the start\n");
+  char filename[512];
+  sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
 
-			fgets(str,n,file);
-			for (int i=0 ; i<strlen(str) ; i++){
-				if (str[i]==',')
-					str[i]=' ';
-			}
-			printf("%s",str);
-			sscanf(str,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d %d %d",&counter,&x,&y,&z,&vx,&vy,&vz,&phi,&theta,&psi,&phi_i,&theta_i,&psi_i, &cmd_phi, &cmd_theta, &cmd_psi);
-			//printf("counter: %d x: %lf, y:%lf, z:%lf, vx:%lf, vy:%lf, vz:%lf, phi:%lf, theta:%lf, psi:%lf, phi_i %d, theta_i %d, psi_d %d \n",counter, x,y,z,vx,vy,vz,phi,theta,psi,phi_i, theta_i, psi_i);
+  file = fopen(filename , "r");
+
+  if (file == NULL) {
+    printf("\n file opening failed ");
+
+  }
+}
 
 
 	//give the commands here
@@ -113,19 +119,61 @@ void replay_commands_periodic(void){
 			guidance_replay.psi = cmd_psi;
 
 
+void replay_commands_init(void)
+{
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_REPLAY_CMD_INFO, replay_cmd_send);
+  file = NULL;
+}
 
-			//stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
+void replay_commands_periodic(void)
+{
+  int n = 200; //maximum number of characters in the line
+  char str[200];
 
-			//stabilization_attitude_set_earth_cmd_i(cmd,heading);
+  if (replay == 1 && file != NULL && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
+    printf("Here is the start\n");
 
-	}
+    if( fgets(str, n, file) != NULL ){
+      for (int i = 0 ; i < strlen(str) ; i++) {
+        if (str[i] == ',') {
+          str[i] = ' ';
+        }
+      }
+      printf("%s", str);
+      sscanf(str, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d %d %d", &counter, &x, &y, &z, &vx, &vy, &vz, &phi, &theta, &psi, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi);
+      //printf("counter: %d x: %lf, y:%lf, z:%lf, vx:%lf, vy:%lf, vz:%lf, phi:%lf, theta:%lf, psi:%lf, phi_i %d, theta_i %d, psi_d %d \n",counter, x,y,z,vx,vy,vz,phi,theta,psi,phi_i, theta_i, psi_i);
+
+
+      //give the commands here (copied to guidance_loop_velocity_autonomous_race)
+      //struct Int32Eulers guidance_replay;
+      guidance_replay.phi = cmd_phi;
+      guidance_replay.theta = cmd_theta;
+      guidance_replay.psi = cmd_psi;
+
+      //stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
+
+      //stabilization_attitude_set_earth_cmd_i(cmd,heading);
+    } else {
+      replay = 0;
+      fclose(file);
+      file = NULL;
+    }
+  }
+
+  phi_euler   = stateGetNedToBodyEulers_i()->phi;
+  theta_euler = stateGetNedToBodyEulers_i()->theta;
+  psi_euler   = stateGetNedToBodyEulers_i()->psi;
 
 }
 
-void replay_commands_stop(void){
-	//if(autopilot_mode != AP_MODE_MODULE)
-	replay = 0;
-	fclose(file);
+void replay_commands_stop(void)
+{
+  //if(autopilot_mode != AP_MODE_MODULE)
+  replay = 0;
+  if (file != NULL) {
+    fclose(file);
+    file = NULL;
+  }
 
 }
 

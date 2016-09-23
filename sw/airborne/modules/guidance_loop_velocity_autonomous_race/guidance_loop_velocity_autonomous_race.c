@@ -29,11 +29,13 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
+#include "modules/replay_commands/replay_commands.h"
 
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 
 
-#include <stdio.h>
+#include<stdio.h>
+#include<stdlib.h>
 
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
