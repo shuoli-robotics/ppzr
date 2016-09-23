@@ -26,6 +26,7 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+#include "modules/command_level_iros/command_level_iros.h"
 #include <stdio.h>
 
 void state_autonomous_race_init();
@@ -45,6 +46,7 @@ void display_states()
     if (autopilot_mode != AP_MODE_MODULE)
         return;
     printf("gate_counter is %d \n",states_race.gate_counter);
+    printf("Lower level state %d\n",state_lower_level);
     printf("\n");
     printf("\n");
     printf("\n");

@@ -51,6 +51,7 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
+	 state_lower_level = WAIT_FOR_DETECTION;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -74,7 +75,7 @@ void command_run() {
                adjust_position(-delta_z_gate);
            else
            {
-               states_race.ready_pass_through = 0;
+               //states_race.ready_pass_through = 0;
                //todo:clear flags
                state_lower_level = GO_THROUGH;
            }
@@ -82,13 +83,18 @@ void command_run() {
 
        case GO_THROUGH:
            go_straight(0.8);
-           if (time_primitive > 4)
+           if (time_primitive > 3)
            {
+	     
                state_lower_level = HOVER_;
            }
            break;
        case HOVER_:
            hover();
+	   if (time_primitive > 3)
+	   {
+	     state_lower_level = WAIT_FOR_DETECTION;
+	  }
            break;
 
    }

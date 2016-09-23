@@ -32,5 +32,6 @@ extern void command_init(void);
 enum states_lower_level{WAIT_FOR_DETECTION,ADJUST_POSITION_,GO_THROUGH,HOVER_};
 enum states_upper_level{HALF_GATE,SQUARE};
 
+extern enum states_lower_level state_lower_level;
 #endif
 
