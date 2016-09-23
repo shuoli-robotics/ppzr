@@ -109,7 +109,8 @@ float deg2rad(float deg)
 
 static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,&fitness,&fps,
+    pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,
+				   &x_center_p,&y_center_p,&disperity,&y_gate_p,&fitness,&fps,
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
 				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
 				   &body_v_x,&body_v_y,&uncertainty_gate,
