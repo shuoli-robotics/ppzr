@@ -16,6 +16,7 @@
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 #define PI 3.1415926
 
