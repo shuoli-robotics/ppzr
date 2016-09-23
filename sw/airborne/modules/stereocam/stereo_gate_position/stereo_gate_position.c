@@ -16,6 +16,7 @@
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 
 #define PI 3.1415926
 
@@ -150,9 +151,13 @@ void stereocam_to_state(void)
 	//SAFETY  gate_detected
 	if(measured_y_gate > 1.0 && measured_y_gate < 3.5 && fitness < GOOD_FIT){
 	  gate_detected = 1;
+        counter_gate_detected = 0;
+        time_gate_detected = 0;
 	}
 	else{
 	  gate_detected = 0;
+        counter_gate_detected = 0;
+        time_gate_detected = 0;
 	}
 	
 	//SAFETY ready_pass_trough

@@ -109,6 +109,7 @@ void first_part_logic()
 
 void second_part_logic()
 {
+    // if we pass through 100 gates, we can change to third part
     if ( gate_counter_in_second_part == 100)
     {
         state_upper_level = THIRD_PART;
@@ -132,7 +133,7 @@ void second_part_logic()
 
             break;
         case ADJUST_POSITION_CM:
-            if (gate_detected == 0)
+            if (gate_detected == 0 && time_gate_detected > 0.5)
             {
                 //todo: add time in gate_detected
                 state_lower_level = WAIT_FOR_DETECTION_CM;

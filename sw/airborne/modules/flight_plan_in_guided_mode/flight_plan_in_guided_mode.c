@@ -161,7 +161,7 @@ void circle(float radius, float planned_time){
         guidance_loop_set_velocity(vx_earth,vy_earth);
         guidance_v_set_guided_z(z0);
     }
-    if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    if(time_primitive > planned_time)
     {
         return;
     }
@@ -216,8 +216,11 @@ void go_up_down(float derta_altitude){
 void adjust_position(float derta_altitude){
 
     // set z
-    if (1)
+    if (primitive_in_use != ADJUST_POSITION)
     {
+        primitive_in_use = ADJUST_POSITION;
+    }
+
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
@@ -228,8 +231,7 @@ void adjust_position(float derta_altitude){
 	  z_setpoint = -1.9;
         guidance_v_set_guided_z(z_setpoint);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        //adjust_position_mask = 1;
-    }
+
     // set vx and vy
     if (fabs(current_x_gate)<0.1)
         velocity_body_y = 0;
@@ -251,4 +253,6 @@ void adjust_position(float derta_altitude){
     guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
 
 }
+
+
 
