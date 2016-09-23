@@ -57,6 +57,7 @@ float velocity_body_y;
 float velocity_earth_x;
 float velocity_earth_y;
 
+
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
 #define Z_BIAS 0.2
@@ -173,6 +174,39 @@ void circle(float radius, float planned_time){
     }
 }
 
+void arc(float radius, float planned_time, float desired_angle_change){
+    if(primitive_in_use != ARC  )
+    {
+        primitive_in_use = ARC;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        omega_circle = desired_angle_change/planned_time;
+        body_velocity_x = omega_circle*radius;
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        vx_earth = cosf(psi0)*body_velocity_x;
+        vy_earth = sinf(psi0)*body_velocity_x;
+        guidance_loop_set_velocity(vx_earth,vy_earth);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0);
+
+    }
+    else
+    {   psi = psi0+omega_circle*time_primitive;
+        guidance_loop_set_heading(psi);
+        vx_earth = cosf(psi)*body_velocity_x;
+        vy_earth = sinf(psi)*body_velocity_x;
+        guidance_loop_set_velocity(vx_earth,vy_earth);
+        guidance_v_set_guided_z(z0);
+        }
+
+    if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    {
+        return;
+    }
+}
 
 void set_velocity_test(float vx_earth_t,float vy_earth_t){
     if(primitive_in_use != SET_VELOCITY_TEST){

@@ -57,10 +57,12 @@ void command_run() {
 
    if (time_autopilot_mode<5)
 	   hover();
-   //else if(time_autopilot_mode<15)
-	  // circle(2,10);
-  // else
-	   //hover();
+   //else if(time_autopilot_mode<7.5)
+     //go_straight(0.8); //fly_straight 2 m
+   //else if(time_autopilot_mode<9)
+     //arc(1.5,4,2.4);
+   else
+	   hover();
 
     
     previous_mode = current_mode;

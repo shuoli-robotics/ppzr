@@ -68,7 +68,7 @@ void replay_commands_start(void)
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 20; //set the primitive number manually for now.
+  int primitive_number = 26; //set the primitive number manually for now.
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
