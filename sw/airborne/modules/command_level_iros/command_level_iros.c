@@ -58,7 +58,7 @@ void command_init(){
     distance_after_gate = 1;
     distance_before_gate = 1.5;
     gate_counter_in_second_part = 0;
-    record_command = 1;
+    record_command = 0;
 }
 
 
@@ -72,20 +72,29 @@ void command_run() {
         primitive_in_use = NO_PRIMITIVE;
         state_lower_level = WAIT_FOR_DETECTION_CM;
         state_upper_level = FIRST_PART;
+        arc_is_finished = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-
-
     if (record_command == 1)
     {
-        if (time_autopilot_mode<2)
-        hover();
-        else if (time_autopilot_mode<6)
-            arc(1.5, 4, 135.0/180*3.14);
-        else
+        if (time_autopilot_mode<5)
+        {
             hover();
+            printf("aaaaaaaaaaaa\n");
+            return;
+        }
+        if (time_autopilot_mode > 5 && arc_is_finished == 0)
+        {
+            arc(1.5, 4, 135.0/180*3.14);
+            printf("!!!!!!!!!!!!!!!!!!!\n");
+        }
+        else
+        {
+            hover();
+            printf("???????????????\n");
+        }
         return;
     }
 
@@ -108,7 +117,7 @@ void command_run() {
     {
         third_part_logic();
     }
-
+    printf("SSSSSSSSSSSSSSSSSSSSSSSS\n");
     previous_mode = current_mode;
 }
 
@@ -151,11 +160,15 @@ void second_part_logic()
                 state_lower_level = ADJUST_POSITION_CM;
             }
 
+            if (time_gate_detected>5 && gate_detected == 0)
+            {
+                state_lower_level = SEARCH_GATE_CM;
+            }
+
             break;
         case ADJUST_POSITION_CM:
             if (gate_detected == 0 && time_gate_detected > 0.5)
             {
-                //todo: add time in gate_detected
                 state_lower_level = WAIT_FOR_DETECTION_CM;
                 break;
             }
@@ -192,6 +205,12 @@ void second_part_logic()
                 gate_counter_in_second_part ++;
             }
             break;
+        case SEARCH_GATE_CM:
+            search_gate();
+            if (gate_detected == 1 && time_gate_detected > 0.5)
+            {
+                state_lower_level = WAIT_FOR_DETECTION_CM;
+            }
     }
 }
 

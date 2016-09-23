@@ -18,6 +18,7 @@
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 
 #define PI 3.1415926

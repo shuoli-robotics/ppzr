@@ -60,6 +60,8 @@ float velocity_body_y;
 float velocity_earth_x;
 float velocity_earth_y;
 
+bool arc_is_finished = 0;
+
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
@@ -92,7 +94,7 @@ void hover()
         guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
         guidance_loop_set_velocity(0,0);
         z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(Z_SETPOINT);
+        guidance_v_set_guided_z(z0);
         psi1 = stateGetNedToBodyEulers_f()->psi;
         guidance_loop_set_heading(psi1);
     }
@@ -198,6 +200,7 @@ void arc(float radius, float planned_time, float desired_angle_change){
 
     if(time_primitive > planned_time)      //(time_primitive>planned_time)
     {
+        arc_is_finished = 1;
         return;
     }
 }
@@ -209,7 +212,7 @@ void set_velocity_test(float vx_earth_t,float vy_earth_t){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-	guidance_loop_set_heading(0);
+	    guidance_loop_set_heading(0);
         guidance_loop_set_velocity(vx_earth_t,vy_earth_t);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0);
@@ -289,4 +292,37 @@ void adjust_position(float derta_altitude){
 }
 
 
-
+void search_gate()
+{
+    if (primitive_in_use != SEARCH_GATE)
+    {
+        primitive_in_use = SEARCH_GATE;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0);
+        return;
+    }
+    if (time_primitive < 5)
+    {
+        velocity_body_x = 0;
+        velocity_body_y = 0.3;
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
+        velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
+        guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+    }
+    else if(time_primitive < 15)
+    {
+        velocity_body_x = 0;
+        velocity_body_y = -0.3;
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
+        velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
+        guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+    }
+}
