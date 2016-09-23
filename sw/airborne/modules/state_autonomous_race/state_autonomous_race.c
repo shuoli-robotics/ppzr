@@ -73,5 +73,8 @@ void display_lower_state()
         case TURN_CM:
             printf("It is in TURN\n");
             break;
+        case SEARCH_GATE_CM:
+            printf("It is in SEARCH_GATE\n");
+            break;
     }
 }

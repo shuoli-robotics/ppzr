@@ -37,10 +37,10 @@
 #define GO_UP_DOWN               7
 #define ADJUST_POSITION          8
 #define ARC                      9
+#define SEARCH_GATE              10
 
 
-
-
+ extern bool arc_is_finished;
  extern int primitive_in_use;
  extern bool adjust_position_mask;
  extern void flight_plan_in_guided_mode_init(void);
@@ -54,6 +54,7 @@
  extern void go_up_down(float derta_altitude);
  extern void adjust_position(float derta_altitude);
  extern void arc(float radius, float planned_time, float desired_angle_change);
+ extern void search_gate(void);
 
 //void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 
