@@ -35,6 +35,7 @@
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 
 #define p_x_position 0.2
@@ -58,6 +59,7 @@ float velocity_body_x;
 float velocity_body_y;
 float velocity_earth_x;
 float velocity_earth_y;
+
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
@@ -122,19 +124,14 @@ void change_heading_hover(float derta_psi){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-	guidance_loop_set_heading(psi0+derta_psi);
+	    guidance_loop_set_heading(psi0+derta_psi);
+        states_race.turning = 1;
     }
-    /*else
-    {
-        guidance_loop_set_velocity(0,0);
-        guidance_v_set_guided_z(z0);
-        guidance_loop_set_heading(psi0+omega_psi*time_primitive);
-    }
-    if(time_primitive>planned_time)
-    {
-        return;
 
-    }*/
+    if (fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.02)
+    {
+        states_race.turning = 0;
+    }
 }
 
 void circle(float radius, float planned_time){
@@ -165,12 +162,45 @@ void circle(float radius, float planned_time){
         guidance_loop_set_velocity(vx_earth,vy_earth);
         guidance_v_set_guided_z(z0);
     }
-    if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    if(time_primitive > planned_time)
     {
         return;
     }
 }
 
+void arc(float radius, float planned_time, float desired_angle_change){
+    if(primitive_in_use != ARC  )
+    {
+        primitive_in_use = ARC;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        omega_circle = desired_angle_change/planned_time;
+        body_velocity_x = omega_circle*radius;
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        vx_earth = cosf(psi0)*body_velocity_x;
+        vy_earth = sinf(psi0)*body_velocity_x;
+        guidance_loop_set_velocity(vx_earth,vy_earth);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(z0);
+
+    }
+    else
+    {   psi = psi0+omega_circle*time_primitive;
+        guidance_loop_set_heading(psi);
+        vx_earth = cosf(psi)*body_velocity_x;
+        vy_earth = sinf(psi)*body_velocity_x;
+        guidance_loop_set_velocity(vx_earth,vy_earth);
+        guidance_v_set_guided_z(z0);
+        }
+
+    if(time_primitive > planned_time)      //(time_primitive>planned_time)
+    {
+        return;
+    }
+}
 
 void set_velocity_test(float vx_earth_t,float vy_earth_t){
     if(primitive_in_use != SET_VELOCITY_TEST){
@@ -220,8 +250,11 @@ void go_up_down(float derta_altitude){
 void adjust_position(float derta_altitude){
 
     // set z
-    if (1)
+    if (primitive_in_use != ADJUST_POSITION)
     {
+        primitive_in_use = ADJUST_POSITION;
+    }
+
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
@@ -232,8 +265,7 @@ void adjust_position(float derta_altitude){
 	  z_setpoint = -1.9;
         guidance_v_set_guided_z(z_setpoint);
         psi0 = stateGetNedToBodyEulers_f()->psi;
-        //adjust_position_mask = 1;
-    }
+
     // set vx and vy
     if (fabs(current_x_gate)<0.1)
         velocity_body_y = 0;
@@ -255,4 +287,6 @@ void adjust_position(float derta_altitude){
     guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
 
 }
+
+
 

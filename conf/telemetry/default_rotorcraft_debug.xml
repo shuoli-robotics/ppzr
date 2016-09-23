@@ -34,6 +34,8 @@
       <message name="STEREO_GATE_INFO"             period=".05"/>
       <message name="STEREO_DATA_INFO"             period=".05"/>
       <message name="SONAR_BEBOP_INFO"             period=".05"/>
+      <!--message name="REPLAY_CMD_INFO"    period="0.05"/-->
+
     </mode>
 
     <mode name="ppm">

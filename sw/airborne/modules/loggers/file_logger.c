@@ -60,12 +60,12 @@ void file_logger_start(void)
 
   file_logger = fopen(filename, "w");
 
-  if (file_logger != NULL) {
+/*  if (file_logger != NULL) {
     fprintf(
       file_logger,
-      "counter,x,y,z,v_x,v_y,v_z,phi,theta,psi,phi_int,theta_int,psi_int\n"
+      //"counter,x,y,z,v_x,v_y,v_z,phi,theta,psi,phi_int,theta_int,psi_int\n"
     );
-  }
+  }*/
 }
 
 /** Stop the logger an nicely close the file */
@@ -86,7 +86,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y
-  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d\n",
           counter,
           stateGetPositionNed_f()->x,
           stateGetPositionNed_f()->y,

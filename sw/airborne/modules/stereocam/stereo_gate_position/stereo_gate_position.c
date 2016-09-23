@@ -17,6 +17,8 @@
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+
 
 #define PI 3.1415926
 
@@ -28,11 +30,13 @@
 #define INITIAL_Z 0
 
 //initial position and speed safety margins
-#define X_POS_MARGIN 0.1//m
-#define Y_POS_MARGIN 0.1//m
-#define Z_POS_MARGIN 0.1//m
-#define X_SPEED_MARGIN 0.1//m/s
-#define Y_SPEED_MARGIN 0.1//m/s
+
+#define X_POS_MARGIN 0.15//m
+#define Y_POS_MARGIN 0.3//m
+#define Z_POS_MARGIN 0.2//m
+#define X_SPEED_MARGIN 0.15//m/s
+#define Y_SPEED_MARGIN 0.15//m/s
+
 
 void stereocam_to_state(void);
 void read_stereo_board(void);
@@ -44,7 +48,9 @@ char fitness  = 0;
 char fps      = 0;
 char x_center_p = 0;
 char y_center_p = 0;
+
 char disperity = 0;
+
 
 float measured_x_gate = 0;
 float measured_y_gate = 0;
@@ -85,6 +91,7 @@ float camera_separation = 0.06;//in meters
 int uncertainty_gate = 0;
 int gate_detected = 0;
 int init_pos_filter = 0;
+int safe_pass_counter = 0;
 
 float fps_filter = 0;
 
@@ -166,19 +173,31 @@ void stereocam_to_state(void)
 	//SAFETY  gate_detected
 	if(measured_y_gate > 1.0 && measured_y_gate < 3.5 && fitness < GOOD_FIT){
 	  gate_detected = 1;
+        counter_gate_detected = 0;
+        time_gate_detected = 0;
 	}
 	else{
 	  gate_detected = 0;
+        counter_gate_detected = 0;
+        time_gate_detected = 0;
 	}
 	
 	//SAFETY ready_pass_trough
 	if(gate_detected == 1 && fabs(measured_x_gate-INITIAL_X) < X_POS_MARGIN && fabs(measured_y_gate-INITIAL_Y) < Y_POS_MARGIN
 	  && fabs(measured_z_gate-INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN ){
-	 states_race.ready_pass_through = 1;
+        safe_pass_counter += 1;
 	}
 	else{
+        safe_pass_counter = 0;
 	 states_race.ready_pass_through = 0;
 	}
+
+    if(safe_pass_counter > 20)
+    {
+        safe_pass_counter = 0;
+        states_race.ready_pass_through = 1;
+    }
+
 	  
 	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
@@ -262,7 +281,6 @@ void stereocam_to_state(void)
 	previous_y_gate = current_y_gate;
 	previous_z_gate = current_z_gate;
 	delta_z_gate = current_z_gate - sonar_alt;
-	
-  
+
 }
 

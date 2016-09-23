@@ -26,12 +26,20 @@
 #ifndef COMMAND_LEVEL_IROS_H
 #define COMMAND_LEVEL_IROS_H
 
+#ifndef CONSTANT_VELOCITY_STRAIGHT
+#define CONSTANT_VELOCITY_STRAIGHT 0.8
+#endif
+
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
-enum states_lower_level{WAIT_FOR_DETECTION,ADJUST_POSITION_,GO_THROUGH,HOVER_};
-enum states_upper_level{HALF_GATE,SQUARE};
+enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
+TURN_CM};
+enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART};
+
 
 extern enum states_lower_level state_lower_level;
+extern enum states_upper_level state_upper_level;
+
 #endif
 

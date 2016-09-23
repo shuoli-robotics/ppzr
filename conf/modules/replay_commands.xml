@@ -8,7 +8,7 @@
     <file name="replay_commands.h"/>
   </header>
   <init fun="replay_commands_init()"/>
-  <periodic fun="replay_commands_periodic()" start="replay_commands_start()" stop="replay_commands_stop()" autorun="TRUE" freq="512"/>
+  <periodic fun="replay_commands_periodic()" start="replay_commands_start()" stop="replay_commands_stop()" autorun="FALSE" freq="512"/>
   <makefile>
     <file name="replay_commands.c"/>
   </makefile>
