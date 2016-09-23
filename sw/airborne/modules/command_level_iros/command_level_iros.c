@@ -38,7 +38,7 @@ uint8_t current_mode;
 float time_to_go_straight;
 float distance_after_gate;
 float distance_before_gate;
-int   gate_counter_second_part;
+int   gate_counter_in_second_part;
 
 void first_part_logic();
 void second_part_logic();
@@ -52,9 +52,9 @@ void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
     time_to_go_straight = 0;
-    distance_after_gate = 2;
+    distance_after_gate = 1;
     distance_before_gate = 1.5;
-    gate_counter_second_part = 0;
+    gate_counter_in_second_part = 0;
 }
 
 
@@ -67,6 +67,7 @@ void command_run() {
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
         state_lower_level = WAIT_FOR_DETECTION_CM;
+        state_upper_level = FIRST_PART;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -108,7 +109,7 @@ void first_part_logic()
 
 void second_part_logic()
 {
-    if (gate_counter_second_part == 2)
+    if ( gate_counter_in_second_part == 100)
     {
         state_upper_level = THIRD_PART;
         return;
@@ -131,6 +132,12 @@ void second_part_logic()
 
             break;
         case ADJUST_POSITION_CM:
+            if (gate_detected == 0)
+            {
+                //todo: add time in gate_detected
+                state_lower_level = WAIT_FOR_DETECTION_CM;
+                break;
+            }
             if(states_race.ready_pass_through == 0)
                 adjust_position(-delta_z_gate);
             else
@@ -148,6 +155,7 @@ void second_part_logic()
                 state_lower_level = HOVER_CM;
             }
             break;
+
         case HOVER_CM:
             hover();
             if (time_primitive > 2)
@@ -156,11 +164,11 @@ void second_part_logic()
             }
             break;
         case TURN_CM:
-            change_heading_hover(3.14/2.0);
+            change_heading_hover(3.14);
             if (states_race.turning == 0)
             {
                 state_lower_level = WAIT_FOR_DETECTION_CM;
-                gate_counter_second_part ++;
+                gate_counter_in_second_part ++;
             }
             break;
     }

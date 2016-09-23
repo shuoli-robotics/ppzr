@@ -27,8 +27,10 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include <stdio.h>
+#include "modules/command_level_iros/command_level_iros.h"
 
 void state_autonomous_race_init();
+void display_lower_state();
 
 
 
@@ -44,9 +46,31 @@ void display_states()
 {
     if (autopilot_mode != AP_MODE_MODULE)
         return;
-    printf("gate_counter is %d \n",states_race.gate_counter);
+   // printf("gate_counter is %d \n",states_race.gate_counter);
+    display_lower_state();
     printf("\n");
     printf("\n");
     printf("\n");
 
+}
+
+void display_lower_state()
+{
+    switch(state_lower_level){
+        case WAIT_FOR_DETECTION_CM:
+            printf("It is in WAIT_FOR_DETECTION\n");
+            break;
+        case ADJUST_POSITION_CM:
+            printf("It is in ADJUST_POSITION\n");
+            break;
+        case GO_THROUGH_CM:
+            printf("It is in GO_THROUGH\n");
+            break;
+        case HOVER_CM:
+            printf("It is in HOVER\n");
+            break;
+        case TURN_CM:
+            printf("It is in TURN\n");
+            break;
+    }
 }

@@ -253,7 +253,6 @@ void stereocam_to_state(void)
 	previous_y_gate = current_y_gate;
 	previous_z_gate = current_z_gate;
 	delta_z_gate = current_z_gate - sonar_alt;
-	
-  
+
 }
 

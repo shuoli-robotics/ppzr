@@ -20,6 +20,8 @@ extern float time_temp2;
 extern float time_temp3;
 extern uint32_t counter_temp1;
 extern uint32_t counter_temp2;
+extern float time_gate_detected;
+extern uint32_t counter_gate_detected;
 
 extern void flight_plan_clock_init(void);
 extern void flight_plan_clock_run(void);
