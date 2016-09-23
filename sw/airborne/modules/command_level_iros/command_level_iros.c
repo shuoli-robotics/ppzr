@@ -31,9 +31,12 @@
 #include "modules/computer_vision/fly_through_gate_demo.h"
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/replay_commands/replay_commands.h"
 
 uint8_t previous_mode;
 uint8_t current_mode;
+
+bool record_command;
 
 float time_to_go_straight;
 float distance_after_gate;
@@ -55,6 +58,7 @@ void command_init(){
     distance_after_gate = 1;
     distance_before_gate = 1.5;
     gate_counter_in_second_part = 0;
+    record_command = 1;
 }
 
 
@@ -73,11 +77,26 @@ void command_run() {
         return;
     }
 
-<<<<<<< HEAD
+    if (record_command == 1)
+    {
+        if (time_autopilot_mode<2)
+        hover();
+        else if (time_autopilot_mode<6)
+            arc(1.5, 4, 135.0/180*3.14);
+        else
+            hover();
+        return;
+
+    }
+
     if(state_upper_level  == FIRST_PART)
     {
         //todo:take off and open loop control to go through half gate
         first_part_logic();
+        if (replay == 0)
+        {
+            state_upper_level  = SECOND_PART;
+        }
     }
 
     if(state_upper_level  == SECOND_PART)
@@ -102,7 +121,8 @@ void command_run() {
 
 void first_part_logic()
 {
-    state_upper_level = SECOND_PART;
+    replay_commands_start();
+    //state_upper_level = FIRST_PART;
 }
 
 

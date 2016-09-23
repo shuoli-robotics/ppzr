@@ -57,31 +57,8 @@ int32_t psi_euler = 0;
 struct Int32Eulers guidance_replay;
 FILE * file;
 
-void replay_commands_start(void){
-	//command_run();
-	replay = 1;
 
-	guidance_replay.phi = 0;
-	guidance_replay.theta = 0;
-	guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-	int primitive_number = 0; //set the primitive number manually for now.
 
-	char filename[512];
-	sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
-
-	FILE * file;
-	file = fopen( filename , "r");
-
-	if(file == NULL)
-	{
-	  printf("\n file opening failed ");
-
-	}
-}
-
-void replay_commands_init(void){
-
-}
 
 
 static void replay_cmd_send(struct transport_tx *trans, struct link_device *dev)
@@ -111,12 +88,6 @@ void replay_commands_start(void)
   }
 }
 
-
-	//give the commands here
-			
-			guidance_replay.phi = cmd_phi;
-			guidance_replay.theta = cmd_theta;
-			guidance_replay.psi = cmd_psi;
 
 
 void replay_commands_init(void)
@@ -154,9 +125,10 @@ void replay_commands_periodic(void)
 
       //stabilization_attitude_set_earth_cmd_i(cmd,heading);
     } else {
-      replay = 0;
+      /*replay = 0;
       fclose(file);
-      file = NULL;
+      file = NULL;*/
+        replay_commands_stop();
     }
   }
 
