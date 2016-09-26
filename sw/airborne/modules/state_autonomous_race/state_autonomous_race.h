@@ -30,6 +30,8 @@ struct state_autonomous_race{
     int gate_counter;
     int ready_pass_through;
     int turning;
+    int altitude_is_achieved;  // for taking off
+    int land_is_finished;      // for landing
 };
 
 extern struct state_autonomous_race states_race;

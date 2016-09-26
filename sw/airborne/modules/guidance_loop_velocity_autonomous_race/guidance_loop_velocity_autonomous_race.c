@@ -207,7 +207,7 @@ void guidance_loop_set_heading(float heading){
     guidance_module.cmd.psi = BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
 }
 
-void guidance_loop_set_velocity(float vx, float vy){
-    guidance_module.desired_vx = vx;
-    guidance_module.desired_vy = vy;
+void guidance_loop_set_velocity(float vx_earth, float vy_earth){
+    guidance_module.desired_vx = vx_earth;
+    guidance_module.desired_vy = vy_earth;
 }

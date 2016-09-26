@@ -32,6 +32,7 @@
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/replay_commands/replay_commands.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 
 uint8_t previous_mode;
 uint8_t current_mode;
@@ -43,9 +44,9 @@ float distance_after_gate;
 float distance_before_gate;
 int   gate_counter_in_second_part;
 
-void first_part_logic();
-void second_part_logic();
-void third_part_logic();
+void first_part_logic(void);
+void second_part_logic(void);
+void third_part_logic(void);
 
 
 enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
@@ -73,39 +74,40 @@ void command_run() {
         state_lower_level = WAIT_FOR_DETECTION_CM;
         state_upper_level = FIRST_PART;
         arc_is_finished = 0;
+        if (fabs(stateGetPositionNed_f()->z)<0.5)
+        {
+            states_race.altitude_is_achieved = 0;  // we need to take off from ground
+        }
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-    if (record_command == 1)
+    /*if (record_command == 1)
     {
         if (time_autopilot_mode<5)
         {
             hover();
-            printf("aaaaaaaaaaaa\n");
             return;
         }
         if (time_autopilot_mode > 5 && arc_is_finished == 0)
         {
             arc(1.5, 4, 135.0/180*3.14);
-            printf("!!!!!!!!!!!!!!!!!!!\n");
         }
         else
         {
             hover();
-            printf("???????????????\n");
         }
         return;
-    }
+    }*/
 
     if(state_upper_level  == FIRST_PART)
     {
         //todo:take off and open loop control to go through half gate
         first_part_logic();
-        if (replay == 0)
-        {
-            state_upper_level  = SECOND_PART;
-        }
+//        if (replay == 0)
+//        {
+//            state_upper_level  = SECOND_PART;
+//        }
     }
 
     if(state_upper_level  == SECOND_PART)
@@ -117,7 +119,6 @@ void command_run() {
     {
         third_part_logic();
     }
-    printf("SSSSSSSSSSSSSSSSSSSSSSSS\n");
     previous_mode = current_mode;
 }
 
@@ -130,7 +131,26 @@ void command_run() {
 
 void first_part_logic()
 {
-    replay_commands_start();
+    if (states_race.altitude_is_achieved == 0)
+    {
+        take_off(-1.5);
+        printf("TAKE_OFF\n");
+        return;
+    }
+
+
+//    hover();
+//    if (time_primitive < 3 && primitive_in_use == HOVER)
+//    {
+//        printf("HOVER\n");
+//        return;
+//    }
+
+
+    land();
+    printf("LAND\n");
+
+    //replay_commands_start();
     //state_upper_level = FIRST_PART;
 }
 
@@ -162,6 +182,7 @@ void second_part_logic()
 
             if (time_gate_detected>5 && gate_detected == 0)
             {
+                // gate is lost
                 state_lower_level = SEARCH_GATE_CM;
             }
 

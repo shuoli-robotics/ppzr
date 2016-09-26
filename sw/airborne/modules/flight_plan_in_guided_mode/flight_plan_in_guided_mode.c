@@ -38,6 +38,7 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 
 
+
 #define p_x_position 0.2
 #define p_y_position 0.2
 
@@ -324,5 +325,47 @@ void search_gate()
         velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
         velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
         guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+    }
+}
+
+void take_off(float desired_altitude)
+{
+    if (primitive_in_use != TAKE_OFF)
+    {
+        primitive_in_use = TAKE_OFF;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(desired_altitude);
+    }
+
+    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1)
+    {
+        states_race.altitude_is_achieved = 1;
+    }
+}
+
+void land()
+{
+    if (primitive_in_use != LAND)
+    {
+        primitive_in_use = LAND;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(0);
+    }
+
+    if (fabs(stateGetPositionNed_f()->z)<0.1)
+    {
+        states_race.land_is_finished = 1;
     }
 }

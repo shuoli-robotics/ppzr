@@ -14,7 +14,7 @@
       <module name="udp"/>
     </target>
 
-    <define name="USE_SONAR" value="TRUE"/>
+    <!--define name="USE_SONAR" value="TRUE"/-->
 
 	<define name="MT9F002_OUTPUT_WIDTH" value="128"/>
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
@@ -59,11 +59,11 @@
    </module>
     <module name="send_imu_mag_current"/>
     <module name="command_level_iros"/>
-    <module name="video_thread">
-    </module>
+    <module name="video_thread"/>
+    
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-    <module name="replay_commands"/>
+    <!--module name="replay_commands"/-->
  
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
@@ -123,14 +123,6 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-    <!-- Magneto calibration >
-	<define name="MAG_X_NEUTRAL" value="-12"/>
-        <define name="MAG_Y_NEUTRAL" value="-47"/>
-	<define name="MAG_Z_NEUTRAL" value="101"/>
-	<define name="MAG_X_SENS" value="6.48683589744" integer="16"/>
-	<define name="MAG_Y_SENS" value="6.88931574557" integer="16"/>
-	<define name="MAG_Z_SENS" value="6.51731492056" integer="16"/-->
-
         <define name="MAG_X_NEUTRAL" value="136"/>
 	<define name="MAG_Y_NEUTRAL" value="60"/>
 	<define name="MAG_Z_NEUTRAL" value="233"/>
