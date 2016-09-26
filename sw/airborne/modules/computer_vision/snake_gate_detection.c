@@ -58,13 +58,6 @@ int sz = 0;
 int szx1 = 0;
 int szx2 = 0;  
 
-//best results
-int y_low_best = 0;
-int y_high_best = 0;
-int x_low1_best = 0;
-int x_low2_best = 0;
-int x_high1_best = 0;
-int x_high2_best = 0;
 
 // Result
 int color_count = 0;
@@ -158,7 +151,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;  
   float quality;
   float best_quality = 0;
-  float x_l_h = 0;
   struct point_t from, to;
   
 
@@ -177,8 +169,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     // check if it has the right color
     if(check_color(img, x, y))
     {
-      //image_yuv422_set_color(img,img,x,y);
-      //
       // snake up and down:
       snake_up_and_down(img, x, y, &y_low, &y_high);
       sz = y_high - y_low;
@@ -191,13 +181,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       // if the stretch is long enough
       if(sz > min_pixel_size)
       {
-	//DEBUG
-	from.y = y_low;
-	to.y = y_high;
-	from.x = x*2;
-	to.x = x*2;
-    //image_draw_line(img, &from, &to);
-	//DEBUG
 	
         // snake left and right:
         snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
@@ -215,15 +198,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         // if the size is big enough:
         if(szx1 > min_pixel_size)
         {
-	  //DEBUG
-	  //y_low
-	  from.y = y_low;
-          to.y = y_low;
-          from.x = x_low1*2;
-          to.x = x_high1*2;
-    //image_draw_line(img, &from, &to);
-	  
-	  //DEBUG
 	  // draw four lines on the image:	  
           x = (x_high1 + x_low1) / 2;//was+
           // set the size to the largest line found:
@@ -238,26 +212,14 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
           {
-	     y_low_best = y_low;
-             x_low1_best = x_low1;
-             x_high1_best = x_high1;
-	     //image_draw_line(img, &from, &to);
-//draw_gate(img, gates[n_gates]);
 	    best_quality = quality;
             n_gates++;
-	    x_l_h = 1;
           }
         }
         
         else if(szx2 > min_pixel_size)
         {
-	  //DEBUG
-	  from.y = y_high;
-          to.y = y_high;
-          from.x = x_low2*2;
-          to.x = x_high2*2;
-      //image_draw_line(img, &from, &to);
-	  //DEBUG
+
           x = (x_high2 + x_low2) / 2;//was +
           // set the size to the largest line found:
           sz = (sz > szx2) ? sz : szx2;
@@ -271,22 +233,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
           {
-             y_high_best = y_high;
-             x_low2_best = x_low2;
-             x_high2_best = x_high2;
-//draw_gate(img, gates[n_gates]);
-	    //image_draw_line(img, &from, &to);
-	    
-	    int sz_x = szx2*2;
-	    from.y = y_high - sz_x;
-	    to.y = y_high - sz_x;
-	    from.x = x_low2*2;
-	    to.x = x_high2*2;
-	    //image_draw_line(img, &from, &to);
-	    
 	    best_quality = quality;
             n_gates++;
-	    x_l_h = 2;
           }
         }
         if(n_gates >= MAX_GATES)
@@ -309,63 +257,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                                        color_cr_min, color_cr_max
                                       );}
           
-          
   //DRAW gate
   
   if(best_quality > min_gate_quality && n_gates>0)
   {
   draw_gate(img, gates[n_gates-1]);
-  //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);
-      /*
-  
-         from.y = y_low_best;
-          to.y = y_low_best;
-          from.x = x_low1_best*2;
-          to.x = x_high1_best*2;
-  image_draw_line(img, &from, &to);
-  
-   from.y = y_high_best;
-          to.y = y_high_best;
-          from.x = x_low2_best*2;
-          to.x = x_high2_best*2;
-  image_draw_line(img, &from, &to);
-  
-         from.y = y_low_best;
-          to.y = y_high_best;
-          from.x = x_low2_best*2;
-          to.x = x_low2_best*2;
-  image_draw_line(img, &from, &to);
-  
-  from.y = y_low_best;
-          to.y = y_high_best;
-          from.x = x_high2_best*2;
-          to.x = x_high2_best*2;
-  image_draw_line(img, &from, &to);
-  *///
-    /*from.y = y_low;
-	to.y = y_high;
-	from.x = (x+gates[n_gates-1].sz)*2;
-	to.x = (x-gates[n_gates-1].sz)*2;
-  image_draw_line(img, &from, &to);*/
-   /* 
-  if(x_l_h == 1)
-  {  
-	  from.y = y_low;
-          to.y = y_low;
-          from.x = x_low1*2;
-          to.x = x_high1*2;
-  image_draw_line(img, &from, &to);
-  }
-  
-  else if(x_l_h == 2)
-  {
-  from.y = y_high;
-          to.y = y_high;
-          from.x = x_low2*2;
-          to.x = x_high2*2;
-  image_draw_line(img, &from, &to);
-  }*/
-	  
+  //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
   }
   return img; // snake_gate_detection did not make a new image
 }
