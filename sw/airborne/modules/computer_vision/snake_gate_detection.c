@@ -45,8 +45,8 @@ uint8_t color_cr_max  = 230;//255;
 // Gate detection settings:
 int n_samples = 500;//1000;//500;
 int min_pixel_size = 40;//100;
-float min_gate_quality = 0.5;
-float gate_thickness = 0.10;//
+float min_gate_quality = 0.4;
+float gate_thickness = 0;//0.05;//0.10;//
 
 int y_low = 0;
 int y_high = 0;
