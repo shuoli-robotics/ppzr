@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 #include "subsystems/datalink/telemetry.h"
+#include "modules/computer_vision/lib/vision/gate_detection.h"
 
 struct video_listener *listener = NULL;
 
@@ -186,9 +187,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
         snake_left_and_right(img, x, y_high, &x_low2, &x_high2); 
 
-	x_low1 = x_low1 + (sz*gate_thickness);
+        x_low1 = x_low1 + (sz*gate_thickness);
         x_high1 = x_high1 - (sz*gate_thickness);
-	x_low2 = x_low2 + (sz*gate_thickness);
+        x_low2 = x_low2 + (sz*gate_thickness);
         x_high2 = x_high2 - (sz*gate_thickness);
 	
         // sizes of the left-right stretches: in y pixel coordinates
@@ -212,7 +213,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
           {
-	    best_quality = quality;
+            best_quality = quality;
             n_gates++;
           }
         }
@@ -233,7 +234,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
           {
-	    best_quality = quality;
+            best_quality = quality;
             n_gates++;
           }
         }
@@ -247,8 +248,37 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     }
     
   }
+
+  // do an additional fit to improve the gate detection:
+  if(best_quality > min_gate_quality && n_gates>0)
+  {
+    // temporary variables:
+    float x_center, y_center, radius, fitness;
+
+    // prepare the Region of Interest (ROI):
+    float size_factor = 1.25;
+    int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
+    int16_t min_x = gates[n_gates-1].x - ROI_size;
+    min_x = (min_x < 0) ? 0 : min_x;
+    int16_t max_x = gates[n_gates-1].x + ROI_size;
+    max_x = (max < img->w) ? max_x : img->w;
+    int16_t min_y = gates[n_gates-1].y - ROI_size;
+    min_y = (min_y < 0) ? 0 : min_y;
+    int16_t max_y = gates[n_gates-1].y + ROI_size;
+    max_y = (max < img->h) ? max_y : img->h;
+
+    // detect the gate:
+    gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t max_y));
+  
+    // store the information in the gate:
+    gates[n_gates-1].x = (int) x_center;
+    gates[n_gates-1].y = (int) y_center;
+    gates[n_gates-1].sz = (int) radius;
+
+  }
           
-            //color filtered versison of image for overlay and debugging
+  //color filtered version of image for overlay and debugging
   if(filter)
   {
   int color_count = image_yuv422_colorfilt(img,img,
