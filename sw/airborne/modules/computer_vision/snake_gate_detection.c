@@ -47,6 +47,7 @@ int n_samples = 500;//1000;//500;
 int min_pixel_size = 40;//100;
 float min_gate_quality = 0.4;
 float gate_thickness = 0;//0.05;//0.10;//
+float gate_size = 34;
 
 int y_low = 0;
 int y_high = 0;
@@ -155,14 +156,16 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
 {
   //calculate angles here
-  hor_angle = (((float)x_pix*2.0)-((float)(img->h)/2.0))*radians_per_pix_w;
-  vert_angle = (((float)y_pix*2.0)-((float)(img->w)/2.0))*radians_per_pix_h;
+  vert_angle = -(((float)x_pix*2.0)-((float)(img->w)/2.0))*radians_per_pix_w;
+  hor_angle = (((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h;
   
   pix_x = x_pix;
   pix_y = y_pix;
   pix_sz = gate.sz;
   
-  
+  y_dist = (pix_sz*3.0)/gate_size;//piz size to meters
+  x_dist = y_dist * sin(hor_angle);
+  z_dist = y_dist * sin(vert_angle);
   
 }
 
