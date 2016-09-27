@@ -24,12 +24,12 @@
  */
 
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
-#include "modules/replay_commands/replay_commands.h"
+//#include "modules/replay_commands/replay_commands.h"
 #include "state.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
-#include "modules/replay_commands/replay_commands.h"
+//#include "modules/replay_commands/replay_commands.h"
 
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 

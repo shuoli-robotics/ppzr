@@ -8,7 +8,7 @@
     <file name="state_autonomous_race.h"/>
   </header>
   <init fun="state_autonomous_race_init()"/>
-  <periodic fun="display_states()" freq="2"/>
+  <periodic fun="display_states()" freq="1"/>
   <makefile>
     <file name="state_autonomous_race.c"/>
   </makefile>

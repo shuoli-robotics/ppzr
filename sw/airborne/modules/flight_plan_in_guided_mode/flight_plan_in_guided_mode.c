@@ -34,8 +34,9 @@
 #include <math.h>
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
-#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/computer_vision/snake_gate_detection.h"
 
 
 

@@ -33,6 +33,10 @@
 
 struct state_autonomous_race states_race;
 
+void display_upper_state(void);
+void display_lower_state(void);
+
+
 void state_autonomous_race_init() {
     states_race.gate_counter = 0;
     states_race.ready_pass_through = FALSE;
@@ -47,7 +51,10 @@ void display_states()
     if (autopilot_mode != AP_MODE_MODULE)
         return;
    // printf("gate_counter is %d \n",states_race.gate_counter);
+
+    display_upper_state();
     display_lower_state();
+
     printf("\n");
     printf("\n");
     printf("\n");
@@ -77,3 +84,19 @@ void display_lower_state()
             break;
     }
 }
+
+void display_upper_state()
+{
+    switch(state_upper_level)
+    {
+        case FIRST_PART:
+            printf("It is in FIRST_PART\n");
+            break;
+        case SECOND_PART:
+            printf("It is in SECOND_PART\n");
+            break;
+        case THIRD_PART:
+            printf("It is in THIRD_PART\n");
+            break;
+    }
+};

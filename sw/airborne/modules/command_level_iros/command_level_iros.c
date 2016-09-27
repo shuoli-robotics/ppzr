@@ -28,21 +28,14 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
-#include "modules/computer_vision/fly_through_gate_demo.h"
-#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+//#include "modules/computer_vision/fly_through_gate_demo.h"
+//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
-#include "modules/replay_commands/replay_commands.h"
-#include "modules/state_autonomous_race/state_autonomous_race.h"
+//#include "modules/replay_commands/replay_commands.h"
+#include "modules/computer_vision/snake_gate_detection.h"
 
 uint8_t previous_mode;
 uint8_t current_mode;
-
-//bool record_command;
-
-
-//float distance_after_gate;
-
-
 
 void first_part_logic(void);
 void second_part_logic(void);
@@ -69,7 +62,7 @@ void command_init(){
     parameter_to_be_tuned.distance_second_gate = 1;
     parameter_to_be_tuned.distance_third_gate = 1;
     parameter_to_be_tuned.distance_fourth_gate = 1;
-    parameter_to_be_tuned.heading_after_first_gate = 0;
+    parameter_to_be_tuned.heading_after_first_gate = 90.0/180*3.14;
     parameter_to_be_tuned.heading_after_second_gate = 0;
     parameter_to_be_tuned.heading_after_third_gate = 0;
     parameter_to_be_tuned.heading_after_fourth_gate = 0;
@@ -123,13 +116,13 @@ void command_run() {
 
 void first_part_logic()
 {
-    if (states_race.altitude_is_achieved == FALSE)
-    {
-        take_off(-1.5);
-        printf("TAKE_OFF\n");
-        return;
-    }
-
+//    if (states_race.altitude_is_achieved == FALSE)
+//    {
+//        take_off(-1.5);
+//        printf("TAKE_OFF\n");
+//        return;
+//    }
+   //hover();
     state_upper_level  = SECOND_PART;
 }
 
@@ -138,7 +131,7 @@ void first_part_logic()
 void second_part_logic()
 {
     // if we pass through 100 gates, we can change to third part
-    if ( states_race.gate_counter_in_second_part == 4)
+    if ( states_race.gate_counter_in_second_part == 1)
     {
         state_upper_level = THIRD_PART;
         return;
@@ -170,6 +163,7 @@ void second_part_logic()
         case ADJUST_POSITION_CM:
             if (states_race.gate_detected == FALSE && time_gate_detected > 0.5)
             {
+                // lost gate
                 state_lower_level = WAIT_FOR_DETECTION_CM;
                 break;
             }
@@ -178,9 +172,11 @@ void second_part_logic()
             else
             {
                 states_race.distance_before_gate = current_y_gate;
+                //state_lower_level = GO_THROUGH_CM;
                 state_lower_level = GO_THROUGH_CM;
             }
             break;
+
 
         case GO_THROUGH_CM:
             states_race.time_to_go_straight = (states_race.distance_before_gate +
@@ -192,6 +188,7 @@ void second_part_logic()
             }
             break;
 
+
         case HOVER_CM:
             hover();
             if (time_primitive > 2)
@@ -199,6 +196,8 @@ void second_part_logic()
                 state_lower_level = TURN_CM;
             }
             break;
+
+
         case TURN_CM:
             change_heading_hover(choose_heading_after_passing_through_gate());
             if (states_race.turning == FALSE)
@@ -208,6 +207,8 @@ void second_part_logic()
                 states_race.gate_counter_in_second_part ++;
             }
             break;
+
+
         case SEARCH_GATE_CM:
             search_gate();
             if (states_race.gate_detected == 1 && time_gate_detected > 0.5)

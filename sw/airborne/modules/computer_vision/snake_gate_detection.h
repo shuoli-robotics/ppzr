@@ -45,6 +45,8 @@ extern void draw_gate(struct image_t *im, struct gate_img gate);
 extern void check_gate(struct image_t *im, struct gate_img gate, float* quality);
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
 
+extern void snake_gate_periodic(void);
+
 extern uint8_t color_lum_min;
 extern uint8_t color_lum_max;
 
@@ -56,6 +58,11 @@ extern uint8_t color_cr_max;
 
 extern int color_count;
 
+//static void snake_gate_send(struct transport_tx *trans, struct link_device *dev);
+
+//uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, int x, int y);
+//void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate);
+//void snake_gate_periodic(void);
 
 
 extern struct video_listener *listener;

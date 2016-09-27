@@ -79,7 +79,7 @@
 	<configure name="STEREO_UART" value="UART2"/>
 	<configure name="STEREO_BAUD" value="B9600"/>
     </module> 
-    <module name="stereo_gate_position"/>
+    <!--module name="stereo_gate_position"/-->
 
   </modules>
 
