@@ -126,12 +126,22 @@ float previous_x_gate = 0;
 float previous_y_gate = 0;
 float previous_z_gate = 0;
 
+//SAFETY AND RESET FLAGS
+int uncertainty_gate = 0;
+int gate_detected = 0;
+int init_pos_filter = 0;
+int safe_pass_counter = 0;
+
+float fps_filter = 0;
+
+struct timeval stop, start;
 
 //Debug messages
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
+				  &current_x_gate,&current_y_gate,&current_z_gate,&body_filter_x,&body_filter_y,
 				  &y_center_picker,&cb_center,&cr_center,&sz,&szx1,&szx2); //  
 }
 
@@ -196,7 +206,7 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
 {
   //calculate angles here
-  vert_angle = -(((float)x_pix*2.0)-((float)(img->w)/2.0))*radians_per_pix_w;
+  vert_angle = (-(((float)x_pix*2.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta);
   hor_angle = (((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h;
   
   pix_x = x_pix;
@@ -210,10 +220,10 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
 }
 
 //state filter in periodic loop
-void snake_gate_detection_init(void)
+void snake_gate_periodic(void)
 {
   	//SAFETY  gate_detected
-	if(measured_y_gate > 0.6 && measured_y_gate < 5){
+	if(y_dist > 0.6 && y_dist < 5){
 	  gate_detected = 1;
         counter_gate_detected = 0;
         time_gate_detected = 0;
@@ -298,13 +308,12 @@ void snake_gate_detection_init(void)
 			uncertainty_gate = 151;//max
 		}
 		else
-			weight_measurement = (GOOD_FIT-(float)fitness)/GOOD_FIT;//check constant weight 
+			weight_measurement = 0.7;//(GOOD_FIT-(float)fitness)/GOOD_FIT;//check constant weight 
 
-		current_x_gate = weight_measurement * measured_x_gate + (1.0f - weight_measurement) * predicted_x_gate;
-		current_y_gate = weight_measurement * measured_y_gate + (1.0f - weight_measurement) * predicted_y_gate;
-		current_z_gate = weight_measurement * (measured_z_gate + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
-		
-
+		current_x_gate = weight_measurement * x_dist + (1.0f - weight_measurement) * predicted_x_gate;
+		current_y_gate = weight_measurement * y_dist + (1.0f - weight_measurement) * predicted_y_gate;
+		current_z_gate = weight_measurement * (z_dist + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
+	
 		// reset uncertainty:
 		uncertainty_gate = 0;
 	}
@@ -683,4 +692,5 @@ void snake_gate_detection_init(void)
 {
   listener = cv_add_to_device(&SGD_CAMERA, snake_gate_detection_func);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SNAKE_GATE_INFO, snake_gate_send);
+  gettimeofday(&start, NULL);
 }

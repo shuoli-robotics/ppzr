@@ -45,7 +45,7 @@ extern void draw_gate(struct image_t *im, struct gate_img gate);
 extern void check_gate(struct image_t *im, struct gate_img gate, float* quality);
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
 
-extern void snake_gate_detection_init(void)
+extern void snake_gate_periodic(void);
 
 extern uint8_t color_lum_min;
 extern uint8_t color_lum_max;
