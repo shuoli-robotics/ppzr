@@ -40,6 +40,9 @@ struct state_autonomous_race{
     bool altitude_is_achieved;  // for taking off
     bool land_is_finished;      // for landing
     int   gate_counter_in_second_part;
+    float distance_before_gate;
+    float time_to_go_straight;
+    bool gate_detected;
 };
 
 extern struct state_autonomous_race states_race;

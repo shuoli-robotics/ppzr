@@ -39,9 +39,9 @@ uint8_t current_mode;
 
 //bool record_command;
 
-float time_to_go_straight;
+
 //float distance_after_gate;
-float distance_before_gate;
+
 
 
 void first_part_logic(void);
@@ -59,10 +59,12 @@ struct parameters_to_be_tuned parameter_to_be_tuned;
 void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
-    time_to_go_straight = 0;
-    distance_before_gate = 1.5;
+    states_race.time_to_go_straight = 0;
+    states_race.distance_before_gate = 1.5;
     //gate_counter_in_second_part = 0;
     //record_command = 0;
+
+    // here we need to change the angle and distance for passing through the gates
     parameter_to_be_tuned.distance_first_gate = 1;
     parameter_to_be_tuned.distance_second_gate = 1;
     parameter_to_be_tuned.distance_third_gate = 1;
@@ -93,32 +95,11 @@ void command_run() {
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
-    /*if (record_command == 1)
-    {
-        if (time_autopilot_mode<5)
-        {
-            hover();
-            return;
-        }
-        if (time_autopilot_mode > 5 && arc_is_finished == 0)
-        {
-            arc(1.5, 4, 135.0/180*3.14);
-        }
-        else
-        {
-            hover();
-        }
-        return;
-    }*/
 
     if(state_upper_level  == FIRST_PART)
     {
-        //todo:take off and open loop control to go through half gate
+
         first_part_logic();
-//        if (replay == 0)
-//        {
-//            state_upper_level  = SECOND_PART;
-//        }
     }
 
     if(state_upper_level  == SECOND_PART)
@@ -150,9 +131,6 @@ void first_part_logic()
     }
 
     state_upper_level  = SECOND_PART;
-
-    //replay_commands_start();
-    //state_upper_level = FIRST_PART;
 }
 
 
@@ -181,13 +159,14 @@ void second_part_logic()
                 state_lower_level = ADJUST_POSITION_CM;
             }
 
-            if (time_gate_detected>5 && gate_detected == FALSE)
+            if (time_gate_detected >5 && gate_detected == FALSE)
             {
                 // gate is lost
                 state_lower_level = SEARCH_GATE_CM;
             }
-
             break;
+
+
         case ADJUST_POSITION_CM:
             if (gate_detected == FALSE && time_gate_detected > 0.5)
             {
@@ -198,15 +177,16 @@ void second_part_logic()
                 adjust_position(-delta_z_gate);
             else
             {
-                distance_before_gate = current_y_gate;
+                states_race.distance_before_gate = current_y_gate;
                 state_lower_level = GO_THROUGH_CM;
             }
             break;
 
         case GO_THROUGH_CM:
-            time_to_go_straight = (distance_before_gate + choose_distance_after_gate())/(CONSTANT_VELOCITY_STRAIGHT*1.2);
+            states_race.time_to_go_straight = (states_race.distance_before_gate +
+                    choose_distance_after_gate())/(CONSTANT_VELOCITY_STRAIGHT*1.2);
             go_straight(CONSTANT_VELOCITY_STRAIGHT);
-            if (time_primitive > time_to_go_straight)
+            if (time_primitive > states_race.time_to_go_straight)
             {
                 state_lower_level = HOVER_CM;
             }
