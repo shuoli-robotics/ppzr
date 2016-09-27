@@ -24,14 +24,10 @@
  */
 
 #include "modules/state_autonomous_race/state_autonomous_race.h"
-#include "firmwares/rotorcraft/autopilot.h"
-#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
-#include "modules/command_level_iros/command_level_iros.h"
-#include <stdio.h>
-#include "modules/command_level_iros/command_level_iros.h"
 
-void state_autonomous_race_init();
-void display_lower_state();
+
+//void state_autonomous_race_init();
+//void display_lower_state();
 
 
 
@@ -39,10 +35,11 @@ struct state_autonomous_race states_race;
 
 void state_autonomous_race_init() {
     states_race.gate_counter = 0;
-    states_race.ready_pass_through = 0;
-    states_race.turning = 0;
-    states_race.altitude_is_achieved = 0;
-    states_race.land_is_finished =0;
+    states_race.ready_pass_through = FALSE;
+    states_race.turning = FALSE;
+    states_race.altitude_is_achieved = FALSE;
+    states_race.land_is_finished =FALSE;
+    states_race.gate_counter_in_second_part = 0;
 }
 
 void display_states()

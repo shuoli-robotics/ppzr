@@ -128,12 +128,12 @@ void change_heading_hover(float derta_psi){
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
 	    guidance_loop_set_heading(psi0+derta_psi);
-        states_race.turning = 1;
+        states_race.turning = TRUE;
     }
 
     if (fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.02)
     {
-        states_race.turning = 0;
+        states_race.turning = FALSE;
     }
 }
 
@@ -227,13 +227,9 @@ void go_left_right(float velocity){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        //psi0 = stateGetNedToBodyEulers_f()->psi;
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        //z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_z(z0);
-        //guidance_loop_set_heading(psi0);
     }
 }
 

@@ -37,9 +37,21 @@ enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,H
 TURN_CM,SEARCH_GATE_CM};
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART};
 
+struct parameters_to_be_tuned{
+    float distance_first_gate;
+    float distance_second_gate;
+    float distance_third_gate;
+    float distance_fourth_gate;
+    float heading_after_first_gate;
+    float heading_after_second_gate;
+    float heading_after_third_gate;
+    float heading_after_fourth_gate;
+};
 
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
+
+extern struct parameters_to_be_tuned parameter_to_be_tuned;
 
 #endif
 

@@ -26,12 +26,20 @@
 #ifndef STATE_AUTONOMOUS_RACE_H
 #define STATE_AUTONOMOUS_RACE_H
 
+#include "state.h"
+#include "firmwares/rotorcraft/autopilot.h"
+#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+#include "modules/command_level_iros/command_level_iros.h"
+#include <stdio.h>
+#include "modules/command_level_iros/command_level_iros.h"
+
 struct state_autonomous_race{
     int gate_counter;
-    int ready_pass_through;
-    int turning;
-    int altitude_is_achieved;  // for taking off
-    int land_is_finished;      // for landing
+    bool ready_pass_through;
+    bool turning;
+    bool altitude_is_achieved;  // for taking off
+    bool land_is_finished;      // for landing
+    int   gate_counter_in_second_part;
 };
 
 extern struct state_autonomous_race states_race;
