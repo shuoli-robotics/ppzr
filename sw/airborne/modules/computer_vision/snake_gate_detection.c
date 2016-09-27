@@ -26,11 +26,31 @@
 // Own header
 #include "modules/computer_vision/snake_gate_detection.h"
 #include <stdio.h>
-
 #include "modules/computer_vision/lib/vision/image.h"
 #include <stdlib.h>
-
 #include "subsystems/datalink/telemetry.h"
+#include "state.h"
+#include "modules/computer_vision/opticflow/opticflow_calculator.h"
+
+#include "modules/computer_vision/opticflow/opticflow_calculator.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
+
+#define PI 3.1415926
+
+//initial position after gate pass
+#define INITIAL_X 0
+#define INITIAL_Y 1.5
+#define INITIAL_Z 0
+
+//initial position and speed safety margins
+
+#define X_POS_MARGIN 0.15//m
+#define Y_POS_MARGIN 0.3//m
+#define Z_POS_MARGIN 0.2//m
+#define X_SPEED_MARGIN 0.15//m/s
+#define Y_SPEED_MARGIN 0.15//m/s
 
 struct video_listener *listener = NULL;
 
@@ -85,6 +105,26 @@ uint8_t cr_center  = 0;
  float x_dist =0;
  float y_dist =0;
  float z_dist =0;
+ 
+ //state filter
+float body_v_x = 0;
+float body_v_y = 0;
+
+float body_filter_x = 0;
+float body_filter_y = 0;
+
+float predicted_x_gate = 0;
+float predicted_y_gate = 0;
+float predicted_z_gate = 0;
+
+float current_x_gate = 0;
+float current_y_gate = 0;
+float current_z_gate = 0;
+float delta_z_gate   = 0;
+
+float previous_x_gate = 0;
+float previous_y_gate = 0;
+float previous_z_gate = 0;
 
 
 //Debug messages
@@ -167,6 +207,122 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
   x_dist = y_dist * sin(hor_angle);
   z_dist = y_dist * sin(vert_angle);
   
+}
+
+//state filter in periodic loop
+void snake_gate_detection_init(void)
+{
+  	//SAFETY  gate_detected
+	if(measured_y_gate > 0.6 && measured_y_gate < 5){
+	  gate_detected = 1;
+        counter_gate_detected = 0;
+        time_gate_detected = 0;
+	}
+	else{
+	  gate_detected = 0;
+        counter_gate_detected = 0;
+        time_gate_detected = 0;
+	}
+	
+	//SAFETY ready_pass_trough
+	if(gate_detected == 1 && fabs(x_dist-INITIAL_X) < X_POS_MARGIN && fabs(y_dist-INITIAL_Y) < Y_POS_MARGIN
+	  && fabs(z_dist-INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN ){
+        safe_pass_counter += 1;
+	}
+	else{
+        safe_pass_counter = 0;
+	 states_race.ready_pass_through = 0;
+	}
+
+    if(safe_pass_counter > 20)
+    {
+        safe_pass_counter = 0;
+        states_race.ready_pass_through = 1;
+    }
+
+	  
+	
+	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
+	if(init_pos_filter == 1)
+	{
+	  init_pos_filter = 0;
+	  //assumed initial position at other end of the gate
+	  predicted_x_gate = INITIAL_X;//0;
+	  predicted_y_gate = INITIAL_Y;//1.5;
+	  
+	}
+	
+        //State filter 
+	
+
+	//convert earth velocity to body x y velocity
+	float v_x_earth =stateGetSpeedNed_f()->x;
+	float v_y_earth = stateGetSpeedNed_f()->y;
+	float psi = stateGetNedToBodyEulers_f()->psi;
+	//When using optitrack
+	//body_v_x = cosf(psi)*v_x_earth + sinf(psi)*v_y_earth;
+	//body_v_y = -sinf(psi)*v_x_earth+cosf(psi)*v_y_earth;
+	
+	body_v_x = opt_body_v_x;
+	body_v_y = opt_body_v_y;
+	
+	//body velocity in filter frame
+	body_filter_x = -body_v_y;
+	body_filter_y = -body_v_x;
+	
+	gettimeofday(&stop, 0);
+	double curr_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+	double elapsed = curr_time - (double)(start.tv_sec + start.tv_usec / 1000000.0);
+	gettimeofday(&start, 0);
+	float dt = elapsed;
+	
+	fps_filter = (float)1.0/dt;
+	
+        // predict the new location:
+	float dx_gate = dt * body_filter_x;//(cos(current_angle_gate) * gate_turn_rate * current_distance);
+	float dy_gate = dt * body_filter_y; //(velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
+	predicted_x_gate = previous_x_gate + dx_gate;
+	predicted_y_gate = previous_y_gate + dy_gate;
+	predicted_z_gate = previous_z_gate;
+	
+	float sonar_alt = stateGetPositionNed_f()->z;
+	
+        if (gate_detected == 1)
+	{
+	
+		// Mix the measurement with the prediction:
+		float weight_measurement;
+		if (uncertainty_gate > 150)
+		{
+			weight_measurement = 1.0f;
+			uncertainty_gate = 151;//max
+		}
+		else
+			weight_measurement = (GOOD_FIT-(float)fitness)/GOOD_FIT;//check constant weight 
+
+		current_x_gate = weight_measurement * measured_x_gate + (1.0f - weight_measurement) * predicted_x_gate;
+		current_y_gate = weight_measurement * measured_y_gate + (1.0f - weight_measurement) * predicted_y_gate;
+		current_z_gate = weight_measurement * (measured_z_gate + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
+		
+
+		// reset uncertainty:
+		uncertainty_gate = 0;
+	}
+	else
+	{
+		// just the prediction
+		current_x_gate = predicted_x_gate;
+		current_y_gate = predicted_y_gate;
+		current_z_gate = predicted_z_gate;
+
+		// increase uncertainty
+		uncertainty_gate++;
+	}
+	// set the previous state for the next time:
+	previous_x_gate = current_x_gate;
+	previous_y_gate = current_y_gate;
+	previous_z_gate = current_z_gate;
+	delta_z_gate = current_z_gate - sonar_alt;
 }
 
 // Function
