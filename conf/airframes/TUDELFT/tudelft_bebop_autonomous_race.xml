@@ -61,7 +61,7 @@
     </module-->
 
     <module name="cv_snake_gate_detection">
-      <define name="SGD_CAMERA" value="bottom_camera"/>
+      <define name="SGD_CAMERA" value="front_camera"/>
     </module>
 
     <module name="cv_opticflow">

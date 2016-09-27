@@ -75,12 +75,23 @@ uint8_t cr_center  = 0;
 #define radians_per_pix_w 0.006666667//2.1 rad(60deg)/315
 #define radians_per_pix_h 0.0065625 //1.05rad / 160
 
+//pixel distance conversion
+ int pix_x = 0;
+ int pix_y = 0;
+ int pix_sz = 0;
+ float hor_angle = 0;
+ float vert_angle = 0;
+ float x_dist =0;
+ float y_dist =0;
+ float z_dist =0;
+
 
 //Debug messages
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
-    pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&y_center_picker,&cb_center,&cr_center,&sz,&szx1,&szx2); //  
+    pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
+				  &y_center_picker,&cb_center,&cr_center,&sz,&szx1,&szx2); //  
 }
 
 
@@ -141,6 +152,20 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
         dest[3] = source[3];  // Y
 }
 
+void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
+{
+  //calculate angles here
+  hor_angle = (((float)x_pix*2.0)-((float)(img->h)/2.0))*radians_per_pix_w;
+  vert_angle = (((float)y_pix*2.0)-((float)(img->w)/2.0))*radians_per_pix_h;
+  
+  pix_x = x_pix;
+  pix_y = y_pix;
+  pix_sz = gate.sz;
+  
+  
+  
+}
+
 // Function
 // Samples from the image and checks if the pixel is the right color.
 // If yes, it "snakes" up and down to see if it is the side of a gate.
@@ -156,6 +181,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   float quality;
   float best_quality = 0;
   struct point_t from, to;
+  
+  //test
+  //pix_x = img->w;
+  //pix_y = img->h;
+  
   
 
   n_gates = 0;  
@@ -268,17 +298,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   draw_gate(img, gates[n_gates-1]);
   //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
   
-  calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz);
+  calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
   
   }
   return img; // snake_gate_detection did not make a new image
 }
 
-void calculate_gate_position(int x_pix,int y_pix, int sz_pix)
-{
-  //calculate angles here
-  
-}
 
 void draw_gate(struct image_t *im, struct gate_img gate)
 {
