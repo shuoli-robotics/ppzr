@@ -20,9 +20,9 @@
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 
 	<define name="MT9F002_OUTPUT_SCALER" value="0.125"/>
-	<define name="MT9F002_INITIAL_OFFSET_X" value="2034"/><!--2050-->
+	<define name="MT9F002_INITIAL_OFFSET_X" value="2050"/>      <!--2034--><!--2050-->
 
-	<define name="MT9F002_INITIAL_OFFSET_Y" value="700"/>
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="476"/><!--700-->
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -72,7 +72,7 @@
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="1"/>
-	<define name="VIEWVIDEO_QUALITY_FACTOR" value="30"/>
+	<define name="VIEWVIDEO_QUALITY_FACTOR" value="70"/>
     </module>
 
     <module name="stereocam">
