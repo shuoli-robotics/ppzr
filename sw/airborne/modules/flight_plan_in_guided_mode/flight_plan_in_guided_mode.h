@@ -59,7 +59,6 @@
  extern void take_off(float desired_altitude);
  extern void land(void);
 
-//void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 
 #endif
 
