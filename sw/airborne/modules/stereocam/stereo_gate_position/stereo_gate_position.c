@@ -16,8 +16,10 @@
 #include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+
 
 #define PI 3.1415926
 
@@ -107,7 +109,8 @@ float deg2rad(float deg)
 
 static void stereo_gate_send(struct transport_tx *trans, struct link_device *dev)
     {
-    pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,&fitness,&fps,
+    pprz_msg_send_STEREO_GATE_INFO(trans, dev, AC_ID,&x_center, &y_center,&radius,
+				   &x_center_p,&y_center_p,&disperity,&y_gate_p,&fitness,&fps,
 				   &measured_x_gate,&measured_y_gate,&measured_z_gate,
 				   &current_x_gate,&current_y_gate,&delta_z_gate,&fps_filter,
 				   &body_v_x,&body_v_y,&uncertainty_gate,
