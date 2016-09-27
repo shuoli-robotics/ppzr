@@ -71,6 +71,10 @@ uint8_t y_center_picker  = 0;
 uint8_t cb_center  = 0;
 uint8_t cr_center  = 0;
 
+//camera parameters
+#define radians_per_pix_w 0.006666667//2.1 rad(60deg)/315
+#define radians_per_pix_h 0.0065625 //1.05rad / 160
+
 
 //Debug messages
 
@@ -263,8 +267,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   {
   draw_gate(img, gates[n_gates-1]);
   //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
+  
+  calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz);
+  
   }
   return img; // snake_gate_detection did not make a new image
+}
+
+void calculate_gate_position(int x_pix,int y_pix, int sz_pix)
+{
+  //calculate angles here
+  
 }
 
 void draw_gate(struct image_t *im, struct gate_img gate)
