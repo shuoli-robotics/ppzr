@@ -30,23 +30,15 @@ uint16_t n_points;
 uint16_t n_generations = 10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
-// watch out: inliers fit does not work so well...
-#define DISTANCE_FIT 0
-#define INLIERS_FIT 1
-#define FF DISTANCE_FIT
-
 // Settings for the fitting:
 float weights[MAX_POINTS];
 int min_points = 5;
-int WEIGHTED = 1; 
-int STICK = 1;
+int WEIGHTED = 0; // color has no weight at the moment, since it is thresholded 
+int STICK = 0; // the stick we assume not to be red
 #define CIRCLE 0
 #define SQUARE 1
-int SHAPE = CIRCLE;
-// Now a parameter:
-// int min_disparity = 2;
+int SHAPE = SQUARE;
 float outlier_threshold = 20.0f;
-
 
 // whether to draw on the image:
 int GRAPHICS = 0;
@@ -87,7 +79,7 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 		(*y0) = mean_y;
     // TODO: make a better initial size estimation - this is actually ridiculous:
     // For instance, take min, max x, min, max y
-		(*size0) = 40.0f;//sqrtf(mean_x*mean_x + mean_y*mean_y);
+		(*size0) = 40.0f;// TODO: how good is 40 for the Bebop images?
 
 		// run the fit procedure:
 		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness);
@@ -186,16 +178,8 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 		{
 			if (SHAPE == CIRCLE)
 			{
-        if(FF == DISTANCE_FIT)
-        {
           // optimize mean distance to circle (and possibly stick) 
 				  fits[i] = mean_distance_to_circle(Population[i]);
-        }
-        else
-        {
-          // optimize the number of inliers
-          fits[i] = get_outlier_ratio(Population[i], total_sum_weights);
-        }
 			}
       else
       {
@@ -238,7 +222,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 	}
 
   // put the final values back in the parameters:
-  if(FF == DISTANCE_FIT) (*fitness) /= total_sum_weights;
+  (*fitness) /= total_sum_weights;
 	(*x_center) = best_genome[0];
 	(*y_center) = best_genome[1];
 	(*radius) = best_genome[2];
@@ -283,7 +267,7 @@ float get_sum(float* nums, int n_elements)
 void convert_image_to_points(struct image_t* color_image, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y)
 {
   int y, x, sp;
-  int disp = 0;
+  int check = 0;
 	uint16_t p = 0;
   
   // We stop sampling at MAX_POINTS, but do not want our samples to be biased toward a certain
@@ -297,12 +281,12 @@ void convert_image_to_points(struct image_t* color_image, uint16_t min_x, uint16
 	  {
 		  for (x = min_x + X0[sp]; x < max_x; x+=GRID_STEP)
 		  {
-        // get the disparity from the image:
-			  disp = check_color(color_image, x, y);
+        // check if the pixel has the right color:
+			  check = check_color(color_image, x, y);
 
-			  if(disp)
+			  if(check)
 			  {
-          // add the points to the array, and use disparity as the weight:
+          // add the points to the array:
 				  points[p].x = (float) x;
 				  points[p].y = (float) y;
 				  weights[p] = 1.0f; // TODO: we could make this depend on how close it is to the ideal color
@@ -386,6 +370,7 @@ float mean_distance_to_square(float* genome)
 	float error, error_stick;
   uint16_t p;
   int index;
+  int n_sides = 4;
 
   // determine corner points:
   struct point_f square_top_left;
@@ -393,14 +378,14 @@ float mean_distance_to_square(float* genome)
   struct point_f square_bottom_right;
   struct point_f square_bottom_left;
   square_top_left.x = x-r;
-  square_top_left.y = y-r; // positive y direction is down
+  square_top_left.y = y-r; // positive y direction is down TODO: check!!!
   square_top_right.x = x+r;
   square_top_right.y = y-r; 
   square_bottom_left.x = x-r;
   square_bottom_left.y = y+r; 
   square_bottom_right.x = x+r;
   square_bottom_right.y = y+r;
-  float side_distances[2];
+  float side_distances[n_sides];
 
 	for (p = 0; p < n_points; p++)
 	{
@@ -409,9 +394,9 @@ float mean_distance_to_square(float* genome)
     // determine the distance to the four sides of the square and select the smallest one:
     side_distances[0] = distance_to_vertical_segment(square_top_left, square_bottom_left, point);
     side_distances[1] = distance_to_vertical_segment(square_top_right, square_bottom_right, point);
-    //side_distances[2] = distance_to_horizontal_segment(square_top_left, square_top_right, point);
-    //side_distances[3] = distance_to_horizontal_segment(square_bottom_left, square_bottom_right, point);
-    error = get_minimum(side_distances, 2, &index);
+    side_distances[2] = distance_to_horizontal_segment(square_top_left, square_top_right, point);
+    side_distances[3] = distance_to_horizontal_segment(square_bottom_left, square_bottom_right, point);
+    error = get_minimum(side_distances, n_sides, &index);
 
 		if (STICK)
 		{

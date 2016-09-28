@@ -480,7 +480,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     // temporary variables:
     float x_center, y_center, radius, fitness;
 
-    // prepare the Region of Interest (ROI):
+    // prepare the Region of Interest (ROI), which is larger than the gate:
     float size_factor = 1.25;
     int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
     int16_t min_x = gates[n_gates-1].x - ROI_size;
