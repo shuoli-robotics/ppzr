@@ -30,6 +30,7 @@
   <periodic fun="snake_gate_periodic()" freq="20" autorun="TRUE"/>
   <makefile target="ap">
     <file name="snake_gate_detection.c"/>
+    <file name="lib/vision/gate_detection.c"/>
   </makefile>
 </module>
 

@@ -9,7 +9,7 @@
 #include <math.h>
 // one would expect this to be part of math.h, but...
 #define PI 3.14159265359
-#include "main_parameters.h"
+//#include "main_parameters.h"
 #include <stdlib.h>
 
 // variables that have to be remembered in between function calls:
@@ -63,7 +63,7 @@ int GRAPHICS = 0;
 void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y)
 {
   // 1) convert the disparity map to a vector of points:
-	convert_image_to_points(color_image);
+	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
 
   // if there are enough colored points:
 	if (n_points > min_points)
@@ -580,6 +580,7 @@ float distance_to_horizontal_segment(struct point_f Q1, struct point_f Q2, struc
 
 void draw_circle(struct image_t* Im, float x_center, float y_center, float radius, uint8_t* color)
 {
+  uint8_t* dest = Im->buf;
   float t_step = 0.05; // should depend on radius, but hey...
 	int x, y;
   float t;
@@ -587,12 +588,12 @@ void draw_circle(struct image_t* Im, float x_center, float y_center, float radiu
 	{
 		x = (int)x_center + (int)(cosf(t)*radius);
 		y = (int)y_center + (int)(sinf(t)*radius);
-		if (x >= 0 && x < Im->w && y >= 0 && y < Im->h)
+		if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
 		{
-      Im->image[y*Im->w*2+x*4] = color[1];
-      Im->image[y*Im->w*2+x*4+1] = color[0];
-      Im->image[y*Im->w*2+x*4+2] = color[2];
-      Im->image[y*Im->w*2+x*4+3] = color[0];
+      dest[y*Im->w*2+x*2] = color[1];
+      dest[y*Im->w*2+x*2+1] = color[0];
+      dest[y*Im->w*2+x*2+2] = color[2];
+      dest[y*Im->w*2+x*2+3] = color[0];
 		}
 	}
   return;
@@ -601,17 +602,17 @@ void draw_circle(struct image_t* Im, float x_center, float y_center, float radiu
 void draw_stick(struct image_t* Im, float x_center, float y_center, float radius, uint8_t* color)
 {
   // Potential TODO: use image_draw_line(struct image_t *img, struct point_t *from, struct point_t *to);
-
+  uint8_t* dest = Im->buf;
   int x, y;
   x = (int) x_center;
   for(y = (int)(y_center + radius); y <  (int)(y_center + 2*radius); y++)
   {
-    if (x >= 0 && x < Im->w && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
 		{
-      Im->image[y*Im->w*2+x*4] = color[1];
-      Im->image[y*Im->w*2+x*4+1] = color[0];
-      Im->image[y*Im->w*2+x*4+2] = color[2];
-      Im->image[y*Im->w*2+x*4+3] = color[0];
+      dest[y*Im->w*2+x*2] = color[1];
+      dest[y*Im->w*2+x*2+1] = color[0];
+      dest[y*Im->w*2+x*2+2] = color[2];
+      dest[y*Im->w*2+x*2+3] = color[0];
 		} 
   }
 }
@@ -620,7 +621,7 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
 {
 
   // Potential TODO: use image_draw_line(struct image_t *img, struct point_t *from, struct point_t *to); 
-
+  uint8_t* dest = Im->buf;
   float t_step = 0.05; // should depend on distance, but hey...
 	int x, y;
   float t;
@@ -628,12 +629,12 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
 	{
 		x = (int)(t * Q1.x + (1.0f - t) * Q2.x);
 		y = (int)(t * Q1.y + (1.0f - t) * Q2.y);
-		if (x >= 0 && x < Im->w && y >= 0 && y < Im->h)
+		if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
 		{
-      Im->image[y*Im->w*2+x*4] = color[1];
-      Im->image[y*Im->w*2+x*4+1] = color[0];
-      Im->image[y*Im->w*2+x*4+2] = color[2];
-      Im->image[y*Im->w*2+x*4+3] = color[0];
+      dest[y*Im->w*2+x*2] = color[1];
+      dest[y*Im->w*2+x*2+1] = color[0];
+      dest[y*Im->w*2+x*2+2] = color[2];
+      dest[y*Im->w*2+x*2+3] = color[0];
 		}
 	}
   return;

@@ -23,7 +23,7 @@ struct point_f {
 };
 
 // main gate detection function:
-void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0,
+extern void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0,
                     uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y);
 
 // "private" functions:
