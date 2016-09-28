@@ -722,7 +722,7 @@ float fit_clock_arms(float x_center, float y_center, float radius, float* angle_
     }
 
 		// if better than any previous individual, remember it:
-		if (min_fit < (*fitness))
+		if (min_fit < fitness)
 		{
 			for (ge = 0; ge < N_GENES_CLOCK; ge++)
 			{
