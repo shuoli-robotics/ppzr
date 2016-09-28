@@ -69,6 +69,7 @@ float min_gate_quality = 0.4;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
 
+
 int y_low = 0;
 int y_high = 0;
 int x_low1 = 0;
@@ -231,7 +232,12 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
   {
     gate_size = 1;
   }
-  y_dist = (pix_sz*3.0)/gate_size;//piz size to meters
+  
+  
+  float gate_size_m = tan(((float)gate_size/2.0)*radians_per_pix_w)*3.0;
+  y_dist = gate_size_m/tan((pix_sz/2)*radians_per_pix_w);
+  
+  //y_dist = (pix_sz*3.0)/gate_size;//piz size to meters
   x_dist = y_dist * sin(hor_angle);
   z_dist = y_dist * sin(vert_angle);
   
