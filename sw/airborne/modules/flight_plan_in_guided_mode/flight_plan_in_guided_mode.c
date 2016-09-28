@@ -34,14 +34,16 @@
 #include <math.h>
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
-#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/computer_vision/snake_gate_detection.h"
+
 
 
 #define p_x_position 0.2
 #define p_y_position 0.2
 
-# define Z_SETPOINT -1.5
+# define Z_SETPOINT 0   //was -1.5
 
 float psi0;//
 float psi1;
@@ -127,12 +129,12 @@ void change_heading_hover(float derta_psi){
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         psi0 = stateGetNedToBodyEulers_f()->psi;
 	    guidance_loop_set_heading(psi0+derta_psi);
-        states_race.turning = 1;
+        states_race.turning = TRUE;
     }
 
     if (fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.02)
     {
-        states_race.turning = 0;
+        states_race.turning = FALSE;
     }
 }
 
@@ -226,13 +228,9 @@ void go_left_right(float velocity){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        //psi0 = stateGetNedToBodyEulers_f()->psi;
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        //z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_z(z0);
-        //guidance_loop_set_heading(psi0);
     }
 }
 
@@ -324,5 +322,47 @@ void search_gate()
         velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
         velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
         guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+    }
+}
+
+void take_off(float desired_altitude)
+{
+    if (primitive_in_use != TAKE_OFF)
+    {
+        primitive_in_use = TAKE_OFF;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(desired_altitude);
+    }
+
+    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1)
+    {
+        states_race.altitude_is_achieved = 1;
+    }
+}
+
+void land()
+{
+    if (primitive_in_use != LAND)
+    {
+        primitive_in_use = LAND;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi0);
+        z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(0);
+    }
+
+    if (fabs(stateGetPositionNed_f()->z)<0.1)
+    {
+        states_race.land_is_finished = 1;
     }
 }

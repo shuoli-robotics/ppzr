@@ -24,12 +24,12 @@
  */
 
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
-#include "modules/replay_commands/replay_commands.h"
+//#include "modules/replay_commands/replay_commands.h"
 #include "state.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
-#include "modules/replay_commands/replay_commands.h"
+//#include "modules/replay_commands/replay_commands.h"
 
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 
@@ -207,7 +207,7 @@ void guidance_loop_set_heading(float heading){
     guidance_module.cmd.psi = BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
 }
 
-void guidance_loop_set_velocity(float vx, float vy){
-    guidance_module.desired_vx = vx;
-    guidance_module.desired_vy = vy;
+void guidance_loop_set_velocity(float vx_earth, float vy_earth){
+    guidance_module.desired_vx = vx_earth;
+    guidance_module.desired_vy = vy_earth;
 }

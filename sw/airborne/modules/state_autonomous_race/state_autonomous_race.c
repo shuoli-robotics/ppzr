@@ -24,23 +24,26 @@
  */
 
 #include "modules/state_autonomous_race/state_autonomous_race.h"
-#include "firmwares/rotorcraft/autopilot.h"
-#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
-#include "modules/command_level_iros/command_level_iros.h"
-#include <stdio.h>
-#include "modules/command_level_iros/command_level_iros.h"
 
-void state_autonomous_race_init();
-void display_lower_state();
+
+//void state_autonomous_race_init();
+//void display_lower_state();
 
 
 
 struct state_autonomous_race states_race;
 
+void display_upper_state(void);
+void display_lower_state(void);
+
+
 void state_autonomous_race_init() {
     states_race.gate_counter = 0;
-    states_race.ready_pass_through = 0;
-    states_race.turning = 0;
+    states_race.ready_pass_through = FALSE;
+    states_race.turning = FALSE;
+    states_race.altitude_is_achieved = FALSE;
+    states_race.land_is_finished =FALSE;
+    states_race.gate_counter_in_second_part = 0;
 }
 
 void display_states()
@@ -48,7 +51,10 @@ void display_states()
     if (autopilot_mode != AP_MODE_MODULE)
         return;
    // printf("gate_counter is %d \n",states_race.gate_counter);
+
+    display_upper_state();
     display_lower_state();
+
     printf("\n");
     printf("\n");
     printf("\n");
@@ -78,3 +84,19 @@ void display_lower_state()
             break;
     }
 }
+
+void display_upper_state()
+{
+    switch(state_upper_level)
+    {
+        case FIRST_PART:
+            printf("It is in FIRST_PART\n");
+            break;
+        case SECOND_PART:
+            printf("It is in SECOND_PART\n");
+            break;
+        case THIRD_PART:
+            printf("It is in THIRD_PART\n");
+            break;
+    }
+};

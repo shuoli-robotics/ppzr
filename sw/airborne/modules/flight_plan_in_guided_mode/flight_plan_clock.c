@@ -51,3 +51,4 @@ void flight_plan_clock_run() {
     time_temp3 = counter_temp3/20.0;
     time_gate_detected = counter_gate_detected/20.0;
 }
+
