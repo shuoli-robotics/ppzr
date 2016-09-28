@@ -21,12 +21,14 @@ int Y0[9] = {0,1,2,0,1,2,0,1,2};
 int X0[9] = {0,0,0,1,1,1,2,2,2};
 
 struct point_f points[MAX_POINTS];
-uint16_t n_points;
+struct point_f clock_arm_points[MAX_POINTS];
+uint16_t n_points, n_clock_arm_points;
 
 // Settings for the evolution:
 // 10 individuals 30 generations is a normal setting
 #define N_INDIVIDUALS 10
 #define N_GENES 3
+#define N_GENES_CLOCK 2
 uint16_t n_generations = 10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
@@ -43,6 +45,9 @@ float outlier_threshold = 20.0f;
 // whether to draw on the image:
 int GRAPHICS = 0;
 
+// factor within which we search for clock arms:
+float clock_factor = 0.6;
+
 /**
  * Function takes a disparity image and fits a circular gate to the close-by points.
  * - x0, y0, size0 contain an initial guess and indicate where the closest object probably is
@@ -52,7 +57,7 @@ int GRAPHICS = 0;
  * @author Guido
  */
 
-void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y)
+void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2)
 {
   // 1) convert the disparity map to a vector of points:
 	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
@@ -83,6 +88,12 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 
 		// run the fit procedure:
 		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness);
+
+    // possibly detect clock arms
+    if(clock_arms)
+    {
+      float clock_arm_fit = fit_clock_arms((*x_center), (*y_center), (*radius), angle_1, angle_2);
+    }
 
     if(GRAPHICS)
     {
@@ -429,6 +440,36 @@ float mean_distance_to_square(float* genome)
 	return mean_distance;
 }
 
+float mean_distance_to_arms(float* genome, float x, float y)
+{
+  int p;
+  float d1, d2, dist;
+  float mean_distance = 0;
+  struct point_f Q1, Q2, Q3, point;
+  Q1.x = x;
+  Q1.y = y;
+  float length_arm = 150; // in pixels
+  Q2.x = Q1.x + cosf(genome[0]);
+  Q2.y = Q1.y + sinf(genome[0]);
+  Q3.x = Q1.x + cosf(genome[1]);
+  Q3.y = Q1.y + sinf(genome[1]);
+
+  for(p = 0; p < n_clock_arm_points; p++)
+  {
+    point = clock_arm_points[p];
+    // float distance_to_segment(struct point_f Q1, struct point_f Q2, struct point_f P);
+    d1 = distance_to_segment(Q1, Q2, point);
+    d1 = distance_to_segment(Q1, Q3, point);
+    dist = (d1 < d2) ? d1 : d2;
+    dist = (dist < outlier_threshold) ? dist : outlier_threshold;
+    mean_distance += dist; 
+  }
+
+  mean_distance /= n_clock_arm_points;
+
+  return mean_distance;
+}
+
 float distance_to_line(struct point_f Q1, struct point_f Q2, struct point_f P)
 {
   // see e.g., http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
@@ -625,3 +666,88 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
   return;
 }
 
+float fit_clock_arms(float x_center, float y_center, float radius, float* angle_1, float* angle_2)
+{
+  // 1) down-select the points to fit within the window
+  // 2) optimize two angles to best fit the pattern
+  
+  int p, cp;
+  float fitness;
+  float min_x = x_center - clock_factor * radius;
+  float max_x = x_center + clock_factor * radius;
+  float min_y = y_center - clock_factor * radius;
+  float max_y = y_center + clock_factor * radius;
+
+  // 1) down-select the points to fit within the window
+  cp = 0;
+  for(p = 0; p < n_points; p++)
+  {
+    if(points[p].x > min_x && points[p].x < max_x && points[p].y > min_y && points[p].y < max_y)
+    {
+      clock_arm_points[cp] = points[p];
+      cp++;     
+    }
+  }
+  n_clock_arm_points = cp;  
+
+  // 2) optimize two angles to best fit the pattern
+  uint16_t i, g, ge;
+	for (i = 0; i < N_INDIVIDUALS; i++)
+	{
+    Population[i][0] = 2 * PI * get_random_number() - PI;
+    Population[i][1] = 2 * PI * get_random_number() - PI;
+	}
+
+	// large number, since we will minimize it:
+	fitness = 1000000;
+	float fits[N_INDIVIDUALS];
+	float best_genome[N_GENES];
+  best_genome[0] = 0;
+  best_genome[1] = 0;
+	for (g = 0; g < n_generations; g++)
+	{
+		for (i = 0; i < N_INDIVIDUALS; i++)
+		{
+      // optimize mean distance to square (and possibly stick) 
+		  fits[i] = mean_distance_to_arms(Population[i], x_center, y_center);
+		}
+
+		// get the best individual and store it in min_genome:
+		int index;
+		float min_fit = get_minimum(fits, N_INDIVIDUALS, &index);
+    float min_genome[N_GENES_CLOCK];
+    for(ge = 0; ge < N_GENES_CLOCK; ge++)
+    {
+		  min_genome[ge] = Population[index][ge];
+    }
+
+		// if better than any previous individual, remember it:
+		if (min_fit < (*fitness))
+		{
+			for (ge = 0; ge < N_GENES_CLOCK; ge++)
+			{
+				best_genome[ge] = min_genome[ge];
+			}
+			fitness = min_fit;
+		}
+
+		// fill the new population with mutated copies of this generation's best:
+		if (g < n_generations - 1)
+		{
+			// super elitist evolution:
+			for (i = 0; i < N_INDIVIDUALS; i++)
+			{
+				Population[i][0] = min_genome[0] + 2 * PI * get_random_number() - PI;
+				Population[i][1] = min_genome[1] + 2 * PI * get_random_number() - PI;
+			}
+		}
+
+	}
+
+  // put the final values back in the parameters:
+	(*angle_1) = best_genome[0];
+	(*angle_2) = best_genome[1];
+
+  return fitness;
+   
+}
