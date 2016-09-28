@@ -63,7 +63,7 @@ int GRAPHICS = 0;
 void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y)
 {
   // 1) convert the disparity map to a vector of points:
-	convert_disparitymap_to_points(color_image);
+	convert_image_to_points(color_image);
 
   // if there are enough colored points:
 	if (n_points > min_points)

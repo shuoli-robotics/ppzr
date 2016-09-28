@@ -52,7 +52,6 @@
 #define Z_POS_MARGIN 0.2//m
 #define X_SPEED_MARGIN 0.15//m/s
 #define Y_SPEED_MARGIN 0.15//m/s
->>>>>>> 0d35f3a42bed0e41e927362ef8a3d4538146cee5
 
 struct video_listener *listener = NULL;
 
@@ -488,15 +487,15 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     int16_t min_x = gates[n_gates-1].x - ROI_size;
     min_x = (min_x < 0) ? 0 : min_x;
     int16_t max_x = gates[n_gates-1].x + ROI_size;
-    max_x = (max < img->w) ? max_x : img->w;
+    max_x = (max_x < img->w) ? max_x : img->w;
     int16_t min_y = gates[n_gates-1].y - ROI_size;
     min_y = (min_y < 0) ? 0 : min_y;
     int16_t max_y = gates[n_gates-1].y + ROI_size;
-    max_y = (max < img->h) ? max_y : img->h;
+    max_y = (max_y < img->h) ? max_y : img->h;
 
     // detect the gate:
     gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
-                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t max_y));
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y);
   
     // store the information in the gate:
     gates[n_gates-1].x = (int) x_center;
