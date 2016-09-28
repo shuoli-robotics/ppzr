@@ -37,13 +37,16 @@
 //#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/snake_gate_detection.h"
+#include "subsystems/ins.h"
 
 
 
-#define p_x_position 0.2
-#define p_y_position 0.2
+#define p_x_position 0.1
+#define p_y_position 0.1
 
-# define Z_SETPOINT 0   //was -1.5
+#define Y_ADJUST_POSITION 2
+
+# define Z_SETPOINT -1.5   //was -1.5
 
 float psi0;//
 float psi1;
@@ -67,7 +70,7 @@ bool arc_is_finished = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
-#define Z_BIAS 0.3//was .2
+#define Z_BIAS 0//was .2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
@@ -109,7 +112,7 @@ void go_straight(float velocity){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        //psi0 = stateGetNedToBodyEulers_f()->psi;
+        psi0 = stateGetNedToBodyEulers_f()->psi;
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
@@ -132,7 +135,7 @@ void change_heading_hover(float derta_psi){
         states_race.turning = TRUE;
     }
 
-    if (fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.02)
+    if (time_primitive > 1)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
     {
         states_race.turning = FALSE;
     }
@@ -275,12 +278,12 @@ void adjust_position(float derta_altitude){
     else if (current_x_gate<-0.1)
         velocity_body_y = p_x_position * current_x_gate;
 
-    if (fabs(current_y_gate-1.5)<0.2)
+    if (fabs(current_y_gate-Y_ADJUST_POSITION)<0.2)
         velocity_body_x = 0;
-    else if (current_y_gate-1.5>0.2)
-        velocity_body_x = 0.15;
-    else if (current_y_gate-1.5<-0.2)
-        velocity_body_x =  -0.15;
+    else if (current_y_gate-Y_ADJUST_POSITION>0.2)
+        velocity_body_x = 0.1;
+    else if (current_y_gate-Y_ADJUST_POSITION<-0.2)
+        velocity_body_x =  -0.1;
 
     velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
     velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
@@ -334,9 +337,11 @@ void take_off(float desired_altitude)
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        psi0 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_heading(psi0);
+        //psi0 = stateGetNedToBodyEulers_f()->psi;
+        //guidance_loop_set_heading(psi0);
+        //ins_reset_altitude_ref();
         z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_vz(-0.2);
         guidance_v_set_guided_z(desired_altitude);
     }
 
