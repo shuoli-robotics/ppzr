@@ -26,10 +26,10 @@
 #ifndef REPLAY_COMMANDS_H
 #define REPLAY_COMMANDS_H
 
-extern void replay_commands_init();
-extern void replay_commands_periodic();
-extern void replay_commands_start();
-extern void replay_commands_stop();
+extern void replay_commands_init(void);
+extern void replay_commands_periodic(void);
+extern void replay_commands_start(void);
+extern void replay_commands_stop(void);
 
 
 extern int n; //maximum number of characters in the line

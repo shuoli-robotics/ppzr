@@ -38,7 +38,8 @@
 #define ADJUST_POSITION          8
 #define ARC                      9
 #define SEARCH_GATE              10
-
+#define TAKE_OFF                 11
+#define LAND                     12
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
@@ -55,8 +56,9 @@
  extern void adjust_position(float derta_altitude);
  extern void arc(float radius, float planned_time, float desired_angle_change);
  extern void search_gate(void);
+ extern void take_off(float desired_altitude);
+ extern void land(void);
 
-//void set_velocity_test(float vx_earth_t,float vy_earth_t,float planned_time);
 
 #endif
 

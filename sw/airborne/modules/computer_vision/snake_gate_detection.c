@@ -129,7 +129,7 @@ float previous_z_gate = 0;
 
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
-int gate_detected = 0;
+//int gate_detected = 0;
 int init_pos_filter = 0;
 int safe_pass_counter = 0;
 
@@ -145,7 +145,7 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
 				  &current_x_gate,&current_y_gate,&current_z_gate,&body_filter_x,&body_filter_y,
-				  &y_center_picker,&cb_center,&cr_center,&sz,&szx1,&szx2); //  
+				  &y_center_picker,&cb_center,&cr_center,&sz,&szx1,&states_race.gate_detected); //
 }
 
 
@@ -227,17 +227,15 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
   pix_x = x_pix;
   pix_y = y_pix;
   pix_sz = gate.sz;
-  
+
+
   if(gate_size == 0)
   {
     gate_size = 1;
   }
   
-  
   float gate_size_m = tan(((float)gate_size/2.0)*radians_per_pix_w)*3.0;
   y_dist = gate_size_m/tan((pix_sz/2)*radians_per_pix_w);
-  
-  //y_dist = (pix_sz*3.0)/gate_size;//piz size to meters
   x_dist = y_dist * sin(hor_angle);
   z_dist = y_dist * sin(vert_angle);
   
@@ -248,18 +246,18 @@ void snake_gate_periodic(void)
 {
   	//SAFETY  gate_detected
 	if(y_dist > 0.6 && y_dist < 5){
-	  gate_detected = 1;
+        states_race.gate_detected = 1;
         counter_gate_detected = 0;
         time_gate_detected = 0;
 	}
 	else{
-	  gate_detected = 0;
+        states_race.gate_detected = 0;
         counter_gate_detected = 0;
         time_gate_detected = 0;
 	}
 	
 	//SAFETY ready_pass_trough
-	if(gate_detected == 1 && fabs(x_dist-INITIAL_X) < X_POS_MARGIN && fabs(y_dist-INITIAL_Y) < Y_POS_MARGIN
+	if(states_race.gate_detected == 1 && fabs(x_dist-INITIAL_X) < X_POS_MARGIN && fabs(y_dist-INITIAL_Y) < Y_POS_MARGIN
 	  && fabs(z_dist-INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN && fabs(opt_body_v_x)<Y_SPEED_MARGIN ){
         safe_pass_counter += 1;
 	}
@@ -321,7 +319,7 @@ void snake_gate_periodic(void)
 	
 	float sonar_alt = stateGetPositionNed_f()->z;
 	
-        if (gate_detected == 1)
+        if (states_race.gate_detected == 1)
 	{
 	
 		// Mix the measurement with the prediction:
@@ -384,6 +382,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
   //color picker
   //check_color_center(img,&y_center_picker,&cb_center,&cr_center);
+
   for(i = 0; i < n_samples; i++)
   {
     // get a random coordinate:
@@ -392,6 +391,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //check_color(img, 1, 1);
     // check if it has the right color
+      int check_seg = y * (img->w) * 2 + x * 4;
+      printf("check_seg:%d\n",check_seg);
+      printf("x = %d,y = %d\n",x,y);
     if(check_color(img, x, y))
     {
       // snake up and down:
@@ -491,6 +493,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
   
   }
+    else{states_race.gate_detected = 0;}
   return img; // snake_gate_detection did not make a new image
 }
 

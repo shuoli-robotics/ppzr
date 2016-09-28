@@ -14,15 +14,15 @@
       <module name="udp"/>
     </target>
 
-    <define name="USE_SONAR" value="TRUE"/>
+    <!--define name="USE_SONAR" value="TRUE"/-->
 
-	<define name="MT9F002_OUTPUT_WIDTH" value="128"/>
+	<define name="MT9F002_OUTPUT_WIDTH" value="160"/>
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 
 	<define name="MT9F002_OUTPUT_SCALER" value="0.125"/>
-	<define name="MT9F002_INITIAL_OFFSET_X" value="2050"/>
+	<define name="MT9F002_INITIAL_OFFSET_X" value="2048"/>
 
-	<define name="MT9F002_INITIAL_OFFSET_Y" value="700"/>
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="472"/>
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -36,7 +36,7 @@
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
     </module>
-    <module name="ins" type="extended"/><!--extended-->
+    <module name="ins" type="extended"/>
   </firmware>
 
   <modules main_freq="512">
@@ -44,9 +44,9 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <module name="logger_file">
+    <!--module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-   </module>
+   </module-->
     <module name="state_autonomous_race"/>
 
     <module name="guidance_loop_velocity_autonomous_race">
@@ -59,11 +59,11 @@
    </module>
     <module name="send_imu_mag_current"/>
     <module name="command_level_iros"/>
-    <module name="video_thread">
-    </module>
+    <module name="video_thread"/>
+    
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-    <module name="replay_commands"/>
+    <!--module name="replay_commands"/-->
  
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
@@ -76,11 +76,21 @@
       <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
     </module>
 
-   <module name="stereocam">
+    <module name="cv_snake_gate_detection">
+      <define name="SGD_CAMERA" value="front_camera"/>
+    </module>
+
+   <!--module name="stereocam">
 	<configure name="STEREO_UART" value="UART2"/>
 	<configure name="STEREO_BAUD" value="B9600"/>
     </module> 
-    <module name="stereo_gate_position"/>
+    <module name="stereo_gate_position"/-->
+
+   <module name="video_rtp_stream">
+       <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
+	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
+	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
+    </module>
 
   </modules>
 
@@ -123,14 +133,6 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-    <!-- Magneto calibration >
-	<define name="MAG_X_NEUTRAL" value="-12"/>
-        <define name="MAG_Y_NEUTRAL" value="-47"/>
-	<define name="MAG_Z_NEUTRAL" value="101"/>
-	<define name="MAG_X_SENS" value="6.48683589744" integer="16"/>
-	<define name="MAG_Y_SENS" value="6.88931574557" integer="16"/>
-	<define name="MAG_Z_SENS" value="6.51731492056" integer="16"/-->
-
         <define name="MAG_X_NEUTRAL" value="136"/>
 	<define name="MAG_Y_NEUTRAL" value="60"/>
 	<define name="MAG_Z_NEUTRAL" value="233"/>
