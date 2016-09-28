@@ -132,6 +132,8 @@ int uncertainty_gate = 0;
 int init_pos_filter = 0;
 int safe_pass_counter = 0;
 
+float gate_quality = 0;
+
 float fps_filter = 0;
 
 struct timeval stop, start;
@@ -150,8 +152,16 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 // 1 means that it passes the filter
 int check_color(struct image_t *im, int x, int y)
 {
+  if(x%2 == 1) x--;
+  
+  if(x < 0 || x >= im->w || y < 0 || y >= im->h)
+    return 0;
+   
   uint8_t *buf = im->buf; 
-  buf += y * (im->w) * 2 + x * 4;
+  buf += 2 * (y * (im->w) + x); // each pixel has two bytes
+				// odd ones are uy
+				// even ones are vy
+  
 
   if (
       (buf[1] >= color_lum_min)
@@ -175,9 +185,9 @@ int check_color(struct image_t *im, int x, int y)
 void check_color_center(struct image_t *im, uint8_t *y_c, uint8_t *cb_c, uint8_t *cr_c)
 {
   uint8_t *buf = im->buf; 
-  int x = (im->w)/4;
+  int x = (im->w)/2;
   int y = (im->h)/2;
-  buf += y * (im->w) * 2 + x * 4;
+  buf += y * (im->w) * 2 + x * 2;
   
   *y_c = buf[1];
   *cb_c = buf[0];
@@ -193,9 +203,13 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 
   // Copy the creation timestamp (stays the same)
   output->ts = input->ts;
-
- source += y * (input->w) * 2 + x * 4;
- dest += y * (output->w) * 2 + x * 4;
+  if(x%2 == 1) x--;
+  if(x < 0 || x >= input->w || y < 0 || y >= input->h)
+    return;
+  
+  
+ source += y * (input->w) * 2 + x * 2;
+ dest += y * (output->w) * 2 + x * 2;
         // UYVY
         dest[0] = 65;//211;        // U//was 65
         dest[1] = source[1];  // Y
@@ -206,14 +220,19 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
 {
   //calculate angles here
-  vert_angle = (-(((float)x_pix*2.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta);
+  vert_angle = (-(((float)x_pix*1.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta);
   hor_angle = (((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h;
   
   pix_x = x_pix;
   pix_y = y_pix;
   pix_sz = gate.sz;
 
-    printf("y_dist is %d\n",gate_size);
+
+  if(gate_size == 0)
+  {
+    gate_size = 1;
+  }
+
   y_dist = (pix_sz*3.0)/gate_size;//piz size to meters
   x_dist = y_dist * sin(hor_angle);
   z_dist = y_dist * sin(vert_angle);
@@ -365,7 +384,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   for(i = 0; i < n_samples; i++)
   {
     // get a random coordinate:
-    x = rand() % (img->w/2);
+    x = rand() % img->w;
     y = rand() % img->h;
 
     //check_color(img, 1, 1);
@@ -387,7 +406,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       // if the stretch is long enough
       if(sz > min_pixel_size)
       {
-	
         // snake left and right:
         snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
         snake_left_and_right(img, x, y_high, &x_low2, &x_high2); 
@@ -398,8 +416,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         x_high2 = x_high2 - (sz*gate_thickness);
 	
         // sizes of the left-right stretches: in y pixel coordinates
-        szx1 = (x_high1-x_low1)*2;
-        szx2 = (x_high2-x_low2)*2;
+        szx1 = (x_high1-x_low1);
+        szx2 = (x_high2-x_low2);
             
         // if the size is big enough:
         if(szx1 > min_pixel_size)
@@ -414,6 +432,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           gates[n_gates].sz = sz/2;
           // check the gate quality:
           check_gate(img, gates[n_gates], &quality);
+	  gates[n_gates].gate_q = quality;
           // only increment the number of gates if the quality is sufficient
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
@@ -422,10 +441,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             n_gates++;
           }
         }
-        
         else if(szx2 > min_pixel_size)
         {
-
           x = (x_high2 + x_low2) / 2;//was +
           // set the size to the largest line found:
           sz = (sz > szx2) ? sz : szx2;
@@ -435,6 +452,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           gates[n_gates].sz = sz/2;
           // check the gate quality:
           check_gate(img, gates[n_gates], &quality);
+	  gates[n_gates].gate_q = quality;
           // only increment the number of gates if the quality is sufficient
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
@@ -464,10 +482,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                                       );}
           
   //DRAW gate
-  
   if(best_quality > min_gate_quality && n_gates>0)
   {
   draw_gate(img, gates[n_gates-1]);
+  gate_quality = gates[n_gates-1].gate_q;
   //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
   
   calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
@@ -482,24 +500,24 @@ void draw_gate(struct image_t *im, struct gate_img gate)
 {
   // draw four lines on the image:
   struct point_t from, to;
-  from.x = (gate.x - gate.sz/2)*2;
+  from.x = (gate.x - gate.sz);
   from.y = gate.y - gate.sz;
-  to.x = (gate.x - gate.sz/2)*2;
+  to.x = (gate.x - gate.sz);
   to.y = gate.y + gate.sz;
   image_draw_line(im, &from, &to);
-  from.x = (gate.x - gate.sz/2)*2;
+  from.x = (gate.x - gate.sz);
   from.y = gate.y + gate.sz;
-  to.x = (gate.x + gate.sz/2)*2;
+  to.x = (gate.x + gate.sz);
   to.y = gate.y + gate.sz;
   image_draw_line(im, &from, &to);
-  from.x = (gate.x + gate.sz/2)*2;
+  from.x = (gate.x + gate.sz);
   from.y = gate.y + gate.sz;
-  to.x = (gate.x + gate.sz/2)*2;
+  to.x = (gate.x + gate.sz);
   to.y = gate.y - gate.sz;
   image_draw_line(im, &from, &to);
-  from.x = (gate.x + gate.sz/2)*2;
+  from.x = (gate.x + gate.sz);
   from.y = gate.y - gate.sz;
-  to.x = (gate.x - gate.sz/2)*2;
+  to.x = (gate.x - gate.sz);
   to.y = gate.y - gate.sz;
   image_draw_line(im, &from, &to);
 }
@@ -513,40 +531,47 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float* quality)
   
   // check the four lines of which the gate consists:
   struct point_t from, to;
-  from.x = gate.x - gate.sz/2;
+  from.x = gate.x - gate.sz;
   from.y = gate.y - gate.sz;
-  to.x = gate.x - gate.sz/2;
+  to.x = gate.x - gate.sz;
   to.y = gate.y + gate.sz;
   check_line(im, from, to, &np, &nc);
   n_points += np; 
   n_colored_points += nc;
 
-  from.x = gate.x - gate.sz/2;
+  from.x = gate.x - gate.sz;
   from.y = gate.y + gate.sz;
-  to.x = gate.x + gate.sz/2;
+  to.x = gate.x + gate.sz;
   to.y = gate.y + gate.sz;
   check_line(im, from, to, &np, &nc);
   n_points += np; 
   n_colored_points += nc;
 
-  from.x = gate.x + gate.sz/2;
+  from.x = gate.x + gate.sz;
   from.y = gate.y + gate.sz;
-  to.x = gate.x + gate.sz/2;
+  to.x = gate.x + gate.sz;
   to.y = gate.y - gate.sz;
   check_line(im, from, to, &np, &nc);
   n_points += np; 
   n_colored_points += nc;
 
-  from.x = gate.x + gate.sz/2;
+  from.x = gate.x + gate.sz;
   from.y = gate.y - gate.sz;
-  to.x = gate.x - gate.sz/2;
+  to.x = gate.x - gate.sz;
   to.y = gate.y - gate.sz;
   check_line(im, from, to, &np, &nc);
   n_points += np; 
   n_colored_points += nc;
 
   // the quality is the ratio of colored points / number of points:
-  (*quality) = ((float) n_colored_points) / ((float) n_points);
+  if(n_points == 0) 
+  {
+    (*quality) = 0;
+  }
+  else
+  {
+    (*quality) = ((float) n_colored_points) / ((float) n_points);
+  }
 }
 
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points)
@@ -564,7 +589,7 @@ void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n
 		x = (int)(t * Q1.x + (1.0f - t) * Q2.x);
 		y = (int)(t * Q1.y + (1.0f - t) * Q2.y);
 
-		if (x >= 0 && x < (im->w/2) && y >= 0 && y < im->h)
+		if (x >= 0 && x < im->w && y >= 0 && y < im->h)
 		{
       // augment number of checked points:
       (*n_points)++;
@@ -618,7 +643,7 @@ void snake_up_and_down(struct image_t *im, int x, int y, int* y_low, int* y_high
     {
       (*y_high)++;
     }
-    else if(x < (im->w/2)-1 && check_color(im, x+1, (*y_high)+1))
+    else if(x < im->w-1 && check_color(im, x+1, (*y_high)+1))
     {
       x++;
       (*y_high)++;
@@ -668,7 +693,7 @@ void snake_left_and_right(struct image_t *im, int x, int y, int* x_low, int* x_h
   (*x_high) = x;
   done = 0;
   // snake towards positive x (right)
-  while((*x_high) < (im->w/2) - 1 && !done)
+  while((*x_high) < im->w - 1 && !done)
   {
     
     if(check_color(im, (*x_high)+1, y))

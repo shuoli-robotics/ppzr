@@ -34,6 +34,7 @@ struct gate_img {
   int x;             ///< The image x coordinate of the gate center
   int y;             ///< The image y coordinate of the gate center
   int sz;            ///< Half the image size of the gate 
+  float gate_q; //gate quality
 };
 
 // Module functions

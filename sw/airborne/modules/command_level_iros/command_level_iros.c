@@ -173,7 +173,7 @@ void second_part_logic()
             {
                 states_race.distance_before_gate = current_y_gate;
                 //state_lower_level = GO_THROUGH_CM;
-                state_lower_level = GO_THROUGH_CM;
+                state_lower_level = ADJUST_POSITION_CM;
             }
             break;
 

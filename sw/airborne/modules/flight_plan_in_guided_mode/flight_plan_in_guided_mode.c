@@ -43,7 +43,7 @@
 #define p_x_position 0.2
 #define p_y_position 0.2
 
-# define Z_SETPOINT -1.5
+# define Z_SETPOINT 0   //was -1.5
 
 float psi0;//
 float psi1;
