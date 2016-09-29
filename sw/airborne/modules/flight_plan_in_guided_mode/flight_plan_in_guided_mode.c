@@ -44,7 +44,7 @@
 #define p_x_position 0.1
 #define p_y_position 0.1
 
-#define Y_ADJUST_POSITION 2
+#define Y_ADJUST_POSITION 2.5
 
 # define Z_SETPOINT -1.5   //was -1.5
 
@@ -308,19 +308,19 @@ void search_gate()
         guidance_v_set_guided_z(z0);
         return;
     }
-    if (time_primitive < 5)
+    if (time_primitive < 2)
     {
         velocity_body_x = 0;
-        velocity_body_y = 0.3;
+        velocity_body_y = 0.2;
         psi0 = stateGetNedToBodyEulers_f()->psi;
         velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
         velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
         guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
     }
-    else if(time_primitive < 15)
+    else if(time_primitive < 6)
     {
         velocity_body_x = 0;
-        velocity_body_y = -0.3;
+        velocity_body_y = -0.2;
         psi0 = stateGetNedToBodyEulers_f()->psi;
         velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
         velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;

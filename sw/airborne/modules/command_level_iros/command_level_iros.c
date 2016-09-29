@@ -60,14 +60,14 @@ void command_init(){
     //record_command = 0;
 
     // here we need to change the angle and distance for passing through the gates
-    parameter_to_be_tuned.distance_first_gate = 1;
-    parameter_to_be_tuned.distance_second_gate = 1;
-    parameter_to_be_tuned.distance_third_gate = 1;
-    parameter_to_be_tuned.distance_fourth_gate = 1;
-    parameter_to_be_tuned.heading_after_first_gate = PI;
+    parameter_to_be_tuned.distance_first_gate = 0.5;
+    parameter_to_be_tuned.distance_second_gate = 0.5;
+    parameter_to_be_tuned.distance_third_gate = 0.5;
+    parameter_to_be_tuned.distance_fourth_gate = 0.5;
+    parameter_to_be_tuned.heading_after_first_gate = -45.0/180.0*PI;
     parameter_to_be_tuned.heading_after_second_gate = PI;
-    parameter_to_be_tuned.heading_after_third_gate = PI;
-    parameter_to_be_tuned.heading_after_fourth_gate = PI;
+    parameter_to_be_tuned.heading_after_third_gate = 45.0/180.0*PI;
+    parameter_to_be_tuned.heading_after_fourth_gate = 0;
 }
 
 
@@ -79,8 +79,8 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = TAKE_OFF_CM;
-        state_upper_level = FIRST_PART;
+        state_lower_level = WAIT_FOR_DETECTION_CM;
+        state_upper_level = SECOND_PART;
         states_race.gate_counter_in_second_part = 0;
         counter_of_step = 0;
 //        if (fabs(stateGetPositionNed_f()->z)<0.5)
@@ -171,7 +171,7 @@ void first_part_logic()
 void second_part_logic()
 {
     // if we pass through 100 gates, we can change to third part
-    if ( states_race.gate_counter_in_second_part == 2)
+    if ( states_race.gate_counter_in_second_part == 4)
     {
         state_upper_level = THIRD_PART;
         return;

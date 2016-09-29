@@ -27,7 +27,7 @@
 #define COMMAND_LEVEL_IROS_H
 
 #ifndef CONSTANT_VELOCITY_STRAIGHT
-#define CONSTANT_VELOCITY_STRAIGHT 0.8
+#define CONSTANT_VELOCITY_STRAIGHT 0.6
 #endif
 
 extern void command_run(void);  // 20HZ
