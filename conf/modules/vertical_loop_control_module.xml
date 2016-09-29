@@ -1,0 +1,14 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="vertical_loop_control_module">
+  <doc>
+    <description>vertical controller in module mode</description>
+  </doc>
+  <header>
+    <file name="vertical_loop_control_module.h"/>
+  </header>
+  <makefile>
+    <file name="vertical_loop_control_module.c"/>
+  </makefile>
+</module>
+

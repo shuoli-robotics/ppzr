@@ -83,10 +83,7 @@ void command_run() {
         state_upper_level = FIRST_PART;
         states_race.gate_counter_in_second_part = 0;
         counter_of_step = 0;
-//        if (fabs(stateGetPositionNed_f()->z)<0.5)
-//        {
-            states_race.altitude_is_achieved = 0;  // we need to take off from ground
-//        }
+        states_race.altitude_is_achieved = 0;  // we need to take off from ground
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -163,14 +160,13 @@ void first_part_logic()
             break;
 
     }
-    //state_upper_level  = SECOND_PART;
 }
 
 
 
 void second_part_logic()
 {
-    // if we pass through 100 gates, we can change to third part
+    // if we pass through 2 gates, we can change to third part
     if ( states_race.gate_counter_in_second_part == 2)
     {
         state_upper_level = THIRD_PART;
@@ -264,6 +260,21 @@ void third_part_logic()
 {
     land();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 float choose_heading_after_passing_through_gate()
 {
