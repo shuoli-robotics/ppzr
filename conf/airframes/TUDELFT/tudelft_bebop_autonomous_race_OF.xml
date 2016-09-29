@@ -79,7 +79,11 @@
       <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
     </module>
 
-    <module name="cv_snake_gate_detection">
+    <!--module name="cv_snake_gate_detection">
+      <define name="SGD_CAMERA" value="front_camera"/>
+    </module-->
+
+    <module name="cv_snake_gate_gen">
       <define name="SGD_CAMERA" value="front_camera"/>
     </module>
 
