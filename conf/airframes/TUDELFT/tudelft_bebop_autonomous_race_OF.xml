@@ -16,6 +16,9 @@
 
     <define name="USE_SONAR" value="TRUE"/>
 
+    <!--define name="USE_SONAR" value="TRUE"/-->
+	<define name="SENSOR_SYNC_SEND_SONAR" value="TRUE"/>
+
 	<define name="MT9F002_OUTPUT_WIDTH" value="160"/>
 	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 

@@ -34,7 +34,7 @@ extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
 enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
-TURN_CM,SEARCH_GATE_CM};
+TURN_CM,SEARCH_GATE_CM,TAKE_OFF_CM,LAND_CM,GO_STRAIGHT_CM};
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART};
 
 struct parameters_to_be_tuned{
