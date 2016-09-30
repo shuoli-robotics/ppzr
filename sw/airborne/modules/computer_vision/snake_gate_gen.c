@@ -65,7 +65,7 @@ uint8_t color_cr_max  = 230;//255;
 // Gate detection settings:
 int n_samples = 500;//1000;//500;
 int min_pixel_size = 40;//100;
-float min_gate_quality = 0.3;
+float min_gate_quality = 0.30;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
 
@@ -223,8 +223,8 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
 {
   //calculate angles here
-  vert_angle = (-(((float)x_pix*1.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta);
-  hor_angle = (((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h;
+  vert_angle = (-(((float)x_pix*1.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta)+0.07;//with correction factor
+  hor_angle = ((((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h)+0.06;//with correction factor
   
   pix_x = x_pix;
   pix_y = y_pix;
@@ -675,6 +675,70 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float* quality)
   {
     (*quality) = ((float) n_colored_points) / ((float) n_points);
   }
+}
+
+extern void check_gate_2(struct image_t *im, struct gate_img gate, float* quality)
+{
+  int n_points, n_colored_points;
+  n_points = 0; 
+  n_colored_points = 0;
+  int np, nc;
+  float side_q[4];
+  
+  // check the four lines of which the gate consists:
+  struct point_t from, to;
+  from.x = gate.x - gate.sz;
+  from.y = gate.y - gate.sz;
+  to.x = gate.x - gate.sz;
+  to.y = gate.y + gate.sz;
+  check_line(im, from, to, &np, &nc);
+  n_points += np; 
+  n_colored_points += nc;
+  if(np > 0){side_q[0] = (float)nc/(float)np;}
+  else{side_q[0] = 0;}
+
+  from.x = gate.x - gate.sz;
+  from.y = gate.y + gate.sz;
+  to.x = gate.x + gate.sz;
+  to.y = gate.y + gate.sz;
+  check_line(im, from, to, &np, &nc);
+  n_points += np; 
+  n_colored_points += nc;
+  if(np > 0){side_q[1] = (float)nc/(float)np;}
+  else{side_q[1] = 0;}
+
+  from.x = gate.x + gate.sz;
+  from.y = gate.y + gate.sz;
+  to.x = gate.x + gate.sz;
+  to.y = gate.y - gate.sz;
+  check_line(im, from, to, &np, &nc);
+  n_points += np; 
+  n_colored_points += nc;
+   if(np > 0){side_q[2] = (float)nc/(float)np;}
+  else{side_q[2] = 0;}
+
+  from.x = gate.x + gate.sz;
+  from.y = gate.y - gate.sz;
+  to.x = gate.x - gate.sz;
+  to.y = gate.y - gate.sz;
+  check_line(im, from, to, &np, &nc);
+  n_points += np; 
+  n_colored_points += nc;
+  if(np > 0){side_q[3] = (float)nc/(float)np;}
+  else{side_q[3] = 0;}
+  
+  qsort(side_q, 4, sizeof(float), cmpfunc);
+  
+  (*quality) = (side_q[0]+side_q[1])/2;
+  
+
+  // the quality is the ratio of colored points / number of points:
+
+}
+
+float cmpfunc (const void * a, const void * b)
+{
+   return ( *(float*)a - *(float*)b );
 }
 
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points)

@@ -45,6 +45,7 @@ extern void snake_left_and_right(struct image_t *im, int x, int y, int* x_low, i
 extern void draw_gate(struct image_t *im, struct gate_img gate);
 extern void check_gate(struct image_t *im, struct gate_img gate, float* quality);
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
+float cmpfunc (const void * a, const void * b);
 
 extern void snake_gate_periodic(void);
 
