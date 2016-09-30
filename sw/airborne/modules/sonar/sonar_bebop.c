@@ -188,7 +188,7 @@ float sonar_filter_gate(float distance_sonar){
         states_race.gate_counter++;
         conunt_gate_green_light = 0;
     }
-    if (diff_pre_cur > 0.3 || time_temp2 > 0.5){
+    if (diff_pre_cur > 0.3 || time_temp2 > 1){
 
         through_gate_green_light = 0;
     }

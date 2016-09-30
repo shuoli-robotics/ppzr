@@ -60,13 +60,13 @@ void command_init(){
     //record_command = 0;
 
     // here we need to change the angle and distance for passing through the gates
-    parameter_to_be_tuned.distance_first_gate = 0.5;
+    parameter_to_be_tuned.distance_first_gate = 1;
     parameter_to_be_tuned.distance_second_gate = 0.5;
     parameter_to_be_tuned.distance_third_gate = 0.5;
     parameter_to_be_tuned.distance_fourth_gate = 0.5;
-    parameter_to_be_tuned.heading_after_first_gate = -45.0/180.0*PI;
+    parameter_to_be_tuned.heading_after_first_gate = -90.0/180.0*PI;
     parameter_to_be_tuned.heading_after_second_gate = PI;
-    parameter_to_be_tuned.heading_after_third_gate = 45.0/180.0*PI;
+    parameter_to_be_tuned.heading_after_third_gate = 90.0/180.0*PI;
     parameter_to_be_tuned.heading_after_fourth_gate = 0;
 }
 
