@@ -24,19 +24,21 @@ struct point_f {
 
 // main gate detection function:
 extern void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0,
-                    uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2);
+                    uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi);
 
 // "private" functions:
 void convert_image_to_points(struct image_t* color_image, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y);
-void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness);
+void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness, float* s_left, float* s_right);
 float fit_clock_arms(float x_center, float y_center, float radius, float* angle_1, float* angle_2);
 float mean_distance_to_circle(float* genome);
 float mean_distance_to_square(float* genome);
+float mean_distance_to_polygon(float* genome);
 float mean_distance_to_arms(float* genome, float x, float y);
 float distance_to_line(struct point_f Q1, struct point_f Q2, struct point_f P);
 float distance_to_segment(struct point_f Q1, struct point_f Q2, struct point_f P);
 float distance_to_vertical_segment(struct point_f Q1, struct point_f Q2, struct point_f P);
 float distance_to_horizontal_segment(struct point_f Q1, struct point_f Q2, struct point_f P);
+float get_angle_from_polygon(float s_left, float s_right, struct image_t* color_image);
 
 // utility functions: should probably be placed in some other file:
 float get_random_number(void);
