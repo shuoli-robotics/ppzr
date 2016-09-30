@@ -125,7 +125,7 @@ elif args.command == 'upload_file_and_run':
     #check firmware version
     v = parrot_utils.check_version(tn, '').strip()
     print("Checking Bebop firmware version... " + v )
-    if ((v < '3.2.0') or (v > '3.4.0-RC2')):
+    if (False): #((v < '3.2.0') or (v > '3.4.0-RC2')):
         print("Error: please upgrade your Bebop firmware to version between 3.2.0 and 3.4.0!")
     else:
         print("Kill running " + f[1] + " and make folder " + args.folder)

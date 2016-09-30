@@ -52,5 +52,6 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
 // calculating the color fit cannot be done with the current stereo output:
 // float check_color_fit();
 
-
 #endif /* GATE_DETECTION_H_ */
+
+
