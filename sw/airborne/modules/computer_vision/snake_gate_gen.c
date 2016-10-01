@@ -394,9 +394,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //check_color(img, 1, 1);
     // check if it has the right color
-      int check_seg = y * (img->w) * 2 + x * 4;
-      printf("check_seg:%d\n",check_seg);
-      printf("x = %d,y = %d\n",x,y);
     if(check_color(img, x, y))
     {
       // snake up and down:
@@ -585,7 +582,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     draw_gate(img, best_gate);
   //draw_gate(img, gates[n_gates-1]);
   gate_quality = gates[n_gates-1].gate_q;
-  //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
   
   calculate_gate_position(best_gate.x,best_gate.y,best_gate.sz,img,best_gate);
   

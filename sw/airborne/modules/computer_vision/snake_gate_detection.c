@@ -66,11 +66,11 @@ uint8_t color_cr_min  = 140;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
-int n_samples = 500;//1000;//500;
+int n_samples = 1000;//1000;//500;
 int min_pixel_size = 40;//100;
-float min_gate_quality = 0.4;
+float min_gate_quality = 0.3;
 float gate_thickness = 0;//0.05;//0.10;//
-float gate_size = 33;
+float gate_size = 34;
 
 
 int y_low = 0;
@@ -88,10 +88,12 @@ int szx2 = 0;
 int color_count = 0;
 #define MAX_GATES 50
 struct gate_img gates[MAX_GATES];
+struct gate_img best_gate;
 struct image_t img_result;
 int n_gates = 0;
 float best_quality = 0;
 float current_quality = 0;
+float best_fitness = 100000;
 
 //color picker
 uint8_t y_center_picker  = 0;
@@ -372,6 +374,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
   int filter = 1;
+  int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;  
   float quality;
@@ -396,9 +399,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //check_color(img, 1, 1);
     // check if it has the right color
-      int check_seg = y * (img->w) * 2 + x * 4;
-      //printf("check_seg:%d\n",check_seg);
-      //printf("x = %d,y = %d\n",x,y);
     if(check_color(img, x, y))
     {
       // snake up and down:
@@ -482,12 +482,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   // do an additional fit to improve the gate detection:
   if(best_quality > min_gate_quality && n_gates>0)
   {
+    /*
     // temporary variables:
     float x_center, y_center, radius, fitness, angle_1, angle_2, psi;
     int clock_arms = 1;
 
     // prepare the Region of Interest (ROI), which is larger than the gate:
-    float size_factor = 1.25;
+    float size_factor = 1.5;//1.25;
     int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
     int16_t min_x = gates[n_gates-1].x - ROI_size;
     min_x = (min_x < 0) ? 0 : min_x;
@@ -497,6 +498,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     min_y = (min_y < 0) ? 0 : min_y;
     int16_t max_y = gates[n_gates-1].y + ROI_size;
     max_y = (max_y < img->h) ? max_y : img->h;
+    
+    draw_gate(img, gates[n_gates-1]);
 
     // detect the gate:
     gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
@@ -506,7 +509,97 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     gates[n_gates-1].x = (int) x_center;
     gates[n_gates-1].y = (int) y_center;
     gates[n_gates-1].sz = (int) radius;
+*/
+        // temporary variables:
+    float x_center, y_center, radius, fitness, angle_1, angle_2, psi;
+    int clock_arms = 1;
 
+    // prepare the Region of Interest (ROI), which is larger than the gate:
+    float size_factor = 1.5;//2;//1.25;
+    /*int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
+    int16_t min_x = gates[n_gates-1].x - ROI_size;
+    min_x = (min_x < 0) ? 0 : min_x;
+    int16_t max_x = gates[n_gates-1].x + ROI_size;
+    max_x = (max_x < img->w) ? max_x : img->w;
+    int16_t min_y = gates[n_gates-1].y - ROI_size;
+    min_y = (min_y < 0) ? 0 : min_y;
+    int16_t max_y = gates[n_gates-1].y + ROI_size;
+    max_y = (max_y < img->h) ? max_y : img->h;*/
+    
+    if(gen_alg)
+    {
+      int max_candidate_gates = 5;
+      best_fitness = 100;
+      if(n_gates > 0 && n_gates < max_candidate_gates)
+      {
+	for(int gate_nr = 0; gate_nr < n_gates; gate_nr +=1)
+	{
+	    int16_t ROI_size = (int16_t) (((float) gates[gate_nr].sz) * size_factor);
+	    int16_t min_x = gates[gate_nr].x - ROI_size;
+	    min_x = (min_x < 0) ? 0 : min_x;
+	    int16_t max_x = gates[gate_nr].x + ROI_size;
+	    max_x = (max_x < img->w) ? max_x : img->w;
+	    int16_t min_y = gates[gate_nr].y - ROI_size;
+	    min_y = (min_y < 0) ? 0 : min_y;
+	    int16_t max_y = gates[gate_nr].y + ROI_size;
+	    max_y = (max_y < img->h) ? max_y : img->h;
+	  
+	  //draw_gate(img, gates[gate_nr]);
+	  // detect the gate:
+	  gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y), &(gates[gate_nr].sz),
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi);
+	  if(fitness < best_fitness)
+	  {
+	    best_fitness = fitness;
+	    // store the information in the gate:
+	    best_gate.x = (int) x_center;
+	    best_gate.y = (int) y_center;
+	    best_gate.sz = (int) radius;
+	  }
+	  
+	}
+	for(int gate_nr = 0; gate_nr < n_gates; gate_nr +=1)
+	{
+	  draw_gate(img, gates[gate_nr]);
+	}
+      }
+      else if(n_gates >= max_candidate_gates)
+      { 
+	for(int gate_nr = n_gates-max_candidate_gates; gate_nr < n_gates; gate_nr +=1)
+	{
+	    int16_t ROI_size = (int16_t) (((float) gates[gate_nr].sz) * size_factor);
+	    int16_t min_x = gates[gate_nr].x - ROI_size;
+	    min_x = (min_x < 0) ? 0 : min_x;
+	    int16_t max_x = gates[gate_nr].x + ROI_size;
+	    max_x = (max_x < img->w) ? max_x : img->w;
+	    int16_t min_y = gates[gate_nr].y - ROI_size;
+	    min_y = (min_y < 0) ? 0 : min_y;
+	    int16_t max_y = gates[gate_nr].y + ROI_size;
+	    max_y = (max_y < img->h) ? max_y : img->h;
+	  //draw_gate(img, gates[gate_nr]);
+	  // detect the gate:
+	  gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y), &(gates[gate_nr].sz),
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi);
+	  if(fitness < best_fitness)
+	  {
+	    best_fitness = fitness;
+	    // store the information in the gate:
+	    best_gate.x = (int) x_center;
+	    best_gate.y = (int) y_center;
+	    best_gate.sz = (int) radius;
+	  }
+	}
+	
+	for(int gate_nr = n_gates-max_candidate_gates; gate_nr < n_gates; gate_nr +=1)
+	{
+	  draw_gate(img, gates[gate_nr]);
+	}
+	
+      }
+      //draw_gate(img, best_gate);
+    }
+
+  //}
   }
           
   //color filtered version of image for overlay and debugging
@@ -522,11 +615,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   if(best_quality > min_gate_quality && n_gates>0)
   {
       current_quality = best_quality;
-  draw_gate(img, gates[n_gates-1]);
+  //draw_gate(img, gates[n_gates-1]);
+      draw_gate(img, best_gate);
   gate_quality = gates[n_gates-1].gate_q;
   //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
   
-  calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
+  //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
+  calculate_gate_position(best_gate.x,best_gate.y,best_gate.sz,img,best_gate);
   
   }
     else{

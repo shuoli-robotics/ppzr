@@ -83,7 +83,7 @@
       <define name="SGD_CAMERA" value="front_camera"/>
     </module-->
 
-    <module name="cv_snake_gate_gen">
+    <module name="cv_snake_gate_detection">
       <define name="SGD_CAMERA" value="front_camera"/>
     </module>
 
