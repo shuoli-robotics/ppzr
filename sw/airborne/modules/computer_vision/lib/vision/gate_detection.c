@@ -12,6 +12,14 @@
 //#include "main_parameters.h"
 #include <stdlib.h>
 
+// camera params: TODO: would be better to get from elsewhere!!!
+#define FOV_W (120.0f/180.0f)*PI
+#define FOV_H (90.0f/180.0f)*PI
+
+// gate params: TODO: would also be better to put elsewhere, centrally:
+#define GATE_SIZE 1.0f
+#define HALF_GATE_SIZE 0.5f
+
 // variables that have to be remembered in between function calls:
 
 // since MAX_POINTS means that the algorithm will stop gathering points after MAX_POINTS, we sample according to a "moving" grid
@@ -24,14 +32,6 @@ struct point_f points[MAX_POINTS];
 struct point_f clock_arm_points[MAX_POINTS];
 uint16_t n_points, n_clock_arm_points;
 
-// Settings for the evolution:
-// 10 individuals 30 generations is a normal setting
-#define N_INDIVIDUALS 10
-#define N_GENES 3
-#define N_GENES_CLOCK 2
-uint16_t n_generations = 10; // could be reduced for instance when there are many points
-float Population[N_INDIVIDUALS][N_GENES];
-
 // Settings for the fitting:
 float weights[MAX_POINTS];
 int min_points = 5;
@@ -39,14 +39,30 @@ int WEIGHTED = 0; // color has no weight at the moment, since it is thresholded
 int STICK = 0; // the stick we assume not to be red
 #define CIRCLE 0
 #define SQUARE 1
-int SHAPE = SQUARE;
+#define POLYGON 2
+#define SHAPE POLYGON
 float outlier_threshold = 20.0f;
+
+// Settings for the evolution:
+// 10 individuals 30 generations is a normal setting
+#define N_INDIVIDUALS 10
+// The number of genes depends on the shape:
+#if SHAPE == CIRCLE || SHAPE == SQUARE
+  #define N_GENES 3
+#else
+  #define N_GENES 5
+#endif
+#define N_GENES_CLOCK 2
+uint16_t n_generations = 10; // could be reduced for instance when there are many points
+float Population[N_INDIVIDUALS][N_GENES];
 
 // whether to draw on the image:
 int GRAPHICS = 0;
 
 // factor within which we search for clock arms:
 float clock_factor = 0.6;
+
+
 
 /**
  * Function takes a disparity image and fits a circular gate to the close-by points.
@@ -57,7 +73,7 @@ float clock_factor = 0.6;
  * @author Guido
  */
 
-void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2)
+void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi)
 {
   // 1) convert the disparity map to a vector of points:
 	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
@@ -87,8 +103,15 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 		(*size0) = 40.0f;// TODO: how good is 40 for the Bebop images?
 
 		// run the fit procedure:
-		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness);
+    float s_left, s_right;
+		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness, &s_left, &s_right);
 
+    if(SHAPE == POLYGON)
+    {
+      // the sizes of the two sides (together with knowledge on the real-world size of the gate and FOV etc. of the camera)
+      // tells us the angle to the center of the gate.
+      (*psi) = get_angle_from_polygon(s_left, s_right, color_image);
+    }
     // possibly detect clock arms
     if(clock_arms)
     {
@@ -155,23 +178,35 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 
 }
 
-void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness)
+void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness, float* s_left, float* s_right)
 {
   // a) initialize Population, seeding it with the initial guess and the previous best individuals:
   // The idea behind this is that evolution can extend over multiple images, while a wrong tracking will not
   // influence the tracking excessively long.
-  uint16_t i, g, ge;
+  uint16_t i, g, ge, j;
 	for (i = 0; i < N_INDIVIDUALS/2; i++)
 	{
     Population[i][0] = (*x0) + 5 * get_random_number() - 2.5f;
     Population[i][1] = (*y0) + 5 * get_random_number() - 2.5f;
 		Population[i][2] = (*size0) + 5 * get_random_number() - 2.5f;
+    if(SHAPE == POLYGON)
+    {
+      // also the half-sizes of the right and left part of the gate are optimized:
+      Population[i][3] = (*size0) + 5 * get_random_number() - 2.5f;
+      Population[i][4] = (*size0) + 5 * get_random_number() - 2.5f;
+    }
 	}
 	for (i = N_INDIVIDUALS/2; i < N_INDIVIDUALS; i++)
 	{
     Population[i][0] = (*x_center) + 5 * get_random_number() - 2.5f;
     Population[i][1] = (*y_center) + 5 * get_random_number() - 2.5f;
 		Population[i][2] = (*radius) + 5 * get_random_number() - 2.5f;
+    if(SHAPE == POLYGON)
+    {
+      // also the half-sizes of the right and left part of the gate are optimized:
+      Population[i][3] = (*radius) + 5 * get_random_number() - 2.5f;
+      Population[i][4] = (*radius) + 5 * get_random_number() - 2.5f;
+    }
 	}
 
   float total_sum_weights = get_sum(weights, n_points);
@@ -183,6 +218,11 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
   best_genome[0] = (*x0);
   best_genome[1] = (*y0);
   best_genome[2] = (*size0);
+  if(SHAPE == POLYGON)
+  {
+    best_genome[3] = (*size0);
+    best_genome[4] = (*size0);
+  }
 	for (g = 0; g < n_generations; g++)
 	{
 		for (i = 0; i < N_INDIVIDUALS; i++)
@@ -192,10 +232,15 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
           // optimize mean distance to circle (and possibly stick) 
 				  fits[i] = mean_distance_to_circle(Population[i]);
 			}
-      else
+      else if(SHAPE == SQUARE)
       {
           // optimize mean distance to square (and possibly stick) 
 				  fits[i] = mean_distance_to_square(Population[i]);
+      }
+      else
+      {
+          // optimize mean distance to a polygon (and possibly stick) 
+				  fits[i] = mean_distance_to_polygon(Population[i]);
       }
 		}
 
@@ -224,9 +269,11 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 			// super elitist evolution:
 			for (i = 0; i < N_INDIVIDUALS; i++)
 			{
-				Population[i][0] = min_genome[0] + 5 * get_random_number() - 2.5f;
-				Population[i][1] = min_genome[1] + 5 * get_random_number() - 2.5f;
-				Population[i][2] = min_genome[2] + 5 * get_random_number() - 2.5f;
+        for (j = 0; j < N_GENES; j++)
+        {
+          // mutate all genes in the same way:
+  				Population[i][j] = min_genome[j] + 5 * get_random_number() - 2.5f;
+        }
 			}
 		}
 
@@ -237,6 +284,11 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 	(*x_center) = best_genome[0];
 	(*y_center) = best_genome[1];
 	(*radius) = best_genome[2];
+  if(SHAPE == POLYGON)
+  {
+    (*s_left) = best_genome[3];
+    (*s_right) = best_genome[4];
+  }
 
   return;
 }
@@ -438,6 +490,110 @@ float mean_distance_to_square(float* genome)
 	}
 	mean_distance /= n_points;
 	return mean_distance;
+}
+
+float mean_distance_to_polygon(float* genome)
+{
+	float x = genome[0];
+	float y = genome[1];
+	float s_width = genome[2];
+  float s_left = genome[3];
+  float s_right = genome[4];
+
+	float mean_distance = 0.0f;
+	struct point_f point;
+	float error, error_stick;
+  uint16_t p;
+  int index;
+  int n_sides = 4;
+
+  // determine corner points:
+  struct point_f square_top_left;
+  struct point_f square_top_right;
+  struct point_f square_bottom_right;
+  struct point_f square_bottom_left;
+  square_top_left.x = x-s_width;
+  square_top_left.y = y-s_left; // positive y direction is down TODO: check!!!
+  square_top_right.x = x+s_width;
+  square_top_right.y = y-s_right; 
+  square_bottom_left.x = x-s_width;
+  square_bottom_left.y = y+s_left; 
+  square_bottom_right.x = x+s_width;
+  square_bottom_right.y = y+s_right;
+  float side_distances[n_sides];
+
+	for (p = 0; p < n_points; p++)
+	{
+    // get the current point:
+    point = points[p];
+    // determine the distance to the four sides of the square and select the smallest one:
+    side_distances[0] = distance_to_segment(square_top_left, square_bottom_left, point);
+    side_distances[1] = distance_to_segment(square_top_right, square_bottom_right, point);
+    side_distances[2] = distance_to_segment(square_top_left, square_top_right, point);
+    side_distances[3] = distance_to_segment(square_bottom_left, square_bottom_right, point);
+    error = get_minimum(side_distances, n_sides, &index);
+
+		if (STICK)
+		{
+			// determine distance to the stick:
+			struct point_f stick1;
+      stick1.x = x;
+      stick1.y = y + (s_left + s_right) / 2;
+			struct point_f stick2;
+      stick2.x = x;
+      stick2.y = y + (s_left + s_right);
+			error_stick = distance_to_vertical_segment(stick1, stick2, point);
+
+			// take the smallest error:
+			if (error_stick < error) error = error_stick;
+		}
+
+		// apply outlier threshold before applying weights:
+		if (error > outlier_threshold) error = outlier_threshold;
+
+		if (WEIGHTED)
+		{
+			mean_distance += error * weights[p];
+		}
+		else
+		{
+			mean_distance += error;
+		}
+	}
+	mean_distance /= n_points;
+	return mean_distance;
+}
+
+float get_angle_from_polygon(float s_left, float s_right, struct image_t* color_image)
+{
+  // The sizes of the sides in sight gives the angle to the gate, as their sizes in the real world
+  // are known, and equal to GATE_SIZE. This of course assuming a pinhole camera model.
+  // So we have a triangle with three known lengths and can determine the angle to the center of the
+  // gate.
+  
+  float psi_estimate = 0;
+
+  // since the sides of the square gate are straight up, we only need FOV_H to determine the 
+  // distance of the camera to the sides.
+  float gamma_left = (s_left / color_image->h) * FOV_H;
+  float d_left = (0.5 * s_left) / tanf(0.5 * gamma_left);
+  float gamma_right = (s_right / color_image->h) * FOV_H;
+  float d_right = (0.5 * s_right) / tanf(0.5 * gamma_right);
+  
+  // angles seen from a top view, with the GATE_SIZE gate on top
+  float angle_right = acosf((GATE_SIZE*GATE_SIZE+d_right*d_right-d_left*d_left) / (2*GATE_SIZE*d_right)); // angle at the right pole
+  float angle_left = acosf((GATE_SIZE*GATE_SIZE+d_left*d_left-d_right*d_right) / (2*GATE_SIZE*d_left)); // angle at the left pole
+
+  // determine psi:
+  if(angle_right > angle_left)
+  {
+    psi_estimate = (angle_right - angle_left) / 2;
+  }
+  else
+  {
+    psi_estimate = -(angle_left - angle_right) / 2;
+  }
+  return psi_estimate;
 }
 
 float mean_distance_to_arms(float* genome, float x, float y)
@@ -751,3 +907,4 @@ float fit_clock_arms(float x_center, float y_center, float radius, float* angle_
   return fitness;
    
 }
+
