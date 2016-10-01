@@ -483,8 +483,15 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   if(best_quality > min_gate_quality && n_gates>0)
   {
     // temporary variables:
-    float x_center, y_center, radius, fitness, angle_1, angle_2, psi;
+    float x_center, y_center, radius, fitness;
+    // whether to detect clock arms:
     int clock_arms = 1;
+    // these vars may be filled depending on the settings:
+    float angle_1 = 0;
+    float angle_2 = 0;
+    float psi = 0;
+    float size_left = 0;
+    float size_right = 0;
 
     // prepare the Region of Interest (ROI), which is larger than the gate:
     float size_factor = 1.25;
@@ -500,13 +507,14 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     // detect the gate:
     gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
-                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi);
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi, &size_left, &size_right);
   
     // store the information in the gate:
     gates[n_gates-1].x = (int) x_center;
     gates[n_gates-1].y = (int) y_center;
     gates[n_gates-1].sz = (int) radius;
-
+    gates[n_gates-1].sz_left = (int) size_left;
+    gates[n_gates-1].sz_right = (int) size_right;
   }
           
   //color filtered version of image for overlay and debugging
@@ -540,27 +548,57 @@ void draw_gate(struct image_t *im, struct gate_img gate)
 {
   // draw four lines on the image:
   struct point_t from, to;
-  from.x = (gate.x - gate.sz);
-  from.y = gate.y - gate.sz;
-  to.x = (gate.x - gate.sz);
-  to.y = gate.y + gate.sz;
-  image_draw_line(im, &from, &to);
-  from.x = (gate.x - gate.sz);
-  from.y = gate.y + gate.sz;
-  to.x = (gate.x + gate.sz);
-  to.y = gate.y + gate.sz;
-  image_draw_line(im, &from, &to);
-  from.x = (gate.x + gate.sz);
-  from.y = gate.y + gate.sz;
-  to.x = (gate.x + gate.sz);
-  to.y = gate.y - gate.sz;
-  image_draw_line(im, &from, &to);
-  from.x = (gate.x + gate.sz);
-  from.y = gate.y - gate.sz;
-  to.x = (gate.x - gate.sz);
-  to.y = gate.y - gate.sz;
-  image_draw_line(im, &from, &to);
+  if(gate.sz_left == gate.sz_right)
+  {
+    // square
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y - gate.sz;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y + gate.sz;
+    image_draw_line(im, &from, &to);
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y + gate.sz;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y + gate.sz;
+    image_draw_line(im, &from, &to);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y + gate.sz;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y - gate.sz;
+    image_draw_line(im, &from, &to);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y - gate.sz;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y - gate.sz;
+    image_draw_line(im, &from, &to);
+  }
+  else
+  {
+    // polygon
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y - gate.sz_left;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y + gate.sz_left;
+    image_draw_line(im, &from, &to);
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y + gate.sz_left;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y + gate.sz_right;
+    image_draw_line(im, &from, &to);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y + gate.sz_right;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y - gate.sz_right;
+    image_draw_line(im, &from, &to);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y - gate.sz_right;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y - gate.sz_left;
+    image_draw_line(im, &from, &to);
+  }
 }
+
+
 
 extern void check_gate(struct image_t *im, struct gate_img gate, float* quality)
 {
@@ -571,37 +609,74 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float* quality)
   
   // check the four lines of which the gate consists:
   struct point_t from, to;
-  from.x = gate.x - gate.sz;
-  from.y = gate.y - gate.sz;
-  to.x = gate.x - gate.sz;
-  to.y = gate.y + gate.sz;
-  check_line(im, from, to, &np, &nc);
-  n_points += np; 
-  n_colored_points += nc;
+  if(gate.sz_left == gate.sz_right)
+  {
+    from.x = gate.x - gate.sz;
+    from.y = gate.y - gate.sz;
+    to.x = gate.x - gate.sz;
+    to.y = gate.y + gate.sz;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
 
-  from.x = gate.x - gate.sz;
-  from.y = gate.y + gate.sz;
-  to.x = gate.x + gate.sz;
-  to.y = gate.y + gate.sz;
-  check_line(im, from, to, &np, &nc);
-  n_points += np; 
-  n_colored_points += nc;
+    from.x = gate.x - gate.sz;
+    from.y = gate.y + gate.sz;
+    to.x = gate.x + gate.sz;
+    to.y = gate.y + gate.sz;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
 
-  from.x = gate.x + gate.sz;
-  from.y = gate.y + gate.sz;
-  to.x = gate.x + gate.sz;
-  to.y = gate.y - gate.sz;
-  check_line(im, from, to, &np, &nc);
-  n_points += np; 
-  n_colored_points += nc;
+    from.x = gate.x + gate.sz;
+    from.y = gate.y + gate.sz;
+    to.x = gate.x + gate.sz;
+    to.y = gate.y - gate.sz;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
 
-  from.x = gate.x + gate.sz;
-  from.y = gate.y - gate.sz;
-  to.x = gate.x - gate.sz;
-  to.y = gate.y - gate.sz;
-  check_line(im, from, to, &np, &nc);
-  n_points += np; 
-  n_colored_points += nc;
+    from.x = gate.x + gate.sz;
+    from.y = gate.y - gate.sz;
+    to.x = gate.x - gate.sz;
+    to.y = gate.y - gate.sz;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
+  }
+  else
+  {
+    from.x = gate.x - gate.sz;
+    from.y = gate.y - gate.sz_left;
+    to.x = gate.x - gate.sz;
+    to.y = gate.y + gate.sz_left;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
+
+    from.x = gate.x - gate.sz;
+    from.y = gate.y + gate.sz_left;
+    to.x = gate.x + gate.sz;
+    to.y = gate.y + gate.sz_right;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
+
+    from.x = gate.x + gate.sz;
+    from.y = gate.y + gate.sz_right;
+    to.x = gate.x + gate.sz;
+    to.y = gate.y - gate.sz_right;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;
+
+    from.x = gate.x + gate.sz;
+    from.y = gate.y - gate.sz_right;
+    to.x = gate.x - gate.sz;
+    to.y = gate.y - gate.sz_left;
+    check_line(im, from, to, &np, &nc);
+    n_points += np; 
+    n_colored_points += nc;    
+  }
 
   // the quality is the ratio of colored points / number of points:
   if(n_points == 0) 

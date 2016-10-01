@@ -73,7 +73,7 @@ float clock_factor = 0.6;
  * @author Guido
  */
 
-void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi)
+void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right)
 {
   // 1) convert the disparity map to a vector of points:
 	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
@@ -103,14 +103,19 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 		(*size0) = 40.0f;// TODO: how good is 40 for the Bebop images?
 
 		// run the fit procedure:
-    float s_left, s_right;
-		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness, &s_left, &s_right);
+		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness, size_left, size_right);
 
     if(SHAPE == POLYGON)
     {
       // the sizes of the two sides (together with knowledge on the real-world size of the gate and FOV etc. of the camera)
       // tells us the angle to the center of the gate.
-      (*psi) = get_angle_from_polygon(s_left, s_right, color_image);
+      (*psi) = get_angle_from_polygon((*size_left), (*size_right), color_image);
+    }
+    else
+    {
+      (*size_left) = (*radius);
+      (*size_right) = (*radius);
+      (*psi) = 0.0f;
     }
     // possibly detect clock arms
     if(clock_arms)
