@@ -82,6 +82,15 @@ void display_lower_state()
         case SEARCH_GATE_CM:
             printf("It is in SEARCH_GATE\n");
             break;
+        case TAKE_OFF_CM:
+            printf("It is in TAKE_OFF\n");
+            break;
+        case LAND_CM:
+            printf("It is in LAND\n");
+            break;
+        case GO_STRAIGHT_CM:
+            printf("It is in GO_STRAIGHT\n");
+            break;
     }
 }
 

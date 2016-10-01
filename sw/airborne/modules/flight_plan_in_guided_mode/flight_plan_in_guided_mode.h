@@ -40,6 +40,7 @@
 #define SEARCH_GATE              10
 #define TAKE_OFF                 11
 #define LAND                     12
+#define ADJUST_HEADING           13
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
@@ -58,6 +59,7 @@
  extern void search_gate(void);
  extern void take_off(float desired_altitude);
  extern void land(void);
+ extern void adjust_heading(float delta_heading);
 
 
 #endif

@@ -368,3 +368,14 @@ void land()
         states_race.land_is_finished = 1;
     }
 }
+
+void adjust_heading(float delta_heading) {
+
+    // set z
+    if (primitive_in_use != ADJUST_HEADING) {
+        primitive_in_use = ADJUST_HEADING;
+    }
+
+    psi0 = stateGetNedToBodyEulers_f()->psi;
+    //todo: guidance_loop_set_heading(psi0+delta_heading);
+}
