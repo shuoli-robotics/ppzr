@@ -70,7 +70,7 @@ bool arc_is_finished = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
-#define Z_BIAS 0//was .2
+#define Z_BIAS 0.2//was .2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
@@ -247,9 +247,11 @@ void go_up_down(float derta_altitude){
         guidance_loop_set_velocity(0,0);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0 - derta_altitude);
+	psi0 = stateGetNedToBodyEulers_f()->psi;
+	 guidance_loop_set_heading(psi0);
         states_race.altitude_is_achieved = FALSE;
     }
-    if (fabs(stateGetPositionNed_f()->z-z0-derta_altitude)<0.1){
+    if (fabs(stateGetPositionNed_f()->z-z0+derta_altitude)<0.4){
         states_race.altitude_is_achieved = TRUE;
     }
 
@@ -267,7 +269,7 @@ void adjust_position(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
-	float z_setpoint = derta_altitude; //z0 - derta_altitude+Z_BIAS;
+	float z_setpoint = derta_altitude+Z_BIAS; //z0 - derta_altitude+Z_BIAS;
 	if (z_setpoint>-1)
 	  z_setpoint = -1;
 	else if (z_setpoint<-3.9)

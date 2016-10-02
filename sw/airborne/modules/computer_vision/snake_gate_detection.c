@@ -46,7 +46,7 @@
 
 //initial position and speed safety margins
 
-#define X_POS_MARGIN 0.15//m
+#define X_POS_MARGIN 0.10//m
 #define Y_POS_MARGIN 0.5//m
 #define Z_POS_MARGIN 0.15//m
 #define X_SPEED_MARGIN 0.15//m/s
@@ -94,7 +94,7 @@ int n_gates = 0;
 float best_quality = 0;
 float current_quality = 0;
 float best_fitness = 100000;
-
+float psi_gate = 0;
 //color picker
 uint8_t y_center_picker  = 0;
 uint8_t cb_center  = 0;
@@ -152,7 +152,8 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
 				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
-				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.ready_pass_through); //
+				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.ready_pass_through,
+				  &psi_gate); //
 }
 
 
@@ -274,7 +275,7 @@ void snake_gate_periodic(void)
 	 states_race.ready_pass_through = 0;
 	}
 
-    if(safe_pass_counter > 10)
+    if(safe_pass_counter > 5)
     {
         safe_pass_counter = 0;
         states_race.ready_pass_through = 1;
@@ -513,7 +514,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     gates[n_gates-1].sz = (int) radius;
 */
         // temporary variables:
-    float x_center, y_center, radius, fitness, angle_1, angle_2, psi;
+    float x_center, y_center, radius, fitness, angle_1, angle_2;
     int clock_arms = 1;
 
     // prepare the Region of Interest (ROI), which is larger than the gate:
@@ -554,7 +555,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	    
 	  // detect the gate:
 	  gate_detection(img, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
-                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi);
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi_gate);
 	  if(fitness < best_fitness)
 	  {
 	    best_fitness = fitness;
@@ -586,7 +587,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  //draw_gate(img, gates[gate_nr]);
 	  // detect the gate:
 	  gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y), &(gates[gate_nr].sz),
-                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi);
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi_gate);
 	  if(fitness < best_fitness)
 	  {
 	    best_fitness = fitness;
