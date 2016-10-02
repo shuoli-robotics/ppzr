@@ -36,6 +36,7 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/computer_vision/lib/vision/qr_code_recognition.h"
 
 #define PI 3.1415926
 
@@ -515,6 +516,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     gates[n_gates-1].sz = (int) radius;
     gates[n_gates-1].sz_left = (int) size_left;
     gates[n_gates-1].sz_right = (int) size_right;
+
+    // read the QR code:
+    float uncertainty;
+    // get the class of the QR, given a region of interest (TODO: find out the right parameters for the region next to the gate that has the QR code)
+    int QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &uncertainty);
   }
           
   //color filtered version of image for overlay and debugging

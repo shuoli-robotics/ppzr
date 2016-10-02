@@ -24,7 +24,6 @@
  */
 
 
-#define RES 100
 #define N_WINDOW_SIZES 1
 
 #include "cv.h"
@@ -193,56 +192,6 @@ uint16_t detect_escape(uint8_t *in __attribute__((unused)), uint32_t image_width
 
   return min_avg;
 }
-
-void get_integral_image(uint8_t *in, uint32_t image_width, uint32_t image_height, uint32_t *integral_image)
-{
-  uint16_t x, y;
-  for (x = 0; x < image_width; x++) {
-    for (y = 0; y < image_height; y++) {
-      if (x >= 1 && y >= 1) {
-        integral_image[x + y * image_width] = (uint32_t) in[x + y * image_width] + integral_image[x - 1 + y * image_width] +
-                                              integral_image[x + (y - 1) * image_width] - integral_image[x - 1 + (y - 1) * image_width];
-      } else if (x >= 1) {
-        integral_image[x + y * image_width] = (uint32_t) in[x + y * image_width] + integral_image[x - 1 + y * image_width];
-      } else if (y >= 1) {
-        integral_image[x + y * image_width] = (uint32_t) in[x + y * image_width] + integral_image[x + (y - 1) * image_width];
-      } else {
-        integral_image[x + y * image_width] = (uint32_t) in[x + y * image_width];
-      }
-    }
-  }
-}
-
-uint32_t get_sum_disparities(uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, uint32_t *integral_image,
-                             uint32_t image_width, uint32_t image_height)
-{
-  uint32_t sum;
-  // If variables are not unsigned, then check for negative inputs
-  // if (min_x + min_y * image_width < 0) { return 0; }
-  if (max_x + max_y * image_width >= image_width * image_height) { return 0; }
-  sum = integral_image[min_x + min_y * image_width] + integral_image[max_x + max_y * image_width] -
-        integral_image[max_x + min_y * image_width] - integral_image[min_x + max_y * image_width];
-  return sum;
-}
-
-uint32_t get_avg_disparity(uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, uint32_t *integral_image,
-                           uint32_t image_width, uint32_t image_height __attribute__((unused)))
-{
-  uint16_t w, h;
-  uint32_t sum, avg, n_pix;
-
-  // width and height of the window
-  w = max_x - min_x + 1;
-  h = max_y - min_y + 1;
-  n_pix = w * h;
-  // sum over the area:
-  sum = integral_image[min_x + min_y * image_width] + integral_image[max_x + max_y * image_width] -
-        integral_image[max_x + min_y * image_width] - integral_image[min_x + max_y * image_width];
-  // take the average, scaled by RES:
-  avg = (sum * RES) / n_pix;
-  return avg;
-}
-
 
 uint16_t get_window_response(uint16_t x, uint16_t y, uint16_t feature_size, uint16_t border, uint32_t *integral_image,
                              uint16_t image_width, uint16_t image_height, uint16_t px_inner, uint16_t px_border, uint8_t MODE)
