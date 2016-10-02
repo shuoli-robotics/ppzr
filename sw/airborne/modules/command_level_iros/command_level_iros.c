@@ -28,10 +28,7 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
-//#include "modules/computer_vision/fly_through_gate_demo.h"
-//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
-//#include "modules/replay_commands/replay_commands.h"
 #include "modules/computer_vision/snake_gate_detection.h"
 
 #define PI 3.1415926
@@ -60,13 +57,13 @@ void command_init(){
     //record_command = 0;
 
     // delta heading after passing through each gate (degree!)
-    float heading_after_gates_temp[NUMBER_OF_GATES] = {0,0,0,0,0,    // 1-5
-                                                       0,0,0,0,0,    // 6-10
-                                                       0,0};         // 11-15
+    float heading_after_gates_temp[100] = {            0,0,125,-125,-125,    // 1-5
+                                                       -45,0,0,0,0,          // 6-10
+                                                       0,0};                 // 11-15
 
-    float distance_after_gates_temp[NUMBER_OF_GATES] = {1,1,1,1,1,    // 1-5
-                                                        1,1,1,1,1,    // 6-10
-                                                        1,1};         // 11-15
+    float distance_after_gates_temp[100] = {            0.5,0.5,0.5,0.5,0.5,    // 1-5
+                                                        0.5,0.5,0.5,0.5,0.5,    // 6-10
+                                                        0.5,0.5,0.5,0.5,0.5,};  // 11-15
     int i;
     for(i=0;i<NUMBER_OF_GATES;i++)
     {

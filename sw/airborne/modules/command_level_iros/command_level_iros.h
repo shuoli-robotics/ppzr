@@ -31,7 +31,7 @@
 #endif
 
 #ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 12
+#define NUMBER_OF_GATES 7
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
@@ -60,10 +60,6 @@ TURN_CM,SEARCH_GATE_CM,TAKE_OFF_CM,LAND_CM,GO_STRAIGHT_CM};
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART};
 
 struct parameters_to_be_tuned{
-    float distance_first_gate;
-    float distance_second_gate;
-    float distance_third_gate;
-    float distance_fourth_gate;
     float heading_after_gate[NUMBER_OF_GATES];
     float distance_after_gate[NUMBER_OF_GATES];
 };
