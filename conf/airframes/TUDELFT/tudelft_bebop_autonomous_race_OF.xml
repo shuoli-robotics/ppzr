@@ -62,6 +62,7 @@
    </module>
     <module name="send_imu_mag_current"/>
     <module name="command_level_iros"/>
+    <module name="cv_ae_awb"/>
     <module name="video_thread"/>
     
     <module name="sonar_bebop"/>

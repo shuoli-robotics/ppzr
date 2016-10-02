@@ -26,7 +26,7 @@
 #include "modules/computer_vision/cv_ae_awb.h"
 #include "lib/isp/libisp.h"
 
-#define MAX_HIST_Y 256-30
+#define MAX_HIST_Y 256-70 //256-30
 
 #include "boards/bebop/mt9f002.h"
 extern struct mt9f002_t mt9f002;
