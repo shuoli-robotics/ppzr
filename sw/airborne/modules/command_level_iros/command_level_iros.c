@@ -58,8 +58,8 @@ void command_init(){
 
 
     // delta heading after passing through each gate (degree!)
-    float heading_after_gates_temp[100] = {            0,0,125,-125,-125,    // 1-5
-                                                       -45,0,0,0,0,          // 6-10
+    float heading_after_gates_temp[100] = {            0,125,-125,-90,-90,    // 1-5
+                                                       0,0,0,0,0,          // 6-10
                                                        0,0};                 // 11-15
 
     float distance_after_gates_temp[100] = {            0.2,0.2,0.2,0.2,0.5,    // 1-5
@@ -249,7 +249,8 @@ void second_part_logic()
 
 
         case TURN_CM:
-            change_heading_hover(choose_heading_after_passing_through_gate());
+            //change_heading_hover(choose_heading_after_passing_through_gate());
+	    change_heading_hover(parameter_to_be_tuned.heading_after_gate[states_race.gate_counter_in_second_part]);
             if (states_race.turning == FALSE)
             {
                 // turning is finished, go to next gate

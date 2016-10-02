@@ -41,8 +41,8 @@
 
 
 
-#define p_x_position 0.08
-#define p_y_position 0.08
+#define p_x_position 0.12
+#define p_y_position 0.12
 
 #define Y_ADJUST_POSITION 2.5
 
