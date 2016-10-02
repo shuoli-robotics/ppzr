@@ -28,10 +28,7 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
-//#include "modules/computer_vision/fly_through_gate_demo.h"
-//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
-//#include "modules/replay_commands/replay_commands.h"
 #include "modules/computer_vision/snake_gate_detection.h"
 
 #define PI 3.1415926
@@ -47,7 +44,7 @@ float choose_distance_after_gate(void);
 
 int counter_of_step;
 enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
-enum states_upper_level state_upper_level = FIRST_PART;
+enum states_upper_level state_upper_level = SECOND_PART;
 
 struct parameters_to_be_tuned parameter_to_be_tuned;
 
@@ -59,15 +56,21 @@ void command_init(){
     //gate_counter_in_second_part = 0;
     //record_command = 0;
 
-    // here we need to change the angle and distance for passing through the gates
-    parameter_to_be_tuned.distance_first_gate = 1;
-    parameter_to_be_tuned.distance_second_gate = 0.5;
-    parameter_to_be_tuned.distance_third_gate = 0.5;
-    parameter_to_be_tuned.distance_fourth_gate = 0.5;
-    parameter_to_be_tuned.heading_after_first_gate = -90.0/180.0*PI;
-    parameter_to_be_tuned.heading_after_second_gate = PI;
-    parameter_to_be_tuned.heading_after_third_gate = 90.0/180.0*PI;
-    parameter_to_be_tuned.heading_after_fourth_gate = 0;
+
+    // delta heading after passing through each gate (degree!)
+    float heading_after_gates_temp[100] = {            0,0,125,-125,-125,    // 1-5
+                                                       -45,0,0,0,0,          // 6-10
+                                                       0,0};                 // 11-15
+
+    float distance_after_gates_temp[100] = {            0.2,0.2,0.2,0.2,0.5,    // 1-5
+                                                        0.5,0.5,0.5,0.5,0.5,    // 6-10
+                                                        0.5,0.5,0.5,0.5,0.5,};  // 11-15
+    int i;
+    for(i=0;i<NUMBER_OF_GATES;i++)
+    {
+        parameter_to_be_tuned.heading_after_gate[i] = heading_after_gates_temp[i]/180.0*PI;
+        parameter_to_be_tuned.distance_after_gate[i] = distance_after_gates_temp[i];
+    }
 }
 
 
@@ -83,10 +86,7 @@ void command_run() {
         state_upper_level = SECOND_PART;
         states_race.gate_counter_in_second_part = 0;
         counter_of_step = 0;
-//        if (fabs(stateGetPositionNed_f()->z)<0.5)
-//        {
-            states_race.altitude_is_achieved = 0;  // we need to take off from ground
-//        }
+        states_race.altitude_is_achieved = 0;  // we need to take off from ground
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -128,30 +128,35 @@ void first_part_logic()
                 counter_of_step++;
             }
             break;
+
         case HOVER_CM:
             hover();
-            if (time_primitive < 2)
+            if (time_primitive < HOVER_TIME)
                 return;
             if (counter_of_step == 1)
             {
-                state_lower_level = GO_STRAIGHT_CM;
+                //state_lower_level = GO_STRAIGHT_CM;
+	      state_lower_level = HOVER_CM;
             }
             else
             {
-                state_lower_level = TURN_CM;
+               // state_lower_level = TURN_CM;
+	       state_lower_level = HOVER_CM;
             }
 
             counter_of_step++;
             break;
+
         case GO_STRAIGHT_CM:
-            go_straight(0.5);
-            if (time_primitive < 3)
+            go_straight(VELOCITY_IN_FIRST_PART);
+            if (time_primitive < TIME_IN_FIRST_PART)
                 return;
                 state_lower_level = HOVER_CM;
                 counter_of_step++;
             break;
+
         case TURN_CM:
-            change_heading_hover(-90.0/180*PI);
+            change_heading_hover(ANGLE_AFTER_HALF_GATE/180.0*PI);
             if (time_primitive < 1)
                 return;
             else
@@ -162,14 +167,17 @@ void first_part_logic()
             }
             break;
 
+        default:
+            break;
+
     }
-    //state_upper_level  = SECOND_PART;
 }
 
 
 
 void second_part_logic()
 {
+
     // if we pass through 100 gates, we can change to third part
     if ( states_race.gate_counter_in_second_part == 4)
     {
@@ -207,8 +215,10 @@ void second_part_logic()
                 state_lower_level = WAIT_FOR_DETECTION_CM;
                 break;
             }
-            if(states_race.ready_pass_through == FALSE)
-                adjust_position(-delta_z_gate);
+            if(states_race.ready_pass_through == FALSE) {
+                adjust_position(current_z_gate);
+                adjust_heading(0);
+            }
             else
             {
                 states_race.distance_before_gate = current_y_gate;
@@ -231,7 +241,7 @@ void second_part_logic()
 
         case HOVER_CM:
             hover();
-            if (time_primitive > 2)
+            if (time_primitive > HOVER_TIME)
             {
                 state_lower_level = TURN_CM;
             }
@@ -257,6 +267,8 @@ void second_part_logic()
                 state_lower_level = WAIT_FOR_DETECTION_CM;
             }
             break;
+        default:
+            break;
     }
 }
 
@@ -265,45 +277,31 @@ void third_part_logic()
     land();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 float choose_heading_after_passing_through_gate()
 {
-    float heading_turn = 0;
-    switch (states_race.gate_counter_in_second_part)
-    {
-        case 0:
-            heading_turn =parameter_to_be_tuned.heading_after_first_gate;
-            break;
-        case 1:
-            heading_turn = parameter_to_be_tuned.heading_after_second_gate;
-            break;
-        case 2:
-            heading_turn = parameter_to_be_tuned.heading_after_third_gate;
-            break;
-        case 3:
-            heading_turn = parameter_to_be_tuned.heading_after_fourth_gate;
-            break;
-
-    }
+    float heading_turn =parameter_to_be_tuned.heading_after_gate[states_race.gate_counter_in_second_part];
     return heading_turn;
 }
 
 float choose_distance_after_gate()
 {
-    float distance_after_gate = 1;
-    switch (states_race.gate_counter_in_second_part)
-    {
-        case 0:
-            distance_after_gate = parameter_to_be_tuned.distance_first_gate;
-            break;
-        case 1:
-            distance_after_gate = parameter_to_be_tuned.distance_second_gate;
-            break;
-        case 2:
-            distance_after_gate = parameter_to_be_tuned.distance_third_gate;
-            break;
-        case 3:
-            distance_after_gate = parameter_to_be_tuned.distance_fourth_gate;
-            break;
-    }
+    float distance_after_gate = parameter_to_be_tuned.distance_after_gate[states_race.gate_counter_in_second_part];
+
+
     return distance_after_gate;
 }

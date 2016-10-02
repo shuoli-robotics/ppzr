@@ -68,4 +68,16 @@ extern int color_count;
 
 extern struct video_listener *listener;
 
+extern float measured_x_gate;
+extern float measured_y_gate;
+extern float measured_z_gate;
+extern float delta_z_gate;
+
+extern float current_x_gate;
+extern float current_y_gate;
+extern float current_z_gate;
+extern char fitness;
+extern int gate_detected;
+extern int init_pos_filter;
+
 #endif /* SNAKE_GATE_DETECTION_CV_PLUGIN_H */

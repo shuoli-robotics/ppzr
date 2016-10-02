@@ -46,11 +46,11 @@
 
 //initial position and speed safety margins
 
-#define X_POS_MARGIN 0.1//m
-#define Y_POS_MARGIN 0.3//m
-#define Z_POS_MARGIN 0.2//m
+#define X_POS_MARGIN 0.15//m
+#define Y_POS_MARGIN 0.5//m
+#define Z_POS_MARGIN 0.15//m
 #define X_SPEED_MARGIN 0.15//m/s
-#define Y_SPEED_MARGIN 0.15//m/s
+#define Y_SPEED_MARGIN 0.2//m/s
 
 #define GOOD_FIT 1.0
 
@@ -151,8 +151,8 @@ struct timeval stop, start;
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
-				  &current_x_gate,&current_y_gate,&current_z_gate,&body_filter_x,&current_quality,
-				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.gate_detected); //
+				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
+				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.ready_pass_through); //
 }
 
 
@@ -253,7 +253,7 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
 void snake_gate_periodic(void)
 {
   	//SAFETY  gate_detected
-	if(y_dist > 0.6 && y_dist < 5 && current_quality>min_gate_quality){
+	if(y_dist > 0.6 && y_dist < 5) {
         states_race.gate_detected = 1;
         counter_gate_detected = 0;
         time_gate_detected = 0;
@@ -274,7 +274,7 @@ void snake_gate_periodic(void)
 	 states_race.ready_pass_through = 0;
 	}
 
-    if(safe_pass_counter > 20)
+    if(safe_pass_counter > 10)
     {
         safe_pass_counter = 0;
         states_race.ready_pass_through = 1;
@@ -338,7 +338,7 @@ void snake_gate_periodic(void)
 			uncertainty_gate = 151;//max
 		}
 		else
-			weight_measurement = (GOOD_FIT-best_quality)/GOOD_FIT;//check constant weight
+			weight_measurement = 0.7;//(GOOD_FIT-best_quality)/GOOD_FIT;//check constant weight
 
 		current_x_gate = weight_measurement * x_dist + (1.0f - weight_measurement) * predicted_x_gate;
 		current_y_gate = weight_measurement * y_dist + (1.0f - weight_measurement) * predicted_y_gate;

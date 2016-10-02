@@ -30,6 +30,28 @@
 #define CONSTANT_VELOCITY_STRAIGHT 0.6
 #endif
 
+#ifndef NUMBER_OF_GATES
+#define NUMBER_OF_GATES 7
+#endif
+
+#ifndef ANGLE_AFTER_HALF_GATE
+#define ANGLE_AFTER_HALF_GATE 90.0     //degree
+#endif
+
+#ifndef VELOCITY_IN_FIRST_PART
+#define VELOCITY_IN_FIRST_PART 0.8
+#endif
+
+
+#ifndef TIME_IN_FIRST_PART
+#define TIME_IN_FIRST_PART 6
+#endif
+
+#ifndef HOVER_TIME
+#define HOVER_TIME 2
+#endif
+
+
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
@@ -38,14 +60,8 @@ TURN_CM,SEARCH_GATE_CM,TAKE_OFF_CM,LAND_CM,GO_STRAIGHT_CM};
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART};
 
 struct parameters_to_be_tuned{
-    float distance_first_gate;
-    float distance_second_gate;
-    float distance_third_gate;
-    float distance_fourth_gate;
-    float heading_after_first_gate;
-    float heading_after_second_gate;
-    float heading_after_third_gate;
-    float heading_after_fourth_gate;
+    float heading_after_gate[NUMBER_OF_GATES];
+    float distance_after_gate[NUMBER_OF_GATES];
 };
 
 extern enum states_lower_level state_lower_level;

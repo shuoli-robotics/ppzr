@@ -41,8 +41,8 @@
 
 
 
-#define p_x_position 0.1
-#define p_y_position 0.1
+#define p_x_position 0.08
+#define p_y_position 0.08
 
 #define Y_ADJUST_POSITION 2.5
 
@@ -262,7 +262,7 @@ void adjust_position(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
-	float z_setpoint = z0 - derta_altitude+Z_BIAS;
+	float z_setpoint = derta_altitude; //z0 - derta_altitude+Z_BIAS;
 	if (z_setpoint>-1)
 	  z_setpoint = -1;
 	else if (z_setpoint<-3.9)
@@ -337,11 +337,8 @@ void take_off(float desired_altitude)
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        //psi0 = stateGetNedToBodyEulers_f()->psi;
-        //guidance_loop_set_heading(psi0);
-        //ins_reset_altitude_ref();
-        z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_vz(-0.2);
+        guidance_loop_set_velocity(0,0);
+        //guidance_v_set_guided_vz(-0.1);
         guidance_v_set_guided_z(desired_altitude);
     }
 
@@ -370,4 +367,15 @@ void land()
     {
         states_race.land_is_finished = 1;
     }
+}
+
+void adjust_heading(float delta_heading) {
+
+    // set z
+    if (primitive_in_use != ADJUST_HEADING) {
+        primitive_in_use = ADJUST_HEADING;
+    }
+
+    psi0 = stateGetNedToBodyEulers_f()->psi;
+    //todo: guidance_loop_set_heading(psi0+delta_heading);
 }
