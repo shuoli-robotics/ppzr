@@ -247,7 +247,12 @@ void go_up_down(float derta_altitude){
         guidance_loop_set_velocity(0,0);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(z0 - derta_altitude);
+        states_race.altitude_is_achieved = FALSE;
     }
+    if (fabs(stateGetPositionNed_f()->z-z0-derta_altitude)<0.1){
+        states_race.altitude_is_achieved = TRUE;
+    }
+
 }
 
 

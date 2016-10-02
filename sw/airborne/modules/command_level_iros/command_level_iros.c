@@ -64,12 +64,18 @@ void command_init(){
 
     float distance_after_gates_temp[100] = {            0.2,0.2,0.2,0.2,0.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
-                                                        0.5,0.5,0.5,0.5,0.5,};  // 11-15
+                                                        0.5,0.5,0.5,0.5,0.5};  // 11-15
+
+    float height_after_gates_temp[100]   ={             0,1,0,0,-1,    // 1-5
+                                                        0,0,0,0,0,    // 6-10
+                                                        0,0,0,0,0  };  // 11-15
+
     int i;
     for(i=0;i<NUMBER_OF_GATES;i++)
     {
         parameter_to_be_tuned.heading_after_gate[i] = heading_after_gates_temp[i]/180.0*PI;
         parameter_to_be_tuned.distance_after_gate[i] = distance_after_gates_temp[i];
+        parameter_to_be_tuned.height_after_gate[i] = height_after_gates_temp[i];
     }
 }
 
@@ -255,11 +261,26 @@ void second_part_logic()
             {
                 // turning is finished, go to next gate
                 init_pos_filter = 1;
-                state_lower_level = WAIT_FOR_DETECTION_CM;
-                states_race.gate_counter_in_second_part ++;
+                state_lower_level = ADJUST_HEIGHT_CM;
+
             }
             break;
-
+        case ADJUST_HEIGHT_CM:
+            if (parameter_to_be_tuned.height_after_gate[states_race.gate_counter_in_second_part] == 0)
+            {
+                state_lower_level = WAIT_FOR_DETECTION_CM;
+                states_race.gate_counter_in_second_part ++;
+                break;
+            }
+            else
+            {
+                go_up_down(parameter_to_be_tuned.height_after_gate[states_race.gate_counter_in_second_part]);
+                    if (states_race.altitude_is_achieved == TRUE)
+                    {
+                        state_lower_level = WAIT_FOR_DETECTION_CM;
+                        states_race.gate_counter_in_second_part ++;
+                    }
+            }
 
         case SEARCH_GATE_CM:
             search_gate();
