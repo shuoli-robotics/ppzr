@@ -232,6 +232,8 @@ void go_left_right(float velocity){
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
+        //z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_z(z0);
     }
 }
 
@@ -383,4 +385,29 @@ void adjust_heading(float delta_heading) {
 
     psi0 = stateGetNedToBodyEulers_f()->psi;
     //todo: guidance_loop_set_heading(psi0+delta_heading);
+}
+
+void left_right_back(float velocity_in_body_x,float velocity_in_body_y)
+{
+    if (primitive_in_use != LEFT_RIGHT_BACK)
+    {
+        primitive_in_use = LEFT_RIGHT_BACK;
+        z0 = stateGetPositionNed_f()->z;
+        //psi1 = stateGetNedToBodyEulers_f()->psi;
+    }
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+    guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+    psi0 = stateGetNedToBodyEulers_f()->psi;
+    guidance_v_set_guided_z(z0);
+    //guidance_loop_set_heading(psi1);
+    // set vx and vy
+
+        velocity_body_y = velocity_in_body_y;
+        velocity_body_x = velocity_in_body_x;
+
+    velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
+    velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
+
+    guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
 }

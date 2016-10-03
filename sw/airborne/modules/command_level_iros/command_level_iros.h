@@ -32,7 +32,7 @@
 #endif
 
 #ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 7
+#define NUMBER_OF_GATES 3
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE

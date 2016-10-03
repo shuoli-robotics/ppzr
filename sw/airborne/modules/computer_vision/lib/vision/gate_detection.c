@@ -296,7 +296,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
     (*s_right) = best_genome[4];
   }
 
-  printf("best_genome 0: %f 1: %f\n",best_genome[0],best_genome[1]);
+  //printf("best_genome 0: %f 1: %f\n",best_genome[0],best_genome[1]);
   //printf("best_genome 3: %f 4: %f\n",best_genome[3],best_genome[4]);
   return;
 }
