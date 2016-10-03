@@ -247,7 +247,6 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
       {
           // optimize mean distance to a polygon (and possibly stick) 
 				  fits[i] = mean_distance_to_polygon(Population[i]);
-				  //printf fitnesses
       }
 		}
 
@@ -263,7 +262,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 		// if better than any previous individual, remember it:
 		if (min_fit < (*fitness))
 		{
-			for (ge = 0; ge < 3; ge++)
+			for (ge = 0; ge < N_GENES; ge++)//was ge < 3 therefore last two genes were not updated
 			{
 				best_genome[ge] = min_genome[ge];
 			}
@@ -297,6 +296,8 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
     (*s_right) = best_genome[4];
   }
 
+  printf("best_genome 0: %f 1: %f\n",best_genome[0],best_genome[1]);
+  //printf("best_genome 3: %f 4: %f\n",best_genome[3],best_genome[4]);
   return;
 }
 

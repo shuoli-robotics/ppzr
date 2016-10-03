@@ -153,7 +153,7 @@ struct timeval stop, start;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
-    pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
+    pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &size_left, &size_right, &x_dist, &y_dist, &z_dist,
 				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
 				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.ready_pass_through,
 				  &psi_gate); //
@@ -284,8 +284,6 @@ void snake_gate_periodic(void)
         states_race.ready_pass_through = 1;
     }
 
-	  
-	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
 	if(init_pos_filter == 1)
 	{
@@ -488,57 +486,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   // do an additional fit to improve the gate detection:
   if(best_quality > min_gate_quality && n_gates>0)
   {
-    /*
-    // temporary variables:
-    float x_center, y_center, radius, fitness;
-    // whether to detect clock arms:
-    int clock_arms = 1;
-    // these vars may be filled depending on the settings:
-    float angle_1 = 0;
-    float angle_2 = 0;
-    float psi = 0;
-    float size_left = 0;
-    float size_right = 0;
-
-    // prepare the Region of Interest (ROI), which is larger than the gate:
-    float size_factor = 1.5;//1.25;
-    int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
-    int16_t min_x = gates[n_gates-1].x - ROI_size;
-    min_x = (min_x < 0) ? 0 : min_x;
-    int16_t max_x = gates[n_gates-1].x + ROI_size;
-    max_x = (max_x < img->w) ? max_x : img->w;
-    int16_t min_y = gates[n_gates-1].y - ROI_size;
-    min_y = (min_y < 0) ? 0 : min_y;
-    int16_t max_y = gates[n_gates-1].y + ROI_size;
-    max_y = (max_y < img->h) ? max_y : img->h;
-    
-    draw_gate(img, gates[n_gates-1]);
-
-    // detect the gate:
-    gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
-                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi, &size_left, &size_right);
-  
-    // store the information in the gate:
-    gates[n_gates-1].x = (int) x_center;
-    gates[n_gates-1].y = (int) y_center;
-    gates[n_gates-1].sz = (int) radius;
-<<<<<<< HEAD
-*/
         // temporary variables:
     float x_center, y_center, radius, fitness, angle_1, angle_2,s_left,s_right;
     int clock_arms = 1;
 
     // prepare the Region of Interest (ROI), which is larger than the gate:
     float size_factor = 1.5;//2;//1.25;
-    /*int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
-    int16_t min_x = gates[n_gates-1].x - ROI_size;
-    min_x = (min_x < 0) ? 0 : min_x;
-    int16_t max_x = gates[n_gates-1].x + ROI_size;
-    max_x = (max_x < img->w) ? max_x : img->w;
-    int16_t min_y = gates[n_gates-1].y - ROI_size;
-    min_y = (min_y < 0) ? 0 : min_y;
-    int16_t max_y = gates[n_gates-1].y + ROI_size;
-    max_y = (max_y < img->h) ? max_y : img->h;*/
     
     if(gen_alg)
     {
@@ -641,6 +594,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   if(best_quality > min_gate_quality && n_gates>0)
   {
       current_quality = best_quality;
+      size_left = best_gate.sz_left;
+      size_right = best_gate.sz_right;
   //draw_gate(img, gates[n_gates-1]);
   draw_gate(img, best_gate);
   gate_quality = gates[n_gates-1].gate_q;
