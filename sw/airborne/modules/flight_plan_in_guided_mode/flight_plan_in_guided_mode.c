@@ -267,7 +267,7 @@ void adjust_position(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
-	float z_setpoint = derta_altitude+Z_BIAS; //z0 - derta_altitude+Z_BIAS;
+	float z_setpoint = derta_altitude+Z_BIAS; //was z0 - derta_altitude+Z_BIAS;
 	if (z_setpoint>-1)
 	  z_setpoint = -1;
 	else if (z_setpoint<-3.9)

@@ -47,7 +47,7 @@
 
 //initial position and speed safety margins
 
-#define X_POS_MARGIN 0.10//m
+#define X_POS_MARGIN 0.15//m
 #define Y_POS_MARGIN 0.5//m
 #define Z_POS_MARGIN 0.15//m
 #define X_SPEED_MARGIN 0.15//m/s

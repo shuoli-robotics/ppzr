@@ -53,7 +53,7 @@
 #endif
 
 #ifndef NUMBER_OF_ZIGZAG
-#define NUMBER_OF_ZIGZAG 4
+#define NUMBER_OF_ZIGZAG 2
 #endif
 
 
