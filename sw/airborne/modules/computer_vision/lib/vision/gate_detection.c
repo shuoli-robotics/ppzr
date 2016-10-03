@@ -53,6 +53,7 @@ float outlier_threshold = 20.0f;
   #define N_GENES 5
 #endif
 #define N_GENES_CLOCK 2
+//printf N_GENES
 uint16_t n_generations = 10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
@@ -73,7 +74,7 @@ float clock_factor = 0.6;
  * @author Guido
  */
 
-void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi)
+void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right)
 {
   // 1) convert the disparity map to a vector of points:
 	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
@@ -103,14 +104,19 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 		(*size0) = 40.0f;// TODO: how good is 40 for the Bebop images?
 
 		// run the fit procedure:
-    float s_left, s_right;
-		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness, &s_left, &s_right);
+		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness, size_left, size_right);
 
     if(SHAPE == POLYGON)
     {
       // the sizes of the two sides (together with knowledge on the real-world size of the gate and FOV etc. of the camera)
       // tells us the angle to the center of the gate.
-      (*psi) = get_angle_from_polygon(s_left, s_right, color_image);
+      (*psi) = get_angle_from_polygon((*size_left), (*size_right), color_image);
+    }
+    else
+    {
+      (*size_left) = (*radius);
+      (*size_right) = (*radius);
+      (*psi) = 0.0f;
     }
     // possibly detect clock arms
     if(clock_arms)
@@ -241,6 +247,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
       {
           // optimize mean distance to a polygon (and possibly stick) 
 				  fits[i] = mean_distance_to_polygon(Population[i]);
+				  //printf fitnesses
       }
 		}
 
@@ -532,6 +539,8 @@ float mean_distance_to_polygon(float* genome)
     side_distances[2] = distance_to_segment(square_top_left, square_top_right, point);
     side_distances[3] = distance_to_segment(square_bottom_left, square_bottom_right, point);
     error = get_minimum(side_distances, n_sides, &index);
+    
+    //printf(side_distances);
 
 		if (STICK)
 		{

@@ -24,7 +24,7 @@ struct point_f {
 
 // main gate detection function:
 extern void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0,
-                    uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi);
+                    uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right);
 
 // "private" functions:
 void convert_image_to_points(struct image_t* color_image, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y);

@@ -70,7 +70,7 @@ void command_init(){
         parameter_to_be_tuned.distance_after_zigzag[i] = distance_after_zigzag_temp[i];
     }
     // delta heading after passing through each gate (degree!)
-    float heading_after_gates_temp[100] = {            0,125,-125,-90,-90,    // 1-5
+    float heading_after_gates_temp[100] = {            0,180,0,0,-90,    // 1-5
                                                        0,0,0,0,0,          // 6-10
                                                        0,0};                 // 11-15
 
@@ -311,6 +311,7 @@ void second_part_logic()
                         state_lower_level = HOVER_CM;
                         states_race.gate_counter_in_second_part ++;
                     }
+                    break;
             }
 
         case SEARCH_GATE_CM:
