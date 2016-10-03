@@ -53,6 +53,7 @@ float outlier_threshold = 20.0f;
   #define N_GENES 5
 #endif
 #define N_GENES_CLOCK 2
+//printf N_GENES
 uint16_t n_generations = 10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
@@ -241,6 +242,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
       {
           // optimize mean distance to a polygon (and possibly stick) 
 				  fits[i] = mean_distance_to_polygon(Population[i]);
+				  //printf fitnesses
       }
 		}
 
@@ -532,6 +534,8 @@ float mean_distance_to_polygon(float* genome)
     side_distances[2] = distance_to_segment(square_top_left, square_top_right, point);
     side_distances[3] = distance_to_segment(square_bottom_left, square_bottom_right, point);
     error = get_minimum(side_distances, n_sides, &index);
+    
+    //printf(side_distances);
 
 		if (STICK)
 		{
