@@ -70,7 +70,7 @@ bool arc_is_finished = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
-#define Z_BIAS 0//was .2
+#define Z_BIAS 0.2//was .2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
@@ -116,8 +116,6 @@ void go_straight(float velocity){
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        //z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_z(z0);
     }
 
 }
