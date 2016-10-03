@@ -31,6 +31,8 @@
   <makefile target="ap">
     <file name="snake_gate_detection.c"/>
     <file name="lib/vision/gate_detection.c"/>
+    <file name="lib/vision/qr_code_recognition.c"/>
+    <file name="lib/vision/integral_image.c"/>    
   </makefile>
 </module>
 
