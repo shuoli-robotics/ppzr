@@ -44,6 +44,7 @@ void state_autonomous_race_init() {
     states_race.altitude_is_achieved = FALSE;
     states_race.land_is_finished =FALSE;
     states_race.gate_counter_in_second_part = 0;
+    states_race.gate_counter_in_third_part = 0;
 }
 
 void display_states()
