@@ -149,13 +149,17 @@ float fps_filter = 0;
 
 struct timeval stop, start;
 
+//QR code classification
+int QR_class = 0;
+float QR_uncertainty;
+
 //Debug messages
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &size_left, &size_right, &x_dist, &y_dist, &z_dist,
 				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
-				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.ready_pass_through,
+				  &y_center_picker,&cb_center,&QR_class,&sz,&n_gates,&states_race.ready_pass_through,
 				  &psi_gate); //
 }
 
@@ -576,10 +580,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     }
 
     // read the QR code:
-    float uncertainty;
     // get the class of the QR, given a region of interest (TODO: find out the right parameters for the region next to the gate that has the QR code)
-    int QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &uncertainty);
+    //QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &QR_uncertainty);
+    
   }
+  QR_class = get_QR_class(img,&QR_uncertainty);
           
   //color filtered version of image for overlay and debugging
   if(filter)

@@ -52,7 +52,7 @@ int get_QR_class(struct image_t *img, float* uncertainty)
 
   // classify the features:
   QR_J48(integral_features, &class, uncertainty);
-
+  class = N_FEATURES;
   return class;
 }
 
