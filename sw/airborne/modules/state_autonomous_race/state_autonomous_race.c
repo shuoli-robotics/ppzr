@@ -92,6 +92,10 @@ void display_lower_state()
         case GO_STRAIGHT_CM:
             printf("It is in GO_STRAIGHT\n");
             break;
+        case ADJUST_HEIGHT_CM:
+            printf("It is in ADJUST_HEIGHT\n");
+            break;
+
     }
 }
 

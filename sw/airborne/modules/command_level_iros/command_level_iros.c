@@ -286,6 +286,7 @@ void second_part_logic()
                 {
                     previous_lower_level = HOVER_CM;
                     state_lower_level = WAIT_FOR_DETECTION_CM;
+                    states_race.gate_counter_in_second_part ++;
                 }
             }
             break;
@@ -318,7 +319,6 @@ void second_part_logic()
                     {
                         previous_lower_level = ADJUST_HEIGHT_CM;
                         state_lower_level = HOVER_CM;
-                        states_race.gate_counter_in_second_part ++;
                     }
                     break;
             }
