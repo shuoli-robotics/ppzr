@@ -397,6 +397,8 @@ void left_right_back(float velocity_in_body_x,float velocity_in_body_y)
     {
         primitive_in_use = LEFT_RIGHT_BACK;
         z0 = stateGetPositionNed_f()->z;
+	 counter_primitive = 0;
+        time_primitive = 0;
         //psi1 = stateGetNedToBodyEulers_f()->psi;
     }
     printf("!!!!!!!!!!!!!!!!!!!!!!!!\n");

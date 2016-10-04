@@ -80,7 +80,7 @@ void command_init(){
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
-    float height_after_gates_temp[100]   ={             0,-1.2,0,-1,-1,    // 1-5
+    float height_after_gates_temp[100]   ={             0,-1.5,0,-1,-1};   // 1-5
 
 
     for(i=0;i<NUMBER_OF_GATES;i++)
@@ -425,7 +425,7 @@ void third_part_logic()
 
         case SEARCH_GATE_CM:
             left_right_back(-0.5,0.5);
-            if (time_primitive > 3)
+            if (time_primitive > 5)
             {
                 previous_lower_level = SEARCH_GATE_CM;
                 state_lower_level = WAIT_FOR_DETECTION_CM;

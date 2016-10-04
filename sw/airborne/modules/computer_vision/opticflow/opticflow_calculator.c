@@ -706,9 +706,9 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
                   previous_state_y, process_noise, measurement_noise, result->fps);
 
 
-    //result->vel_body_x = previous_state_x[0];
-    //result->vel_body_y =  previous_state_y[0];
-    
+    result->vel_body_x = previous_state_x[0];
+    result->vel_body_y =  previous_state_y[0];
+   
     opt_body_v_x  = previous_state_x[0];
     opt_body_v_y  = previous_state_y[0];
     
