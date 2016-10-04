@@ -351,6 +351,8 @@ void snake_gate_periodic(void)
 		current_x_gate = weight_measurement * x_dist + (1.0f - weight_measurement) * predicted_x_gate;
 		current_y_gate = weight_measurement * y_dist + (1.0f - weight_measurement) * predicted_y_gate;
 		current_z_gate = weight_measurement * (z_dist + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
+		
+		//psi_bias
 	
 		// reset uncertainty:
 		uncertainty_gate = 0;

@@ -25,6 +25,13 @@
 
 #include "subsystems/datalink/telemetry.h"
 
+
+static void stereo_flow_send(struct transport_tx *trans, struct link_device *dev)
+    {
+    pprz_msg_send_STEREO_FLOW_INFO(trans, dev, AC_ID,&fps,&flow_x, &flow_y,
+		  &vel_x, &vel_y);
+    }
+
 void stereocam_to_state(void);
 
 void stereo_to_state_init(void)
@@ -39,6 +46,8 @@ void stereo_to_state_periodic(void)
     stereocam_data.fresh = 0;
   }
 }
+
+
 
 void stereocam_to_state(void)
 {
@@ -82,12 +91,12 @@ void stereocam_to_state(void)
 
   if (!(abs(vel_body_x) > 0.5 || abs(vel_body_x) > 0.5))
   {
-    AbiSendMsgVELOCITY_ESTIMATE(STEREOCAM2STATE_SENDER_ID, now_ts,
+   /* AbiSendMsgVELOCITY_ESTIMATE(STEREOCAM2STATE_SENDER_ID, now_ts,
                                 vel_body_x,
                                 vel_body_y,
                                 0.0f,
                                 0.3f
-                               );
+                               );*/
   }
 
   // Reusing the OPTIC_FLOW_EST telemetry messages, with some values replaced by 0
@@ -96,8 +105,8 @@ void stereocam_to_state(void)
   int16_t dummy_int16 = 0;
   float dummy_float = 0;
 
-  DOWNLINK_SEND_OPTIC_FLOW_EST(DefaultChannel, DefaultDevice, &fps, &dummy_uint16, &dummy_uint16, &flow_x, &flow_y, &dummy_int16, &dummy_int16,
-		  &vel_x, &vel_y,&dummy_float, &dummy_float, &dummy_float);
+ /* DOWNLINK_SEND_OPTIC_FLOW_EST(DefaultChannel, DefaultDevice, &fps, &dummy_uint16, &dummy_uint16, &flow_x, &flow_y, &dummy_int16, &dummy_int16,
+		  &vel_x, &vel_y,&dummy_float, &dummy_float, &dummy_float);*/
 
 #endif
 
