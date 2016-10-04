@@ -41,6 +41,7 @@
 #define TAKE_OFF                 11
 #define LAND                     12
 #define ADJUST_HEADING           13
+#define LEFT_RIGHT_BACK          14
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
@@ -60,6 +61,8 @@
  extern void take_off(float desired_altitude);
  extern void land(void);
  extern void adjust_heading(float delta_heading);
+ extern void left_right_back(float velocity_in_body_x,float velocity_in_body_y);
+
 
 
 #endif

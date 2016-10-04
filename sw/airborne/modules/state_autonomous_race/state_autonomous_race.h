@@ -43,6 +43,7 @@ struct state_autonomous_race{
     float distance_before_gate;
     float time_to_go_straight;
     bool gate_detected;
+    int gate_counter_in_third_part;
 };
 
 extern struct state_autonomous_race states_race;

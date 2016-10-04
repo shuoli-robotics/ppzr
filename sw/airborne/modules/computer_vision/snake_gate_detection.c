@@ -47,7 +47,7 @@
 
 //initial position and speed safety margins
 
-#define X_POS_MARGIN 0.10//m
+#define X_POS_MARGIN 0.15//m
 #define Y_POS_MARGIN 0.5//m
 #define Z_POS_MARGIN 0.15//m
 #define X_SPEED_MARGIN 0.15//m/s
@@ -63,7 +63,7 @@ uint8_t color_lum_min = 60;//105;
 uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
-uint8_t color_cr_min  = 140;//was 180
+uint8_t color_cr_min  = 146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
