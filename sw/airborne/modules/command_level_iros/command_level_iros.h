@@ -28,11 +28,11 @@
 #define COMMAND_LEVEL_IROS_H
 
 #ifndef CONSTANT_VELOCITY_STRAIGHT
-#define CONSTANT_VELOCITY_STRAIGHT 0.6
+#define CONSTANT_VELOCITY_STRAIGHT 0.8
 #endif
 
 #ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 3
+#define NUMBER_OF_GATES 2
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
@@ -56,6 +56,9 @@
 #define NUMBER_OF_ZIGZAG 2
 #endif
 
+#ifndef STRAIGHT_TIME
+#define STRAIGHT_TIME 5.0
+#endif
 
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
@@ -70,6 +73,7 @@ struct parameters_to_be_tuned{
     float height_after_gate[NUMBER_OF_GATES];
     bool flag_zigzag[NUMBER_OF_ZIGZAG];
     float distance_after_zigzag[NUMBER_OF_ZIGZAG];
+    float heading_after_first_part;
 };
 
 extern enum states_lower_level state_lower_level;

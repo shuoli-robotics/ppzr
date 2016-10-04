@@ -24,6 +24,8 @@
  */
 
 #include "modules/vertical_loop_control_module/vertical_loop_control_module.h"
+#include "subsystems/radio_control.h"
+#include "firmwares/rotorcraft/stabilization.h"
 
 void guidance_v_module_init(void)
 {
@@ -36,10 +38,11 @@ void guidance_v_module_read_rc(void)
 }
 void guidance_v_module_enter(void)
 {
-
+    //printf("module_enter is called!\n");
 }
 
 void guidance_v_module_run(bool in_flight)
 {
-
+    //printf("Vertical control module is called!\n");
+    //stabilization_cmd[COMMAND_THRUST] = 0;
 }

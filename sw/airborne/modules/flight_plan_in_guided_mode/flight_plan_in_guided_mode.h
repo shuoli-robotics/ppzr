@@ -26,6 +26,8 @@
 #ifndef FLIGHT_PLAN_IN_GUIDED_MODE_H
 #define FLIGHT_PLAN_IN_GUIDED_MODE_H
 #include "flight_plan_clock.h"
+#include "modules/vertical_loop_control_module/vertical_loop_control_module.h"
+#include "firmwares/rotorcraft/guidance/guidance_v.h"
 
 #define NO_PRIMITIVE             0
 #define HOVER                    1

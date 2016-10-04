@@ -24,6 +24,9 @@
  */
 
 #include "modules/state_autonomous_race/state_autonomous_race.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+#include "firmwares/rotorcraft/guidance/guidance_v.h"
+#include "firmwares/rotorcraft/guidance/guidance_h.h"
 
 
 //void state_autonomous_race_init();
@@ -35,6 +38,7 @@ struct state_autonomous_race states_race;
 
 void display_upper_state(void);
 void display_lower_state(void);
+void display_guidance_mode(void);
 
 
 void state_autonomous_race_init() {
@@ -55,6 +59,16 @@ void display_states()
 
     display_upper_state();
     display_lower_state();
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    display_guidance_mode();
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("Primitive in use is %d\n",primitive_in_use);
+    printf("Time in primitve is %f\n",time_primitive);
+
 
     printf("\n");
     printf("\n");
@@ -96,6 +110,7 @@ void display_lower_state()
             printf("It is in ADJUST_HEIGHT\n");
             break;
 
+
     }
 }
 
@@ -114,3 +129,32 @@ void display_upper_state()
             break;
     }
 };
+
+void display_guidance_mode()
+{
+    switch(guidance_h.mode)
+    {
+        case GUIDANCE_H_MODE_MODULE:
+            printf("Horizontal mode is　MODULE mode\n");
+            break;
+        case GUIDANCE_H_MODE_GUIDED:
+            printf("Horizontal mode is　GUIDED mode\n");
+            break;
+        default:
+            break;
+    }
+
+
+    switch(guidance_v_mode)
+    {
+        case GUIDANCE_V_MODE_MODULE:
+            printf("Vertial mode is　MODULE mode\n");
+            break;
+        case GUIDANCE_V_MODE_GUIDED:
+            printf("Vertial mode is　GUIDED mode\n");
+            break;
+
+        default:
+            break;
+    }
+}

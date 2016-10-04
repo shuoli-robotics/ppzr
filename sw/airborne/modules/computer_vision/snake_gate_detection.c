@@ -47,7 +47,7 @@
 
 //initial position and speed safety margins
 
-#define X_POS_MARGIN 0.15//m
+#define X_POS_MARGIN 0.20//m
 #define Y_POS_MARGIN 0.5//m
 #define Z_POS_MARGIN 0.15//m
 #define X_SPEED_MARGIN 0.15//m/s
@@ -63,7 +63,7 @@ uint8_t color_lum_min = 60;//105;
 uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
-uint8_t color_cr_min  = 146;//was 180
+uint8_t color_cr_min  = 138;//146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
@@ -142,6 +142,7 @@ int uncertainty_gate = 0;
 //int gate_detected = 0;
 int init_pos_filter = 0;
 int safe_pass_counter = 0;
+int gate_gen = 0;
 
 float gate_quality = 0;
 
@@ -149,13 +150,17 @@ float fps_filter = 0;
 
 struct timeval stop, start;
 
+//QR code classification
+int QR_class = 0;
+float QR_uncertainty;
+
 //Debug messages
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &size_left, &size_right, &x_dist, &y_dist, &z_dist,
 				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
-				  &y_center_picker,&cb_center,&cr_center,&sz,&n_gates,&states_race.ready_pass_through,
+				  &y_center_picker,&cb_center,&QR_class,&sz,&n_gates,&states_race.gate_detected,
 				  &psi_gate); //
 }
 
@@ -257,7 +262,8 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
 void snake_gate_periodic(void)
 {
   	//SAFETY  gate_detected
-	if(y_dist > 0.6 && y_dist < 5) {
+	if(y_dist > 0.6 && y_dist < 5)// && gate_gen == 1) 
+	{
         states_race.gate_detected = 1;
         counter_gate_detected = 0;
         time_gate_detected = 0;
@@ -576,10 +582,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     }
 
     // read the QR code:
-    float uncertainty;
     // get the class of the QR, given a region of interest (TODO: find out the right parameters for the region next to the gate that has the QR code)
-    int QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &uncertainty);
+    //QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &QR_uncertainty);
+    
   }
+  else
+  {
+    //random position guesses here and then genetic algorithm
+    //use random sizes and positions bounded by minimum size 
+  }
+  QR_class = get_QR_class(img,&QR_uncertainty);
           
   //color filtered version of image for overlay and debugging
   if(filter)
@@ -603,11 +615,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
   //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
   calculate_gate_position(best_gate.x,best_gate.y,best_gate.sz,img,best_gate);
-  
+  gate_gen = 0;
   }
     else{
       states_race.gate_detected = 0;
-      current_quality = 0;}
+      current_quality = 0;
+      gate_gen = 1;
+    }
   return img; // snake_gate_detection did not make a new image
 }
 

@@ -54,7 +54,7 @@ float outlier_threshold = 20.0f;
 #endif
 #define N_GENES_CLOCK 2
 //printf N_GENES
-uint16_t n_generations = 10; // could be reduced for instance when there are many points
+uint16_t n_generations = 20;//10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
 // whether to draw on the image:
@@ -295,9 +295,6 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
     (*s_left) = best_genome[3];
     (*s_right) = best_genome[4];
   }
-
-  //printf("best_genome 0: %f 1: %f\n",best_genome[0],best_genome[1]);
-  //printf("best_genome 3: %f 4: %f\n",best_genome[3],best_genome[4]);
   return;
 }
 
