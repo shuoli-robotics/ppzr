@@ -584,6 +584,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     //QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &QR_uncertainty);
     
   }
+  else
+  {
+    //random position guesses here and then genetic algorithm
+    //use random sizes and positions bounded by minimum size 
+  }
   QR_class = get_QR_class(img,&QR_uncertainty);
           
   //color filtered version of image for overlay and debugging

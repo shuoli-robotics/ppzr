@@ -87,7 +87,7 @@ void cv_ae_awb_periodic(void) {
     float fTolerance = 2.0f;
     float targetAWB = 0.0f;
 
-    printf("U-V: %f\r\n", avgU - avgV);
+    //printf("U-V: %f\r\n", avgU - avgV);
     if (avgU - avgV + targetAWB < -fTolerance) {
       // Want more red
       printf("Too red...\r\n");

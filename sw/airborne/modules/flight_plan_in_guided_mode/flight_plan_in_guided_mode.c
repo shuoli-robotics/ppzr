@@ -116,10 +116,10 @@ void go_straight(float velocity){
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        //z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_z(z0);
+        z0 = stateGetPositionNed_f()->z;
+        
     }
-
+   // guidance_v_set_guided_z(z0);
 }
 
 void change_heading_hover(float derta_psi){
@@ -133,7 +133,9 @@ void change_heading_hover(float derta_psi){
         psi0 = stateGetNedToBodyEulers_f()->psi;
 	    guidance_loop_set_heading(psi0+derta_psi);
         states_race.turning = TRUE;
+	z0 = stateGetPositionNed_f()->z;
     }
+    //guidance_v_set_guided_z(z0);
 
     if (time_primitive > 1)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
     {
@@ -251,7 +253,7 @@ void go_up_down(float derta_altitude){
 	 guidance_loop_set_heading(psi0);
         states_race.altitude_is_achieved = FALSE;
     }
-    if (fabs(stateGetPositionNed_f()->z-z0+derta_altitude)<0.4){
+    if (time_primitive > 2){
         states_race.altitude_is_achieved = TRUE;
     }
 
