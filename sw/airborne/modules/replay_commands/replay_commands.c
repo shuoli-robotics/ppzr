@@ -101,7 +101,7 @@ void replay_commands_periodic(void)
   int n = 200; //maximum number of characters in the line
   char str[200];
 
-  if (replay == 1 && file != NULL && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
+  if (replay == 1 && file != NULL){// && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
     printf("Here is the start\n");
 
     if( fgets(str, n, file) != NULL ){
