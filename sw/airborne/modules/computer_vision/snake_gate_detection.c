@@ -353,6 +353,10 @@ void snake_gate_periodic(void)
 		current_z_gate = weight_measurement * (z_dist + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
 		
 		//psi_bias
+		//if state is adjust position then slowly add bias using the fitness as weight
+		//keep always updating bias based on current angle and limit
+		//psi_filter_weight = GOOD_POLY_FIT - best_fitness;
+		//psi_increment = psi_filter_weight * psi_gate;
 	
 		// reset uncertainty:
 		uncertainty_gate = 0;
@@ -383,7 +387,7 @@ void snake_gate_periodic(void)
 struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
-  int filter = 1;
+  int filter = 0;
   int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;  
