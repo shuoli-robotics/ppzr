@@ -240,7 +240,7 @@ void go_left_right(float velocity){
     }
 }
 
-void go_up_down(float derta_altitude){
+void go_up_down(float altitude){
     if(primitive_in_use != GO_UP_DOWN){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
@@ -248,13 +248,13 @@ void go_up_down(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);   // earth coordinate
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0 - derta_altitude);
-	psi0 = stateGetNedToBodyEulers_f()->psi;
-	 guidance_loop_set_heading(psi0);
+        //z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(altitude);
+	    psi0 = stateGetNedToBodyEulers_f()->psi;
+	    guidance_loop_set_heading(psi0);
         states_race.altitude_is_achieved = FALSE;
     }
-    if (time_primitive > 2){
+    if (fabs(stateGetPositionNed_f()->z-altitude)<0.2){
         states_race.altitude_is_achieved = TRUE;
     }
 
