@@ -45,9 +45,9 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <!--module name="logger_file">
+    <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-   </module-->
+   </module>
     <module name="state_autonomous_race"/>
     <module name="vertical_loop_control_module"/>
 
@@ -66,7 +66,7 @@
     
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-    <!--module name="replay_commands"/-->
+    <module name="replay_commands"/>
  
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
@@ -130,7 +130,7 @@
   </command_laws>
 
   <section name="MISC">
-    <define name="NO_RC_THRUST_LIMIT" value="FALSE"/>
+    <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
   </section>
 
   <section name="AIR_DATA" prefix="AIR_DATA_">

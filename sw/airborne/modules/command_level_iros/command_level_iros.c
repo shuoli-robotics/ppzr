@@ -30,6 +30,7 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/snake_gate_detection.h"
+#include "modules/replay_commands/replay_commands.h"
 
 #define PI 3.1415926
 
@@ -45,6 +46,7 @@ float choose_heading_after_passing_through_gate(void);
 float choose_distance_after_gate(void);
 
 int counter_of_step;
+bool replay_flag;
 enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
 enum states_upper_level state_upper_level = SECOND_PART;
 
@@ -59,6 +61,7 @@ void command_init(){
     states_race.distance_before_gate = 1.5;
     //gate_counter_in_second_part = 0;
     //record_command = 0;
+    replay_flag = 0;
 
 
     bool flag_zigzag_temp[100] = {TRUE,FALSE,TRUE,FALSE};
@@ -90,7 +93,7 @@ void command_init(){
         parameter_to_be_tuned.height_after_gate[i] = height_after_gates_temp[i];
     }
 
-    parameter_to_be_tuned.heading_after_first_part = 90.0/180.0*PI;
+   // parameter_to_be_tuned.heading_after_first_part = 90.0/180.0*PI;
 }
 
 
@@ -102,12 +105,13 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = TAKE_OFF_CM;
-        state_upper_level = FIRST_PART;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        state_lower_level = HOVER_CM;
+        state_upper_level = FOURTH_PART;
+        //guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        //guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
+        replay_flag = 0;
         //counter_of_step = 0;
         //states_race.altitude_is_achieved = 0;  // we need to take off from ground
     }
@@ -150,25 +154,39 @@ void first_part_logic()
 {
     switch(state_lower_level)
     {
-        case TAKE_OFF_CM:
-            take_off(-1.5);
-            if(states_race.altitude_is_achieved != 1)
-                break;
-            else
+        case PREPARE_CM:
+            if (time_autopilot_mode > 3)
             {
-                previous_lower_level = TAKE_OFF_CM;
-                state_lower_level = HOVER_CM;
-                break;
+                previous_lower_level = PREPARE_CM;
+                state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
             }
+            break;
+        case TAKE_OFF_OPEN_LOOP_CM:
+            take_off(TAKE_OFF_ALTITUDE);
+            if(states_race.altitude_is_achieved == 1)
+            {
+                previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
+                state_lower_level =  TAKE_OFF_CLOSE_LOOP_CM;
+            }
+            break;
 
+        case TAKE_OFF_CLOSE_LOOP_CM:
+            hold_altitude(TAKE_OFF_ALTITUDE);
+            if(states_race.altitude_is_achieved == 1)
+            {
+                previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
+                state_lower_level =  HOVER_CM;
+            }
+            break;
         case HOVER_CM:
             hover();
             if (time_primitive > HOVER_TIME)
             {
-                if (previous_lower_level == TAKE_OFF_CM)
+                if (previous_lower_level == TAKE_OFF_CLOSE_LOOP_CM)
                 {
                     previous_lower_level = HOVER_CM;
-                    state_lower_level = GO_STRAIGHT_CM;
+                    state_lower_level = WAIT_FOR_DETECTION_CM;
+                    state_upper_level = THIRD_PART;
                 }
                 if (previous_lower_level == GO_STRAIGHT_CM)
                 {
@@ -192,7 +210,7 @@ void first_part_logic()
             }
             break;
         case TURN_CM:
-            change_heading_hover(parameter_to_be_tuned.heading_after_first_part);
+            change_heading_hover(ANGLE_AFTER_HALF_GATE);
             if (states_race.turning == FALSE)
             {
                 // turning is finished, go to next gate
@@ -203,10 +221,6 @@ void first_part_logic()
             break;
 
     }
-  //take_off(-1.5);
-  //hover();
-
-   // }
 }
 
 
@@ -318,6 +332,7 @@ void second_part_logic()
 
             }
             break;
+
         case ADJUST_HEIGHT_CM:
             if (parameter_to_be_tuned.height_after_gate[states_race.gate_counter_in_second_part] == 0)
             {
@@ -366,7 +381,7 @@ void third_part_logic()
 
         case WAIT_FOR_DETECTION_CM:
             hover();
-            if (time_primitive < 1)
+            if (time_primitive < 2)
                 break;
             if (states_race.gate_detected == FALSE) {
                 hover();
@@ -375,12 +390,6 @@ void third_part_logic()
                 previous_lower_level = WAIT_FOR_DETECTION_CM;
                 state_lower_level = ADJUST_POSITION_CM;
             }
-
-//            if (time_gate_detected > 3 && states_race.gate_detected == FALSE) {
-//                // gate is lost
-//                previous_lower_level = WAIT_FOR_DETECTION_CM;
-//                state_lower_level = SEARCH_GATE_CM;
-//            }
             break;
 
 
@@ -417,7 +426,7 @@ void third_part_logic()
 
         case HOVER_CM:
             hover();
-            printf("Time_primitive is %f\n",time_primitive);
+            //printf("Time_primitive is %f\n",time_primitive);
             if (time_primitive > HOVER_TIME) {
                 if (states_race.gate_counter_in_third_part == 0)
                 {
@@ -435,7 +444,7 @@ void third_part_logic()
 
         case SEARCH_GATE_CM:
             left_right_back(-0.5,0.5);
-            if (time_primitive > 5)
+            if (time_primitive > 3)
             {
                 previous_lower_level = SEARCH_GATE_CM;
                 state_lower_level = WAIT_FOR_DETECTION_CM;
@@ -450,7 +459,32 @@ void third_part_logic()
 
 void fourth_part_logic()
 {
-    land();
+//hover();
+    switch (state_lower_level)
+    {
+
+        case HOVER_CM:
+            hover();
+            if (time_primitive > 5) {
+                previous_lower_level = HOVER_CM;
+                state_lower_level = REPLAY_CM;
+            }
+            break;
+
+        case REPLAY_CM:
+            if( replay_flag != TRUE)
+            {
+                replay_flag = TRUE;
+                replay_commands_start();
+            }
+            if (replay == FALSE)
+            {
+                replay_flag = FALSE;
+                previous_lower_level = REPLAY_CM;
+                state_lower_level = HOVER_CM;
+            }
+            break;
+    }
 }
 
 

@@ -27,7 +27,7 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
-
+#include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 
 //void state_autonomous_race_init();
 //void display_lower_state();
@@ -53,6 +53,7 @@ void state_autonomous_race_init() {
 
 void display_states()
 {
+    printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
     if (autopilot_mode != AP_MODE_MODULE)
         return;
    // printf("gate_counter is %d \n",states_race.gate_counter);
@@ -66,7 +67,7 @@ void display_states()
     printf("\n");
     printf("\n");
     printf("\n");
-    printf("Primitive in use is %d\n",primitive_in_use);
+    //printf("Primitive in use is %d\n",primitive_in_use);
     printf("Time in primitve is %f\n",time_primitive);
 
 
@@ -97,8 +98,11 @@ void display_lower_state()
         case SEARCH_GATE_CM:
             printf("It is in SEARCH_GATE\n");
             break;
-        case TAKE_OFF_CM:
-            printf("It is in TAKE_OFF\n");
+        case TAKE_OFF_OPEN_LOOP_CM:
+            printf("It is in TAKE_OFF_OPEN_LOOP\n");
+            break;
+        case TAKE_OFF_CLOSE_LOOP_CM:
+            printf("It is in TAKE_OFF_CLOSE_LOOP\n");
             break;
         case LAND_CM:
             printf("It is in LAND\n");
@@ -109,7 +113,12 @@ void display_lower_state()
         case ADJUST_HEIGHT_CM:
             printf("It is in ADJUST_HEIGHT\n");
             break;
-
+        case PREPARE_CM:
+            printf("It is in PREPARE\n");
+            break;
+        case REPLAY_CM:
+            printf("It is in REPLAY\n");
+            break;
 
     }
 }
