@@ -425,7 +425,7 @@ void third_part_logic()
 
         case SEARCH_GATE_CM:
             left_right_back(-0.5,0.5);
-            if (time_primitive > 5)
+            if (time_primitive > 3)
             {
                 previous_lower_level = SEARCH_GATE_CM;
                 state_lower_level = WAIT_FOR_DETECTION_CM;

@@ -273,7 +273,7 @@ void stereocam_to_state(void)
   //stereo_motion.foe.y = buffer[13];
 
   fps_f = (float)buffer[14];
-  int16_t RES = 10000;//buffer[14];
+  int16_t RES = 20000;//buffer[14];
 
   vel_pixel_i.x = vel_x_pixelwise_int;
   vel_pixel_i.y = 0;
