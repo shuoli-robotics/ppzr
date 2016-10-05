@@ -79,12 +79,10 @@ void replay_commands_start(void)
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
-
   file = fopen(filename , "r");
-
+  
   if (file == NULL) {
-    printf("\n file opening failed ");
-
+    printf("file opening failed\n");
   }
 }
 

@@ -65,7 +65,9 @@
     
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-    <module name="replay_commands"/>
+    <module name="replay_commands">
+      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
+    </module>
  
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
