@@ -72,11 +72,11 @@ void replay_commands_start(void)
 {
   //command_run();
   replay = 1;
-    guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
+   // guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 28; //set the primitive number manually for now.
+  int primitive_number = 29; //set the primitive number manually for now.
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
@@ -97,8 +97,8 @@ void replay_commands_init(void)
 
 void replay_commands_periodic(void)
 {
-  int n = 200; //maximum number of characters in the line
-  char str[200];
+  int n = 400; //maximum number of characters in the line
+  char str[400];
 
   if (replay == 1 && file != NULL){// && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
     printf("Here is the start\n");

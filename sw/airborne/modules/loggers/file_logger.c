@@ -34,6 +34,7 @@
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
+#include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_int.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -100,9 +101,12 @@ void file_logger_periodic(void)
           stateGetNedToBodyEulers_i()->phi,
           stateGetNedToBodyEulers_i()->theta,
           stateGetNedToBodyEulers_i()->psi,
-          guidance_module.cmd.phi,
-          guidance_module.cmd.theta,
-          guidance_module.cmd.psi,
+          //guidance_module.cmd.phi,
+          //guidance_module.cmd.theta,
+          //guidance_module.cmd.psi,
+	  stab_att_sp_euler.phi,
+          stab_att_sp_euler.theta,
+          stab_att_sp_euler.psi,
 	      stabilization_cmd[COMMAND_THRUST]
 	      //stabilization_cmd[COMMAND_ROLL],
 	      //stabilization_cmd[COMMAND_PITCH],

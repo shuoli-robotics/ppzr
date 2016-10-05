@@ -136,6 +136,7 @@ void guidance_h_module_run(bool in_flight)    // this function is called in high
 	if(replay == 1)
 	{
 		stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);
+		printf("replay setpoints set -------------------------------------------------\n");
 	}
 	else{
     /* Update the setpoint */
