@@ -25,6 +25,9 @@
 
 #ifndef VERTICAL_LOOP_CONTROL_MODULE_H
 #define VERTICAL_LOOP_CONTROL_MODULE_H
+#include "state.h"
+
+
 
 extern void guidance_v_module_init(void);
 extern void guidance_v_module_run(bool in_flight);

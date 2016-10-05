@@ -86,7 +86,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y
-  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d\n",
+  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d\n",
           counter,
           stateGetPositionNed_f()->x,
           stateGetPositionNed_f()->y,
@@ -102,8 +102,8 @@ void file_logger_periodic(void)
           stateGetNedToBodyEulers_i()->psi,
           guidance_module.cmd.phi,
           guidance_module.cmd.theta,
-          guidance_module.cmd.psi
-	      //stabilization_cmd[COMMAND_THRUST],
+          guidance_module.cmd.psi,
+	      stabilization_cmd[COMMAND_THRUST]
 	      //stabilization_cmd[COMMAND_ROLL],
 	      //stabilization_cmd[COMMAND_PITCH],
 	      //stabilization_cmd[COMMAND_YAW],

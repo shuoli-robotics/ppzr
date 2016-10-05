@@ -650,12 +650,12 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   }
   
   //downward_facing optic flow
-  //result->vel_body_x = result->vel_y;
-  //result->vel_body_y = - result->vel_x;
+  result->vel_body_x = result->vel_y;
+  result->vel_body_y = - result->vel_x;
   
   //stereo optic flow 
-  result->vel_body_x = -s_flow_vel_z;
-  result->vel_body_y = s_flow_vel_x;
+  //result->vel_body_x = -s_flow_vel_z;
+  //result->vel_body_y = s_flow_vel_x;
 
 
   // KALMAN filter
@@ -714,8 +714,8 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
                   previous_state_y, process_noise, measurement_noise, result->fps);
 
 
-    //result->vel_body_x = previous_state_x[0];
-    //result->vel_body_y =  previous_state_y[0];
+    result->vel_body_x = previous_state_x[0];
+    result->vel_body_y =  previous_state_y[0];
    
     opt_body_v_x  = previous_state_x[0];
     opt_body_v_y  = previous_state_y[0];

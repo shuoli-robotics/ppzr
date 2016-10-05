@@ -24,7 +24,9 @@
  */
 
 #include "modules/vertical_loop_control_module/vertical_loop_control_module.h"
-
+#include "subsystems/radio_control.h"
+#include "firmwares/rotorcraft/stabilization.h"
+#include "modules/replay_commands/replay_commands.h"
 void guidance_v_module_init(void)
 {
 
@@ -36,10 +38,20 @@ void guidance_v_module_read_rc(void)
 }
 void guidance_v_module_enter(void)
 {
-
+    //printf("module_enter is called!\n");
 }
 
 void guidance_v_module_run(bool in_flight)
 {
+    //printf("Vertical control module is called!\n");
+    if (replay == 1)
+    {
+        //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA %d\n",cmd_thrust);
+        stabilization_cmd[COMMAND_THRUST] = cmd_thrust ;
+    }
+    else
+    {
+        stabilization_cmd[COMMAND_THRUST] = 5000;
+    }
 
-}
+};

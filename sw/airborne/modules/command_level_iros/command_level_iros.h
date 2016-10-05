@@ -56,12 +56,21 @@
 #define NUMBER_OF_ZIGZAG 2
 #endif
 
+#ifndef STRAIGHT_TIME
+#define STRAIGHT_TIME 5.0
+#endif
+
+#ifndef TAKE_OFF_ALTITUDE
+#define TAKE_OFF_ALTITUDE -1.5
+#endif
 
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
 enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
-TURN_CM,SEARCH_GATE_CM,TAKE_OFF_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM};
+TURN_CM,SEARCH_GATE_CM,TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM,PREPARE_CM,
+    REPLAY_CM};
+
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART};
 
 struct parameters_to_be_tuned{
@@ -70,12 +79,14 @@ struct parameters_to_be_tuned{
     float height_after_gate[NUMBER_OF_GATES];
     bool flag_zigzag[NUMBER_OF_ZIGZAG];
     float distance_after_zigzag[NUMBER_OF_ZIGZAG];
+    //float heading_after_first_part;
 };
 
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
 
 extern struct parameters_to_be_tuned parameter_to_be_tuned;
+extern uint8_t previous_lower_level;
 
 #endif
 

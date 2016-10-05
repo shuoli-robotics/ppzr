@@ -45,10 +45,11 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <!--module name="logger_file">
+    <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-   </module-->
+   </module>
     <module name="state_autonomous_race"/>
+    <module name="vertical_loop_control_module"/>
 
     <module name="guidance_loop_velocity_autonomous_race">
      	<define name="PHI_PGAIN" value="0.5"/>
@@ -65,9 +66,11 @@
     
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
+
     <module name="replay_commands">
      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-    </modele>
+    </module>
+
  
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
@@ -83,22 +86,14 @@
     <!--module name="stereocam_stereocam2state"/-->
 
    
-    <module name="stereocam_state2camera">
-      <define name="STEREOCAM_EDGEFLOW_DEROTATION" value="1"/>
-      <define name="STEREOCAM_EDGEFLOW_ADAPT_HORIZON" value="1"/>
-      <!--define name="STEREOCAM_EDGEFLOW_WINDOW_SIZE" value="8"/>
-      <define name="STEREOCAM_EDGEFLOW_SEARCH_DISTANCE" value="15"/>
-      <define name="STEREOCAM_EDGEFLOW_SNAPSHOT" value="0"/>
-      <define name="STEREOCAM_EDGEFLOW_KALMAN_FILTERING" value="0"/-->
+
+    <module name="cv_snake_gate_detection">
+      <define name="SGD_CAMERA" value="front_camera"/>
     </module>
 
     <!--module name="cv_snake_gate_detection">
-      <define name="SGD_CAMERA" value="front_camera"/>
-    </module-->
-
-    <module name="cv_snake_gate_detection">
       <define name="SGD_CAMERA" value="bottom_camera"/>
-    </module>
+    </module-->
 
    <module name="stereocam">
 	<configure name="STEREO_UART" value="UART2"/>
@@ -143,7 +138,7 @@
   </command_laws>
 
   <section name="MISC">
-    <define name="NO_RC_THRUST_LIMIT" value="FALSE"/>
+    <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
   </section>
 
   <section name="AIR_DATA" prefix="AIR_DATA_">
