@@ -32,7 +32,7 @@
 #endif
 
 #ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 2
+#define NUMBER_OF_GATES 2               //second part
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
@@ -64,6 +64,10 @@
 #define TAKE_OFF_ALTITUDE -1.5
 #endif
 
+#ifndef PREPARE_TIME
+#define PREPARE_TIME 3
+#endif
+
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
@@ -80,6 +84,7 @@ struct parameters_to_be_tuned{
     bool flag_zigzag[NUMBER_OF_ZIGZAG];
     float distance_after_zigzag[NUMBER_OF_ZIGZAG];
     //float heading_after_first_part;
+    float heading_after_zigzag[NUMBER_OF_ZIGZAG];
 };
 
 extern enum states_lower_level state_lower_level;
