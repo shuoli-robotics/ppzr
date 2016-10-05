@@ -658,7 +658,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   static float covariance_y[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   float measurements_y[2];
   float process_noise[2] = {0.01f, 0.01f};
-  float measurement_noise[2] = {0.2f, 1.0f};
+  float measurement_noise[2] = {result->noise_measurement, 1.0f};
 
 
   if (opticflow->just_switched_method == 1) {

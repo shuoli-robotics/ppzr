@@ -265,8 +265,8 @@ void adjust_position(float derta_altitude){
 	float z_setpoint = z0 - derta_altitude+Z_BIAS;
 	if (z_setpoint>-1)
 	  z_setpoint = -1;
-	else if (z_setpoint<-1.9)
-	  z_setpoint = -1.9;
+	else if (z_setpoint<-3.9)
+	  z_setpoint = -3.9;
         guidance_v_set_guided_z(z_setpoint);
         psi0 = stateGetNedToBodyEulers_f()->psi;
 

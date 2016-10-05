@@ -63,7 +63,7 @@ uint8_t color_cr_min  = 140;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
-int n_samples = 500;//1000;//500;
+int n_samples = 1000;//1000;//500;
 int min_pixel_size = 40;//100;
 float min_gate_quality = 0.30;
 float gate_thickness = 0;//0.05;//0.10;//
@@ -485,7 +485,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     int clock_arms = 1;
 
     // prepare the Region of Interest (ROI), which is larger than the gate:
-    float size_factor = 2;//1.25;
+    float size_factor = 1.5;//2;//1.25;
     /*int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
     int16_t min_x = gates[n_gates-1].x - ROI_size;
     min_x = (min_x < 0) ? 0 : min_x;
