@@ -486,32 +486,32 @@ void third_part_logic()
 
 void fourth_part_logic()
 {
-//     switch (state_lower_level)
-//     {
-// 
-//         case HOVER_CM:
-//             hover();
-//             if (time_primitive > 5) {
-//                 previous_lower_level = HOVER_CM;
-//                 state_lower_level = REPLAY_CM;
-//             }
-//             break;
-// 
-//         case REPLAY_CM:
-//             if( replay_flag != TRUE)
-//             {
-//                 replay_flag = TRUE;
-//                 replay_commands_start();
-//             }
-//             if (replay == FALSE)
-//             {
-//                 replay_flag = FALSE;
-//                 previous_lower_level = REPLAY_CM;
-//                 state_lower_level = HOVER_CM;
-//             }
-//             break;
-//     }
- hover();
+    switch (state_lower_level)
+    {
+
+        case HOVER_CM:
+            hover();
+            if (time_primitive > 5) {
+                previous_lower_level = HOVER_CM;
+                state_lower_level = REPLAY_CM;
+            }
+            break;
+
+        case REPLAY_CM:
+            if( replay_flag != TRUE)
+            {
+                replay_flag = TRUE;
+                replay_commands_start();
+            }
+            if (replay == FALSE)
+            {
+                replay_flag = FALSE;
+                previous_lower_level = REPLAY_CM;
+                state_lower_level = HOVER_CM;
+            }
+            break;
+    }
+ //hover();
 }
 
 

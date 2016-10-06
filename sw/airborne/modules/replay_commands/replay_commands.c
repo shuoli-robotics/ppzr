@@ -76,8 +76,14 @@ void replay_commands_start(void)
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 32;//30;//29; //set the primitive number manually for now.
-  //30 straight 3m turn 90 deg left and straith 3m while going up.
+  int primitive_number = 7;//32;//30;//29; //set the primitive number manually for now.
+  //30 straight 3m turn 90 deg left and straith 3m while going up.(blue drone?)
+  //32 around the cyberzoo with one meter drift blue drone (shuo)
+  //1 red drone (no stereo) first part small scale test
+  //5 red drone same but start from hover
+  //6 red start from ground and land on ground
+  //7 
+  
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
