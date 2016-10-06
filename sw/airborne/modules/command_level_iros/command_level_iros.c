@@ -63,7 +63,7 @@ void command_init(){
     //record_command = 0;
     replay_flag = 0;
 
-    float distance_after_zigzag_temp[100] = {            0.5,0.5,0.5,0.2,0.5,    // 1-5
+    float distance_after_zigzag_temp[100] = {           0.5,0.5,0.5,0.2,0.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
@@ -77,16 +77,19 @@ void command_init(){
     }
     // delta heading after passing through each gate (degree!)
 
-    float heading_after_gates_temp[100] = {            90,-90,0,0,-90,      // 1-5
+    float heading_after_gates_temp[100] = {            -45,-40,0,0,-90,      // 1-5
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            0.8,1.5,0.8,0.8,0.5,    // 1-5
+    float distance_after_gates_temp[100] = {            0.8,0.5,0.2,0.8,0.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
-    float height_after_gates_temp[100]   ={             0,-2,0,0,-1,            // absolute height
+    float height_after_gates_temp[100]   ={             -2,-1.5,0,0,-1,            // absolute height
                                                         0,0,0,0,0};             // 1-5
+
+    float approach_after_gates_temp[100]   ={             0,0,0,0,0,            // time for approach
+                                                          0,0,0,0,0};             // 1-5
 
 
     for(i=0;i<NUMBER_OF_GATES;i++)
@@ -94,6 +97,7 @@ void command_init(){
         parameter_to_be_tuned.heading_after_gate[i] = heading_after_gates_temp[i]/180.0*PI;
         parameter_to_be_tuned.distance_after_gate[i] = distance_after_gates_temp[i];
         parameter_to_be_tuned.height_after_gate[i] = height_after_gates_temp[i];
+        parameter_to_be_tuned.approach_after_gate[i] = approach_after_gates_temp[i];
     }
 
    // parameter_to_be_tuned.heading_after_first_part = 90.0/180.0*PI;
@@ -108,8 +112,8 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = HOVER_CM;
-        state_upper_level = FOURTH_PART;
+        state_lower_level = PREPARE_CM;
+        state_upper_level = FIRST_PART;
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
         replay_flag = 0;
@@ -184,8 +188,8 @@ void first_part_logic()
                 if (previous_lower_level == TAKE_OFF_CLOSE_LOOP_CM)
                 {
                     previous_lower_level = HOVER_CM;
-                    state_lower_level = GO_STRAIGHT_CM;
-                    //state_upper_level = SECOND_PART;
+                    state_lower_level = WAIT_FOR_DETECTION_CM;
+                    state_upper_level = SECOND_PART;
                 }
                 if (previous_lower_level == GO_STRAIGHT_CM)
                 {
@@ -312,7 +316,13 @@ void second_part_logic()
                 else if (previous_lower_level == ADJUST_HEIGHT_CM)
                 {
                     previous_lower_level = HOVER_CM;
+                    state_lower_level = APPROACH_GATE_CM;
+                }
+                else if (previous_lower_level == APPROACH_GATE_CM)
+                {
+                    previous_lower_level = HOVER_CM;
                     state_lower_level = WAIT_FOR_DETECTION_CM;
+                    init_pos_filter = 1;
                     states_race.gate_counter_in_second_part ++;     // every gate ends here
                 }
             }
@@ -325,7 +335,7 @@ void second_part_logic()
             if (states_race.turning == FALSE)
             {
                 // turning is finished, go to next gate
-                init_pos_filter = 1;
+
                 previous_lower_level = TURN_CM;
                 state_lower_level = HOVER_CM;
 
@@ -336,8 +346,7 @@ void second_part_logic()
             if (parameter_to_be_tuned.height_after_gate[states_race.gate_counter_in_second_part] == 0)
             {
                 previous_lower_level = ADJUST_HEIGHT_CM;
-                state_lower_level = WAIT_FOR_DETECTION_CM;
-                states_race.gate_counter_in_second_part ++;
+                state_lower_level = HOVER_CM;
             }
             else
             {
@@ -349,6 +358,24 @@ void second_part_logic()
                     }
             }
             break;
+
+        case APPROACH_GATE_CM:
+            if(parameter_to_be_tuned.approach_after_gate[states_race.gate_counter_in_second_part] == 0)
+            {
+                previous_lower_level = APPROACH_GATE_CM;
+                state_lower_level = HOVER_CM;
+            }
+            else
+            {
+                go_straight(CONSTANT_VELOCITY_STRAIGHT);
+                if(time_primitive > parameter_to_be_tuned.approach_after_gate[states_race.gate_counter_in_second_part])
+                {
+                    previous_lower_level = APPROACH_GATE_CM;
+                    state_lower_level = HOVER_CM;
+                }
+            }
+            break;
+
         case SEARCH_GATE_CM:
             search_gate();
             if (states_race.gate_detected == 1 && time_gate_detected > 0.5)

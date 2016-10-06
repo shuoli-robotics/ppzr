@@ -32,7 +32,7 @@
 #endif
 
 #ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 2               //second part
+#define NUMBER_OF_GATES 3               //second part
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
@@ -73,7 +73,7 @@ extern void command_init(void);
 
 enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
 TURN_CM,SEARCH_GATE_CM,TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM,PREPARE_CM,
-    REPLAY_CM};
+    REPLAY_CM,APPROACH_GATE_CM};
 
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART};
 
@@ -81,6 +81,7 @@ struct parameters_to_be_tuned{
     float heading_after_gate[NUMBER_OF_GATES];
     float distance_after_gate[NUMBER_OF_GATES];
     float height_after_gate[NUMBER_OF_GATES];
+    float approach_after_gate[NUMBER_OF_GATES];
     bool flag_zigzag[NUMBER_OF_ZIGZAG];
     float distance_after_zigzag[NUMBER_OF_ZIGZAG];
     //float heading_after_first_part;

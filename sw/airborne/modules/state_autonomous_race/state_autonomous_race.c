@@ -67,7 +67,6 @@ void display_states()
     printf("\n");
     printf("\n");
     printf("\n");
-    //printf("Primitive in use is %d\n",primitive_in_use);
     printf("Time in primitve is %f\n",time_primitive);
 
 
@@ -119,6 +118,9 @@ void display_lower_state()
         case REPLAY_CM:
             printf("It is in REPLAY\n");
             break;
+        case APPROACH_GATE_CM:
+            printf("It is in APPROACH_GATE\n");
+            break;
 
     }
 }
@@ -135,6 +137,9 @@ void display_upper_state()
             break;
         case THIRD_PART:
             printf("It is in THIRD_PART\n");
+            break;
+        case FOURTH_PART:
+            printf("It is in FOURTH_PART\n");
             break;
     }
 };
