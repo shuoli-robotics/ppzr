@@ -167,6 +167,9 @@ struct MedianFilterInt vel_x_filt, vel_y_filt;
 #include "subsystems/imu.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 
+//for stereo optic flow
+#include "modules/stereocam/stereocam2state/stereocam2state.h"
+
 
 /* Functions only used here */
 static uint32_t timeval_diff(struct timeval *starttime, struct timeval *finishtime);
@@ -646,8 +649,13 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
     calc_edgeflow_tot(opticflow, state, img, result);
   }
   
+  //downward_facing optic flow
   result->vel_body_x = result->vel_y;
   result->vel_body_y = - result->vel_x;
+  
+  //stereo optic flow 
+  //result->vel_body_x = -s_flow_vel_z;
+  //result->vel_body_y = s_flow_vel_x;
 
 
   // KALMAN filter
@@ -664,7 +672,7 @@ void opticflow_calc_frame(struct opticflow_t *opticflow, struct opticflow_state_
   static float covariance_y[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   float measurements_y[2];
   float process_noise[2] = {0.01f, 0.01f};
-  float measurement_noise[2] = {result->noise_measurement, 1.0f};
+  float measurement_noise[2] = {0.2,1.0};//result->noise_measurement, 1.0f};
 
 
   if (opticflow->just_switched_method == 1) {

@@ -76,16 +76,15 @@ void replay_commands_start(void)
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 28; //set the primitive number manually for now.
+  int primitive_number = 32;//30;//29; //set the primitive number manually for now.
+  //30 straight 3m turn 90 deg left and straith 3m while going up.
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
-
   file = fopen(filename , "r");
-
+  
   if (file == NULL) {
     printf("\n file opening failed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-
   }
 }
 
@@ -99,10 +98,10 @@ void replay_commands_init(void)
 
 void replay_commands_periodic(void)
 {
-  int n = 200; //maximum number of characters in the line
-  char str[200];
+  int n = 400; //maximum number of characters in the line
+  char str[400];
 
-  if (replay == 1 && file != NULL && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
+  if (replay == 1 && file != NULL){// && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
     printf("Here is the start\n");
 
     if( fgets(str, n, file) != NULL ){
@@ -112,7 +111,6 @@ void replay_commands_periodic(void)
         }
       }
       printf("%s", str);
-        printf("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n");
       sscanf(str, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d %d %d %d", &counter, &x, &y, &z, &vx, &vy, &vz, &phi, &theta, &psi, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi,&cmd_thrust);
       //printf("counter: %d x: %lf, y:%lf, z:%lf, vx:%lf, vy:%lf, vz:%lf, phi:%lf, theta:%lf, psi:%lf, phi_i %d, theta_i %d, psi_d %d \n",counter, x,y,z,vx,vy,vz,phi,theta,psi,phi_i, theta_i, psi_i);
 

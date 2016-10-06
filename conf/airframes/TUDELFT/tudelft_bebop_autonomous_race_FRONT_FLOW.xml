@@ -34,7 +34,7 @@
     <module name="gps" type="datalink"/><!--datalink-->
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="TRUE"/> <!--TRUE-->
+      <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
     </module>
     <module name="ins" type="extended"/>
@@ -45,11 +45,10 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <module name="logger_file">
+    <!--module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-   </module>
+   </module-->
     <module name="state_autonomous_race"/>
-    <module name="vertical_loop_control_module"/>
 
     <module name="guidance_loop_velocity_autonomous_race">
      	<define name="PHI_PGAIN" value="0.5"/>
@@ -66,11 +65,9 @@
     
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
-
     <module name="replay_commands">
-     <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
+      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
     </module>
-
  
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>
@@ -83,22 +80,39 @@
       <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!-- 2 * arctan(240 / (2*347.22222222)) -->
     </module>
 
-    <!--module name="stereocam_stereocam2state"/-->
+    <module name="stereocam_stereocam2state"/>
 
    
+    <module name="stereocam_state2camera">
+      <define name="STEREOCAM_EDGEFLOW_DEROTATION" value="1"/>
+      <define name="STEREOCAM_EDGEFLOW_ADAPT_HORIZON" value="1"/>
+      <!--define name="STEREOCAM_EDGEFLOW_WINDOW_SIZE" value="8"/>
+      <define name="STEREOCAM_EDGEFLOW_SEARCH_DISTANCE" value="15"/>
+      <define name="STEREOCAM_EDGEFLOW_SNAPSHOT" value="0"/>
+      <define name="STEREOCAM_EDGEFLOW_KALMAN_FILTERING" value="0"/-->
+    </module>
+
+    <!--module name="cv_snake_gate_detection">
+      <define name="SGD_CAMERA" value="front_camera"/>
+    </module-->
 
     <module name="cv_snake_gate_detection">
       <define name="SGD_CAMERA" value="front_camera"/>
     </module>
 
-    <!--module name="cv_snake_gate_detection">
-      <define name="SGD_CAMERA" value="bottom_camera"/>
-    </module-->
-
-   <module name="stereocam">
-	<configure name="STEREO_UART" value="UART2"/>
-	<configure name="STEREO_BAUD" value="115200"/><!--B9600"/-->
-    </module> 
+  <module name="stereocam">
+      <configure name="STEREO_UART" value="UART2"/>
+      <configure name="STEREO_BAUD" value="B115200"/>
+      <define name="SEND_STEREO" value="TRUE"/>
+      <!-- foward looking stereocam -->
+      <define name="STEREO_BODY_TO_STEREO_PHI" value="90."/>
+      <define name="STEREO_BODY_TO_STEREO_THETA" value="0."/>
+      <define name="STEREO_BODY_TO_STEREO_PSI" value="90."/>
+      <!-- downward looking stereocam -->
+      <!--define name="STEREO_BODY_TO_STEREO_PHI" value="0."/>
+      <define name="STEREO_BODY_TO_STEREO_THETA" value="0."/>
+      <define name="STEREO_BODY_TO_STEREO_PSI" value="90."/-->
+    </module>
     <!--module name="stereo_gate_position"/-->
 
    <module name="video_rtp_stream">
@@ -138,7 +152,7 @@
   </command_laws>
 
   <section name="MISC">
-    <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
+    <define name="NO_RC_THRUST_LIMIT" value="FALSE"/>
   </section>
 
   <section name="AIR_DATA" prefix="AIR_DATA_">
@@ -148,18 +162,12 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-        <!--define name="MAG_X_NEUTRAL" value="136"/>
+        <define name="MAG_X_NEUTRAL" value="136"/>
 	<define name="MAG_Y_NEUTRAL" value="60"/>
 	<define name="MAG_Z_NEUTRAL" value="233"/>
 	<define name="MAG_X_SENS" value="6.20593629495" integer="16"/>
 	<define name="MAG_Y_SENS" value="6.80783514212" integer="16"/>
-	<define name="MAG_Z_SENS" value="7.8793006146" integer="16"/-->
-        <define name="MAG_X_NEUTRAL" value="-26"/>
-	<define name="MAG_Y_NEUTRAL" value="-52"/>
-	<define name="MAG_Z_NEUTRAL" value="102"/>
-	<define name="MAG_X_SENS" value="6.815173312" integer="16"/>
-	<define name="MAG_Y_SENS" value="7.13479822922" integer="16"/>
-	<define name="MAG_Z_SENS" value="7.56070485615" integer="16"/>
+	<define name="MAG_Z_SENS" value="7.8793006146" integer="16"/>
 
 
 
