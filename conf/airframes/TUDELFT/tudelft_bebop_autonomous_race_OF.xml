@@ -34,7 +34,7 @@
     <module name="gps" type="datalink"/><!--datalink-->
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
+      <configure name="USE_MAGNETOMETER" value="TRUE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
     </module>
     <module name="ins" type="extended"/>
@@ -102,7 +102,7 @@
     <!--module name="stereo_gate_position"/-->
 
    <module name="video_rtp_stream">
-       <define name="VIEWVIDEO_CAMERA" value="bottom_camera"/>
+       <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
     </module>
@@ -148,12 +148,18 @@
   </section>
 
   <section name="IMU" prefix="IMU_">
-        <define name="MAG_X_NEUTRAL" value="136"/>
+        <!--define name="MAG_X_NEUTRAL" value="136"/>
 	<define name="MAG_Y_NEUTRAL" value="60"/>
 	<define name="MAG_Z_NEUTRAL" value="233"/>
 	<define name="MAG_X_SENS" value="6.20593629495" integer="16"/>
 	<define name="MAG_Y_SENS" value="6.80783514212" integer="16"/>
-	<define name="MAG_Z_SENS" value="7.8793006146" integer="16"/>
+	<define name="MAG_Z_SENS" value="7.8793006146" integer="16"/-->
+        <define name="MAG_X_NEUTRAL" value="-26"/>
+	<define name="MAG_Y_NEUTRAL" value="-52"/>
+	<define name="MAG_Z_NEUTRAL" value="102"/>
+	<define name="MAG_X_SENS" value="6.815173312" integer="16"/>
+	<define name="MAG_Y_SENS" value="7.13479822922" integer="16"/>
+	<define name="MAG_Z_SENS" value="7.56070485615" integer="16"/>
 
 
 

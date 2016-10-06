@@ -158,7 +158,7 @@ float QR_uncertainty;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
-    pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &size_left, &size_right, &x_dist, &y_dist, &z_dist,
+    pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
 				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
 				  &y_center_picker,&cb_center,&QR_class,&sz,&n_gates,&states_race.gate_detected,
 				  &psi_gate); //
@@ -236,9 +236,10 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 
 void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
 {
+  float hor_calib = 0.075;
   //calculate angles here
   vert_angle = (-(((float)x_pix*1.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta);
-  hor_angle = (((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h;
+  hor_angle = ((((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h)+hor_calib;
   
   pix_x = x_pix;
   pix_y = y_pix;

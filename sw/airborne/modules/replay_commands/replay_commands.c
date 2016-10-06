@@ -72,11 +72,12 @@ void replay_commands_start(void)
 {
   //command_run();
   replay = 1;
-   // guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
+    guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 29; //set the primitive number manually for now.
+  int primitive_number = 32;//30;//29; //set the primitive number manually for now.
+  //30 straight 3m turn 90 deg left and straith 3m while going up.
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
