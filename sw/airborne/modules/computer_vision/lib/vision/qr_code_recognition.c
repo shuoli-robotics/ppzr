@@ -175,7 +175,7 @@ void get_closest_template(struct image_t *img, uint32_t x_min, uint32_t y_min, u
         Y_template = get_sub_pixel(img, sub_pixel_x, sub_pixel_y, templ);
 
         // augment the SAD cost:
-        cost += abs(Y_im - Y_template);
+        cost += abs((int)Y_im - (int)Y_template);
       }
     }
 
