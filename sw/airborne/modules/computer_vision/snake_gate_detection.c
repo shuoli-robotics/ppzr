@@ -176,7 +176,8 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 // 1 means that it passes the filter
 int check_color(struct image_t *im, int x, int y)
 {
-  if (x % 2 == 1) { x--; }
+  // if (x % 2 == 1) { x--; }
+  if (y % 2 == 1) { y--; }
 
   // if (x < 0 || x >= im->w || y < 0 || y >= im->h) {
   if (x < 0 || x >= im->h || y < 0 || y >= im->w) {
@@ -230,7 +231,9 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 
   // Copy the creation timestamp (stays the same)
   output->ts = input->ts;
-  if (x % 2 == 1) { x--; }
+  // if (x % 2 == 1) { x--; }
+  if (y % 2 == 1) { y--; }
+
   if (x < 0 || x >= input->w || y < 0 || y >= input->h) {
     return;
   }
@@ -252,10 +255,15 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *img, struct gate_img gate)
 {
   float hor_calib = 0.075;
-  //calculate angles here
+  //calculate angles here  
+  /*
   vert_angle = (-(((float)x_pix * 1.0) - ((float)(img->w) / 2.0)) * radians_per_pix_w) -
                (stateGetNedToBodyEulers_f()->theta);
   hor_angle = ((((float)y_pix * 1.0) - ((float)(img->h) / 2.0)) * radians_per_pix_h) + hor_calib;
+  */
+  vert_angle = (-(((float)y_pix * 1.0) - ((float)(img->w) / 2.0)) * radians_per_pix_h) -
+               (stateGetNedToBodyEulers_f()->theta);
+  hor_angle = ((((float)x_pix * 1.0) - ((float)(img->h) / 2.0)) * radians_per_pix_w) + hor_calib;
 
   pix_x = x_pix;
   pix_y = y_pix;
@@ -415,8 +423,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   for (i = 0; i < n_samples; i++) {
     // get a random coordinate:
-    x = rand() % img->w;
-    y = rand() % img->h;
+    x = rand() % img->h;
+    y = rand() % img->w;
 
     //check_color(img, 1, 1);
     // check if it has the right color
@@ -514,11 +522,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int16_t min_x = gates[gate_nr].x - ROI_size;
           min_x = (min_x < 0) ? 0 : min_x;
           int16_t max_x = gates[gate_nr].x + ROI_size;
-          max_x = (max_x < img->w) ? max_x : img->w;
+          max_x = (max_x < img->h) ? max_x : img->h;
           int16_t min_y = gates[gate_nr].y - ROI_size;
           min_y = (min_y < 0) ? 0 : min_y;
           int16_t max_y = gates[gate_nr].y + ROI_size;
-          max_y = (max_y < img->h) ? max_y : img->h;
+          max_y = (max_y < img->w) ? max_y : img->w;
 
           //draw_gate(img, gates[gate_nr]);
 
@@ -552,11 +560,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int16_t min_x = gates[gate_nr].x - ROI_size;
           min_x = (min_x < 0) ? 0 : min_x;
           int16_t max_x = gates[gate_nr].x + ROI_size;
-          max_x = (max_x < img->w) ? max_x : img->w;
+          max_x = (max_x < img->h) ? max_x : img->h;
           int16_t min_y = gates[gate_nr].y - ROI_size;
           min_y = (min_y < 0) ? 0 : min_y;
           int16_t max_y = gates[gate_nr].y + ROI_size;
-          max_y = (max_y < img->h) ? max_y : img->h;
+          max_y = (max_y < img->w) ? max_y : img->w;
           //draw_gate(img, gates[gate_nr]);
           // detect the gate:
           gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
@@ -615,11 +623,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     int16_t min_x = previous_best_gate.x - ROI_size;
     min_x = (min_x < 0) ? 0 : min_x;
     int16_t max_x = previous_best_gate.x + ROI_size;
-    max_x = (max_x < img->w) ? max_x : img->w;
+    max_x = (max_x < img->h) ? max_x : img->h;
     int16_t min_y = previous_best_gate.y - ROI_size;
     min_y = (min_y < 0) ? 0 : min_y;
     int16_t max_y = previous_best_gate.y + ROI_size;
-    max_y = (max_y < img->h) ? max_y : img->h;
+    max_y = (max_y < img->w) ? max_y : img->w;
 
     // detect the gate:
     gate_detection(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
@@ -870,8 +878,8 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     // square gate:
     min_x = gate.x - (1.0f + size_square) * gate.sz;
     max_x = gate.x - gate.sz;
-    min_y = gate.y - gate.sz;
-    max_y = gate.y - (1.0f - size_square) * gate.sz;
+    min_y = gate.y + gate.sz;
+    max_y = gate.y + (1.0f - size_square) * gate.sz;
     
     // draw it:
     bs_square.x = (min_x + max_x) / 2;
@@ -906,8 +914,8 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     
     min_x = gate.x - (1.0f + size_square) * gate.sz;
     max_x = gate.x - gate.sz;
-    min_y = gate.y - gate.sz_left;
-    max_y = gate.y - (1.0f - size_square) * gate.sz_left;
+    min_y = gate.y + gate.sz_left;
+    max_y = gate.y + (1.0f - size_square) * gate.sz_left;
     
     for(y = min_y; y < max_y; y++)
     {
