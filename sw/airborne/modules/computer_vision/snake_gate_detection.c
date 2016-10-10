@@ -154,6 +154,9 @@ struct timeval stop, start;
 int QR_class = 0;
 float QR_uncertainty;
 
+// back-side of a gate:
+int back_side = 0;
+
 //Debug messages
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
@@ -588,7 +591,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                                             );
   }
 
-  //DRAW gate
+
+  /**************************************
+  * BEST GATE -> TRANSFORM TO COORDINATES
+  ***************************************/
+
   if (best_quality > min_gate_quality && n_gates > 0) {
     current_quality = best_quality;
     size_left = best_gate.sz_left;
@@ -597,6 +604,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     draw_gate(img, best_gate);
     gate_quality = best_gate.gate_q;
     
+    back_side = check_back_side_QR_code(img, best_gate);
+
     //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
@@ -773,6 +782,83 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
   } else {
     (*quality) = ((float) n_colored_points) / ((float) n_points);
   }
+}
+
+
+extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
+{
+  // check a square at the top left of the gate:
+  int n_points, n_colored_points;
+  int min_x, max_x, min_y, max_y;
+  n_points = 0;
+  n_colored_points = 0;
+  float size_square = 0.5; // quarter of a gate  
+  struct gate_img bs_square;  
+  float threshold_color_ratio = 0.5;
+
+  if (gate.sz_left == gate.sz_right) {
+
+    // square gate:
+    min_x = gate.x - (1.0f + size_square) * gate.sz;
+    max_x = gate.x - gate.sz;
+    min_y = gate.y - gate.sz;
+    max_y = gate.y - (1.0f - size_square) * gate.sz;
+    
+    // draw it:
+    bs_square.x = (min_x + max_x) / 2;
+    bs_square.y = (min_y + max_y) / 2;
+    bs_square.sz = (max_x - min_x) / 2;
+    bs_square.sz_left = bs_square.sz;
+    bs_square.sz_right = bs_square.sz;
+    draw_gate(im, bs_square);
+
+    // go over the back side square and see if it is orange enough:
+    for(y = min_y; y < max_y; y++)
+    {
+      for(x = min_x; x < max_x; x++)
+      {
+        n_points++;
+        n_colored_points += check_color(im, x, y); 
+      }
+    }
+    
+    if((float) n_colored_points / (float) n_points > threshold_color_ratio)
+    {
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
+  }
+  else
+  {
+    // polygon gate:
+    
+    min_x = gate.x - (1.0f + size_square) * gate.sz;
+    max_x = gate.x - gate.sz;
+    min_y = gate.y - gate.sz_left;
+    max_y = gate.y - (1.0f - size_square) * gate.sz_left;
+    
+    for(y = min_y; y < max_y; y++)
+    {
+      for(x = min_x; x < max_x; x++)
+      {
+        n_points++;
+        n_colored_points += check_color(im, x, y); 
+      }
+    }
+    
+    if((float) n_colored_points / (float) n_points > threshold_color_ratio)
+    {
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
+  }  
+    
 }
 
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int *n_points, int *n_colored_points)
