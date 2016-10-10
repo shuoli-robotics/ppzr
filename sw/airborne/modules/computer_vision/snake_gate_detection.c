@@ -176,14 +176,17 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 // 1 means that it passes the filter
 int check_color(struct image_t *im, int x, int y)
 {
-  if (x % 2 == 1) { x--; }
-
-  if (x < 0 || x >= im->w || y < 0 || y >= im->h) {
+  // if (x % 2 == 1) { x--; }
+  if (y % 2 == 1) { y--; }
+  
+  // if (x < 0 || x >= im->w || y < 0 || y >= im->h) {
+  if (x < 0 || x >= im->h || y < 0 || y >= im->w) {
     return 0;
   }
 
   uint8_t *buf = im->buf;
-  buf += 2 * (y * (im->w) + x); // each pixel has two bytes
+  // buf += 2 * (y * (im->w) + x); // each pixel has two bytes
+  buf += 2 * (x * (im->w) + y); // each pixel has two bytes
   // odd ones are uy
   // even ones are vy
 
@@ -207,9 +210,12 @@ int check_color(struct image_t *im, int x, int y)
 void check_color_center(struct image_t *im, uint8_t *y_c, uint8_t *cb_c, uint8_t *cr_c)
 {
   uint8_t *buf = im->buf;
-  int x = (im->w) / 2;
-  int y = (im->h) / 2;
-  buf += y * (im->w) * 2 + x * 2;
+  // int x = (im->w) / 2;
+  // int y = (im->h) / 2;
+  int x = (im->h) / 2;
+  int y = (im->w) / 2;
+  // buf += y * (im->w) * 2 + x * 2;
+  buf += x * (im->w) * 2 + y * 2;
 
   *y_c = buf[1];
   *cb_c = buf[0];
@@ -225,14 +231,20 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 
   // Copy the creation timestamp (stays the same)
   output->ts = input->ts;
-  if (x % 2 == 1) { x--; }
+  // if (x % 2 == 1) { x--; }
+  if (y % 2 == 1) { y--; }
+
   if (x < 0 || x >= input->w || y < 0 || y >= input->h) {
     return;
   }
 
 
+  /*
   source += y * (input->w) * 2 + x * 2;
   dest += y * (output->w) * 2 + x * 2;
+  */
+  source += x * (input->w) * 2 + y * 2;
+  dest += x * (output->w) * 2 + y * 2;
   // UYVY
   dest[0] = 65;//211;        // U//was 65
   dest[1] = source[1];  // Y
@@ -243,10 +255,15 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *img, struct gate_img gate)
 {
   float hor_calib = 0.075;
-  //calculate angles here
+  //calculate angles here  
+  /*
   vert_angle = (-(((float)x_pix * 1.0) - ((float)(img->w) / 2.0)) * radians_per_pix_w) -
                (stateGetNedToBodyEulers_f()->theta);
   hor_angle = ((((float)y_pix * 1.0) - ((float)(img->h) / 2.0)) * radians_per_pix_h) + hor_calib;
+  */
+  vert_angle = (-(((float)y_pix * 1.0) - ((float)(img->w) / 2.0)) * radians_per_pix_h) -
+               (stateGetNedToBodyEulers_f()->theta);
+  hor_angle = ((((float)x_pix * 1.0) - ((float)(img->h) / 2.0)) * radians_per_pix_w) + hor_calib;
 
   pix_x = x_pix;
   pix_y = y_pix;
@@ -407,8 +424,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   for (i = 0; i < n_samples; i++) {
     // get a random coordinate:
-    x = rand() % img->w;
-    y = rand() % img->h;
+    x = rand() % img->h;
+    y = rand() % img->w;
 
     //check_color(img, 1, 1);
     // check if it has the right color
@@ -507,11 +524,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int16_t min_x = gates[gate_nr].x - ROI_size;
           min_x = (min_x < 0) ? 0 : min_x;
           int16_t max_x = gates[gate_nr].x + ROI_size;
-          max_x = (max_x < img->w) ? max_x : img->w;
+          max_x = (max_x < img->h) ? max_x : img->h;
           int16_t min_y = gates[gate_nr].y - ROI_size;
           min_y = (min_y < 0) ? 0 : min_y;
           int16_t max_y = gates[gate_nr].y + ROI_size;
-          max_y = (max_y < img->h) ? max_y : img->h;
+          max_y = (max_y < img->w) ? max_y : img->w;
 
           //draw_gate(img, gates[gate_nr]);
 
@@ -545,11 +562,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int16_t min_x = gates[gate_nr].x - ROI_size;
           min_x = (min_x < 0) ? 0 : min_x;
           int16_t max_x = gates[gate_nr].x + ROI_size;
-          max_x = (max_x < img->w) ? max_x : img->w;
+          max_x = (max_x < img->h) ? max_x : img->h;
           int16_t min_y = gates[gate_nr].y - ROI_size;
           min_y = (min_y < 0) ? 0 : min_y;
           int16_t max_y = gates[gate_nr].y + ROI_size;
-          max_y = (max_y < img->h) ? max_y : img->h;
+          max_y = (max_y < img->w) ? max_y : img->w;
           //draw_gate(img, gates[gate_nr]);
           // detect the gate:
           gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
@@ -608,11 +625,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     int16_t min_x = previous_best_gate.x - ROI_size;
     min_x = (min_x < 0) ? 0 : min_x;
     int16_t max_x = previous_best_gate.x + ROI_size;
-    max_x = (max_x < img->w) ? max_x : img->w;
+    max_x = (max_x < img->h) ? max_x : img->h;
     int16_t min_y = previous_best_gate.y - ROI_size;
     min_y = (min_y < 0) ? 0 : min_y;
     int16_t max_y = previous_best_gate.y + ROI_size;
-    max_y = (max_y < img->h) ? max_y : img->h;
+    max_y = (max_y < img->w) ? max_y : img->w;
 
     // detect the gate:
     gate_detection(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
@@ -906,8 +923,8 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     // square gate:
     min_x = gate.x - (1.0f + size_square) * gate.sz;
     max_x = gate.x - gate.sz;
-    min_y = gate.y - gate.sz;
-    max_y = gate.y - (1.0f - size_square) * gate.sz;
+    min_y = gate.y + gate.sz;
+    max_y = gate.y + (1.0f - size_square) * gate.sz;
     
     // draw it:
     bs_square.x = (min_x + max_x) / 2;
@@ -942,8 +959,8 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     
     min_x = gate.x - (1.0f + size_square) * gate.sz;
     max_x = gate.x - gate.sz;
-    min_y = gate.y - gate.sz_left;
-    max_y = gate.y - (1.0f - size_square) * gate.sz_left;
+    min_y = gate.y + gate.sz_left;
+    max_y = gate.y + (1.0f - size_square) * gate.sz_left;
     
      // draw it:
     bs_square.x = (min_x + max_x) / 2;
@@ -988,7 +1005,8 @@ void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int *n
     x = (int)(t * Q1.x + (1.0f - t) * Q2.x);
     y = (int)(t * Q1.y + (1.0f - t) * Q2.y);
 
-    if (x >= 0 && x < im->w && y >= 0 && y < im->h) {
+    // if (x >= 0 && x < im->w && y >= 0 && y < im->h) {
+    if (x >= 0 && x < im->h && y >= 0 && y < im->w) {
       // augment number of checked points:
       (*n_points)++;
 
@@ -1025,11 +1043,13 @@ void snake_up_and_down(struct image_t *im, int x, int y, int *y_low, int *y_high
   (*y_high) = y;
   done = 0;
   // snake towards positive y (up?)
-  while ((*y_high) < im->h - 1 && !done) {
+  // while ((*y_high) < im->h - 1 && !done) {
+  while ((*y_high) < im->w - 1 && !done) {
 
     if (check_color(im, x, (*y_high) + 1)) {
       (*y_high)++;
-    } else if (x < im->w - 1 && check_color(im, x + 1, (*y_high) + 1)) {
+    //    } else if (x < im->w - 1 && check_color(im, x + 1, (*y_high) + 1)) {
+    } else if (x < im->h - 1 && check_color(im, x + 1, (*y_high) + 1)) {
       x++;
       (*y_high)++;
     } else if (x > 0 && check_color(im, x - 1, (*y_high) + 1)) {
@@ -1050,8 +1070,9 @@ void snake_left_and_right(struct image_t *im, int x, int y, int *x_low, int *x_h
   // snake towards negative x (left)
   while ((*x_low) > 0 && !done) {
     if (check_color(im, (*x_low) - 1, y)) {
-      (*x_low)--;
-    } else if (y < im->h - 1 && check_color(im, (*x_low) - 1, y + 1)) {
+      (*x_low)--;  
+    // } else if (y < im->h - 1 && check_color(im, (*x_low) - 1, y + 1)) {
+    } else if (y < im->w - 1 && check_color(im, (*x_low) - 1, y + 1)) {
       y++;
       (*x_low)--;
     } else if (y > 0 && check_color(im, (*x_low) - 1, y - 1)) {
@@ -1066,11 +1087,13 @@ void snake_left_and_right(struct image_t *im, int x, int y, int *x_low, int *x_h
   (*x_high) = x;
   done = 0;
   // snake towards positive x (right)
-  while ((*x_high) < im->w - 1 && !done) {
+  // while ((*x_high) < im->w - 1 && !done) {
+  while ((*x_high) < im->h - 1 && !done) {
 
     if (check_color(im, (*x_high) + 1, y)) {
       (*x_high)++;
-    } else if (y < im->h - 1 && check_color(im, (*x_high) + 1, y++)) {
+    // } else if (y < im->h - 1 && check_color(im, (*x_high) + 1, y++)) {
+    } else if (y < im->w - 1 && check_color(im, (*x_high) + 1, y++)) {
       y++;
       (*x_high)++;
     } else if (y > 0 && check_color(im, (*x_high) + 1, y - 1)) {

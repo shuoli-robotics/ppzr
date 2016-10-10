@@ -446,13 +446,13 @@ float mean_distance_to_square(float* genome)
   struct point_f square_bottom_right;
   struct point_f square_bottom_left;
   square_top_left.x = x-r;
-  square_top_left.y = y-r; // positive y direction is down TODO: check!!!
+  square_top_left.y = y+r; // positive y direction is down TODO: check!!!
   square_top_right.x = x+r;
-  square_top_right.y = y-r; 
+  square_top_right.y = y+r; 
   square_bottom_left.x = x-r;
-  square_bottom_left.y = y+r; 
+  square_bottom_left.y = y-r; 
   square_bottom_right.x = x+r;
-  square_bottom_right.y = y+r;
+  square_bottom_right.y = y-r;
   float side_distances[n_sides];
 
 	for (p = 0; p < n_points; p++)
@@ -460,22 +460,22 @@ float mean_distance_to_square(float* genome)
     // get the current point:
     point = points[p];
     // determine the distance to the four sides of the square and select the smallest one:
-    side_distances[0] = distance_to_vertical_segment(square_top_left, square_bottom_left, point);
-    side_distances[1] = distance_to_vertical_segment(square_top_right, square_bottom_right, point);
+    side_distances[0] = distance_to_vertical_segment(square_bottom_left, square_top_left, point);
+    side_distances[1] = distance_to_vertical_segment(square_bottom_right, square_top_right, point);
     side_distances[2] = distance_to_horizontal_segment(square_top_left, square_top_right, point);
     side_distances[3] = distance_to_horizontal_segment(square_bottom_left, square_bottom_right, point);
     error = get_minimum(side_distances, n_sides, &index);
 
 		if (STICK)
 		{
-			// determine distance to the stick:
+			// determine distance to the stick: y positive = up!!!
 			struct point_f stick1;
       stick1.x = x;
-      stick1.y = y + r;
+      stick1.y = y - r;
 			struct point_f stick2;
       stick2.x = x;
-      stick2.y = y + 2*r;
-			error_stick = distance_to_vertical_segment(stick1, stick2, point);
+      stick2.y = y - 2*r;
+			error_stick = distance_to_vertical_segment(stick2, stick1, point);
 
 			// take the smallest error:
 			if (error_stick < error) error = error_stick;
@@ -518,13 +518,13 @@ float mean_distance_to_polygon(float* genome)
   struct point_f square_bottom_right;
   struct point_f square_bottom_left;
   square_top_left.x = x-s_width;
-  square_top_left.y = y-s_left; // positive y direction is down TODO: check!!!
+  square_top_left.y = y+s_left; // positive y direction is up
   square_top_right.x = x+s_width;
-  square_top_right.y = y-s_right; 
+  square_top_right.y = y+s_right; 
   square_bottom_left.x = x-s_width;
-  square_bottom_left.y = y+s_left; 
+  square_bottom_left.y = y-s_left; 
   square_bottom_right.x = x+s_width;
-  square_bottom_right.y = y+s_right;
+  square_bottom_right.y = y-s_right;
   float side_distances[n_sides];
 
 	for (p = 0; p < n_points; p++)
@@ -532,8 +532,8 @@ float mean_distance_to_polygon(float* genome)
     // get the current point:
     point = points[p];
     // determine the distance to the four sides of the square and select the smallest one:
-    side_distances[0] = distance_to_segment(square_top_left, square_bottom_left, point);
-    side_distances[1] = distance_to_segment(square_top_right, square_bottom_right, point);
+    side_distances[0] = distance_to_segment(square_bottom_left, square_top_left, point);
+    side_distances[1] = distance_to_segment(square_bottom_right, square_top_right, point);
     side_distances[2] = distance_to_segment(square_top_left, square_top_right, point);
     side_distances[3] = distance_to_segment(square_bottom_left, square_bottom_right, point);
     error = get_minimum(side_distances, n_sides, &index);
@@ -545,11 +545,11 @@ float mean_distance_to_polygon(float* genome)
 			// determine distance to the stick:
 			struct point_f stick1;
       stick1.x = x;
-      stick1.y = y + (s_left + s_right) / 2;
+      stick1.y = y - (s_left + s_right) / 2;
 			struct point_f stick2;
       stick2.x = x;
-      stick2.y = y + (s_left + s_right);
-			error_stick = distance_to_vertical_segment(stick1, stick2, point);
+      stick2.y = y - (s_left + s_right);
+			error_stick = distance_to_vertical_segment(stick2, stick1, point);
 
 			// take the smallest error:
 			if (error_stick < error) error = error_stick;
@@ -582,9 +582,11 @@ float get_angle_from_polygon(float s_left, float s_right, struct image_t* color_
 
   // since the sides of the square gate are straight up, we only need FOV_H to determine the 
   // distance of the camera to the sides.
-  float gamma_left = (s_left / color_image->h) * FOV_H;
+  // float gamma_left = (s_left / color_image->h) * FOV_H;
+  float gamma_left = (s_left / color_image->w) * FOV_H;
   float d_left = (0.5 * s_left) / tanf(0.5 * gamma_left);
-  float gamma_right = (s_right / color_image->h) * FOV_H;
+  // float gamma_right = (s_right / color_image->h) * FOV_H;
+  float gamma_right = (s_right / color_image->w) * FOV_H;
   float d_right = (0.5 * s_right) / tanf(0.5 * gamma_right);
   
   // angles seen from a top view, with the GATE_SIZE gate on top
@@ -605,6 +607,8 @@ float get_angle_from_polygon(float s_left, float s_right, struct image_t* color_
 
 float mean_distance_to_arms(float* genome, float x, float y)
 {
+
+  // TODO: check if x and y should be swapped in this function:
   int p;
   float d1, d2, dist;
   float mean_distance = 0;
@@ -715,7 +719,7 @@ float distance_to_segment(struct point_f Q1, struct point_f Q2, struct point_f P
 
 float distance_to_vertical_segment(struct point_f Q1, struct point_f Q2, struct point_f P)
 {
-  // Q1.y should be smaller than Q2.y, y positive down
+  // Q1.y should be smaller than Q2.y, (y positive down but does not matter)
   // so first top then bottom
 
   // Calculating the distance to a vertical segment is actually quite simple:
@@ -777,12 +781,19 @@ void draw_circle(struct image_t* Im, float x_center, float y_center, float radiu
 	{
 		x = (int)x_center + (int)(cosf(t)*radius);
 		y = (int)y_center + (int)(sinf(t)*radius);
-		if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+		// if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->h-1 && y >= 0 && y < Im->w)
 		{
+      /*
       dest[y*Im->w*2+x*2] = color[1];
       dest[y*Im->w*2+x*2+1] = color[0];
       dest[y*Im->w*2+x*2+2] = color[2];
       dest[y*Im->w*2+x*2+3] = color[0];
+      */
+      dest[x*Im->w*2+y*2] = color[1];
+      dest[x*Im->w*2+y*2+1] = color[0];
+      dest[x*Im->w*2+y*2+2] = color[2];
+      dest[x*Im->w*2+y*2+3] = color[0];
 		}
 	}
   return;
@@ -794,14 +805,21 @@ void draw_stick(struct image_t* Im, float x_center, float y_center, float radius
   uint8_t* dest = Im->buf;
   int x, y;
   x = (int) x_center;
-  for(y = (int)(y_center + radius); y <  (int)(y_center + 2*radius); y++)
+  for(y = (int)(y_center - radius); y <  (int)(y_center - 2*radius); y++)
   {
-    if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    // if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->h-1 && y >= 0 && y < Im->w)
 		{
+      /* x,y swap due to crappy bebop image:
       dest[y*Im->w*2+x*2] = color[1];
       dest[y*Im->w*2+x*2+1] = color[0];
       dest[y*Im->w*2+x*2+2] = color[2];
       dest[y*Im->w*2+x*2+3] = color[0];
+      */
+      dest[x*Im->w*2+y*2] = color[1];
+      dest[x*Im->w*2+y*2+1] = color[0];
+      dest[x*Im->w*2+y*2+2] = color[2];
+      dest[x*Im->w*2+y*2+3] = color[0];
 		} 
   }
 }
@@ -818,12 +836,19 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
 	{
 		x = (int)(t * Q1.x + (1.0f - t) * Q2.x);
 		y = (int)(t * Q1.y + (1.0f - t) * Q2.y);
-		if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+		// if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->h-1 && y >= 0 && y < Im->w)
 		{
+      /*
       dest[y*Im->w*2+x*2] = color[1];
       dest[y*Im->w*2+x*2+1] = color[0];
       dest[y*Im->w*2+x*2+2] = color[2];
       dest[y*Im->w*2+x*2+3] = color[0];
+      */
+      dest[x*Im->w*2+y*2] = color[1];
+      dest[x*Im->w*2+y*2+1] = color[0];
+      dest[x*Im->w*2+y*2+2] = color[2];
+      dest[x*Im->w*2+y*2+3] = color[0];
 		}
 	}
   return;
@@ -831,6 +856,8 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
 
 float fit_clock_arms(float x_center, float y_center, float radius, float* angle_1, float* angle_2)
 {
+  // TODO: what about x, y?
+  
   // 1) down-select the points to fit within the window
   // 2) optimize two angles to best fit the pattern
   
