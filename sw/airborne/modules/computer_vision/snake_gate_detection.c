@@ -393,6 +393,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   float quality;
   struct point_t from, to;
   best_quality = 0;
+  best_gate.gate_q = 0;
   //test
   //pix_x = img->w;
   //pix_y = img->h;
@@ -491,12 +492,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   // prepare the Region of Interest (ROI), which is larger than the gate:
   float size_factor = 1.5;//2;//1.25;
 
-
   // do an additional fit to improve the gate detection:
   if (best_quality > min_gate_quality && n_gates > 0) {
     // temporary variables:
 
-    if (gen_alg) {
+    //if (gen_alg) {
       int max_candidate_gates = 5;//5;
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
@@ -573,7 +573,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
       }
       //draw_gate(img, best_gate);
-    }
+    //}
 
     // TODO: check if top left is orange (back side)
     // read the QR code:
@@ -599,7 +599,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   /*
   * What is better? The current or previous gate?
   */
-  if(previous_best_gate.sz != 0)
+  if(previous_best_gate.sz != 0 && best_quality > min_gate_quality && n_gates > 0)
   {
     // refit the previous best gate in the current image and compare the quality:
     int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor);
@@ -654,8 +654,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   * BEST GATE -> TRANSFORM TO COORDINATES
   ***************************************/
 
-  if (best_quality > min_gate_quality && n_gates > 0) {
-
+  if (best_gate.gate_q > min_gate_quality) {
 
     current_quality = best_quality;
     size_left = best_gate.sz_left;
@@ -672,9 +671,53 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
     gate_gen = 0;
   } else {
-    states_race.gate_detected = 0;
-    current_quality = 0;
-    gate_gen = 1;
+    
+    if(previous_best_gate.sz != 0)
+    {
+      printf("previous gate\n");
+      // refit the previous best gate in the current image and compare the quality:
+      int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor * 1.25);
+      int16_t min_x = previous_best_gate.x - ROI_size;
+      min_x = (min_x < 0) ? 0 : min_x;
+      int16_t max_x = previous_best_gate.x + ROI_size;
+      max_x = (max_x < img->w) ? max_x : img->w;
+      int16_t min_y = previous_best_gate.y - ROI_size;
+      min_y = (min_y < 0) ? 0 : min_y;
+      int16_t max_y = previous_best_gate.y + ROI_size;
+      max_y = (max_y < img->h) ? max_y : img->h;
+
+      // detect the gate:
+      gate_detection(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
+		    &(previous_best_gate.sz),
+		    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
+		    &s_left, &s_right);
+
+      // store the information in the gate:
+      previous_best_gate.x = (int) x_center;
+      previous_best_gate.y = (int) y_center;
+      previous_best_gate.sz = (int) radius;
+      previous_best_gate.sz_left = (int) s_left;
+      previous_best_gate.sz_right = (int) s_right;
+
+      // also get the color fitness
+      check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
+    }
+    
+    if (previous_best_gate.gate_q > min_gate_quality)
+    { 
+      printf("previous gate quality\n");
+      current_quality = previous_best_gate.gate_q;
+      gate_gen = 1;
+      states_race.gate_detected = 1;
+      
+      draw_gate(img, previous_best_gate);
+    }
+    else
+    {
+      states_race.gate_detected = 0;
+      current_quality = 0;
+      gate_gen = 1;
+    }
   }
   return img; // snake_gate_detection did not make a new image
 }
@@ -899,6 +942,14 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     max_x = gate.x - gate.sz;
     min_y = gate.y - gate.sz_left;
     max_y = gate.y - (1.0f - size_square) * gate.sz_left;
+    
+     // draw it:
+    bs_square.x = (min_x + max_x) / 2;
+    bs_square.y = (min_y + max_y) / 2;
+    bs_square.sz = (max_x - min_x) / 2;
+    bs_square.sz_left = bs_square.sz_left;
+    bs_square.sz_right = bs_square.sz_right;
+    draw_gate(im, bs_square);
     
     for(y = min_y; y < max_y; y++)
     {
