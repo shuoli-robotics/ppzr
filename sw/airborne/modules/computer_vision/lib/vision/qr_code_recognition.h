@@ -29,10 +29,10 @@
 
 #include "image.h"
 
+
 int get_QR_class(struct image_t *img, float* uncertainty);
 int get_QR_class_ROI(struct image_t *img, uint32_t x_min, uint32_t y_min, uint32_t x_max, uint32_t y_max, float* uncertainty);
 void get_QR_integral_features(uint32_t* integral_image, uint32_t width, uint32_t height, float* features);
-void QR_J48(float* attributes, int* class, float* uncertainty);
 void QR_J48(float* attributes, int* class, float* uncertainty);
 void get_closest_template(struct image_t *img, uint32_t x_min, uint32_t y_min, uint32_t w, uint32_t h, int* QR_template, float* cost_ratio);
 uint8_t get_sub_pixel(struct image_t *img, float x, float y, uint8_t templ);

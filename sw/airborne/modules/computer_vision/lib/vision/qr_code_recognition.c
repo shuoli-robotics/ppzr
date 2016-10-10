@@ -108,6 +108,7 @@ int get_QR_class(struct image_t *img, float* uncertainty)
     get_closest_template(img, 0, 0, (uint32_t) img->w, (uint32_t) img->h, &class, &cost_ratio);
     
   }
+
   return class;
 }
 
@@ -126,7 +127,6 @@ int get_QR_class_ROI(struct image_t *img, uint32_t x_min, uint32_t y_min, uint32
   if(QR_REC_METHOD == INTEGRAL_FEATURES)
   {
     // extract integral features and classify with a decision tree:
-
     uint32_t integral_image[width*height];
     get_integral_image_ROI(img->buf, (uint32_t) img->w, (uint32_t) img->h, integral_image, x_min, y_min, x_max, y_max);
 
@@ -145,7 +145,6 @@ int get_QR_class_ROI(struct image_t *img, uint32_t x_min, uint32_t y_min, uint32
 
   return class;
 }
-
 
 // get closest QR template by pixel matching:
 void get_closest_template(struct image_t *img, uint32_t x_min, uint32_t y_min, uint32_t w, uint32_t h, int* QR_template, float* cost_ratio)

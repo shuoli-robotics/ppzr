@@ -35,6 +35,7 @@ struct gate_img {
   int y;             ///< The image y coordinate of the gate center
   int sz;            ///< Half the image size of the gate 
   float gate_q;      ///< gate quality
+  int n_sides;       ///< How many sides are orange (to prevent detecting a small gate in the corner of a big one partially out of view).
   float sz_left;     ///< Half the image size of the left side
   float sz_right;    ///< Half the image size of the right side
 };
@@ -45,7 +46,8 @@ extern int check_color(struct image_t *im, int x, int y);
 extern void snake_up_and_down(struct image_t *im, int x, int y, int* y_low, int* y_high);
 extern void snake_left_and_right(struct image_t *im, int x, int y, int* x_low, int* x_high);
 extern void draw_gate(struct image_t *im, struct gate_img gate);
-extern void check_gate(struct image_t *im, struct gate_img gate, float* quality);
+extern void check_gate(struct image_t *im, struct gate_img gate, float* quality, int* sides);
+extern int check_back_side_QR_code(struct image_t* im, struct gate_img best_gate);
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
 
 extern void snake_gate_periodic(void);
