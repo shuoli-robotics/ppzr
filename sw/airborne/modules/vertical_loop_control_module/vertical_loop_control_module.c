@@ -51,7 +51,7 @@ void guidance_v_module_run(bool in_flight)
     }
     else
     {
-        stabilization_cmd[COMMAND_THRUST] = 5000;
+        stabilization_cmd[COMMAND_THRUST] = 5200;
     }
 
 };

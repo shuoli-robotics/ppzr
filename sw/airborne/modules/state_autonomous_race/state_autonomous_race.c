@@ -53,7 +53,7 @@ void state_autonomous_race_init() {
 
 void display_states()
 {
-    printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
+    //printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
     if (autopilot_mode != AP_MODE_MODULE)
         return;
    // printf("gate_counter is %d \n",states_race.gate_counter);
@@ -63,16 +63,12 @@ void display_states()
     printf("\n");
     printf("\n");
     printf("\n");
-    display_guidance_mode();
+   // display_guidance_mode();
     printf("\n");
     printf("\n");
     printf("\n");
-    printf("Time in primitve is %f\n",time_primitive);
+   // printf("Time in primitve is %f\n",time_primitive);
 
-
-    printf("\n");
-    printf("\n");
-    printf("\n");
 
 }
 

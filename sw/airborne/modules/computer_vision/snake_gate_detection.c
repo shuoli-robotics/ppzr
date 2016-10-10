@@ -63,13 +63,13 @@ uint8_t color_lum_min = 60;//105;
 uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
-uint8_t color_cr_min  = 138;//146;//was 180
+uint8_t color_cr_min  = 134;//138;//146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
 int n_samples = 1000;//1000;//500;
-int min_pixel_size = 40;//100;
-float min_gate_quality = 0.2;
+int min_pixel_size = 20;//40;//100;
+float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
 
@@ -508,7 +508,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
     if(gen_alg)
     {
-      int max_candidate_gates = 5;//5;
+      int max_candidate_gates = 10;//5;
       best_fitness = 100;
       if(n_gates > 0 && n_gates < max_candidate_gates)
       {

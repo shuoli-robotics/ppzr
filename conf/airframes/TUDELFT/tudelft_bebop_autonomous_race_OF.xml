@@ -34,7 +34,7 @@
     <module name="gps" type="datalink"/><!--datalink-->
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="TRUE"/> <!--TRUE-->
+      <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
     </module>
     <module name="ins" type="extended"/>
@@ -95,10 +95,10 @@
       <define name="SGD_CAMERA" value="bottom_camera"/>
     </module-->
 
-   <module name="stereocam">
+   <!--module name="stereocam">
 	<configure name="STEREO_UART" value="UART2"/>
-	<configure name="STEREO_BAUD" value="115200"/><!--B9600"/-->
-    </module> 
+	<configure name="STEREO_BAUD" value="115200"/--><!--B9600"/-->
+    <!--/module--> 
     <!--module name="stereo_gate_position"/-->
 
    <module name="video_rtp_stream">

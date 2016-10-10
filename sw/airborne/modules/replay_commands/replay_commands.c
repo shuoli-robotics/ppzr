@@ -72,11 +72,11 @@ void replay_commands_start(void)
 {
   //command_run();
   replay = 1;
-    guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
+   // guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 32;//30;//29; //set the primitive number manually for now.
+  int primitive_number = 6; //set the primitive number manually for now.
   //30 straight 3m turn 90 deg left and straith 3m while going up.
 
   char filename[512];
@@ -102,7 +102,7 @@ void replay_commands_periodic(void)
   char str[400];
 
   if (replay == 1 && file != NULL){// && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
-    printf("Here is the start\n");
+   // printf("Here is the start\n");
 
     if( fgets(str, n, file) != NULL ){
       for (int i = 0 ; i < strlen(str) ; i++) {
@@ -110,7 +110,7 @@ void replay_commands_periodic(void)
           str[i] = ' ';
         }
       }
-      printf("%s", str);
+      //printf("%s", str);
       sscanf(str, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d %d %d %d", &counter, &x, &y, &z, &vx, &vy, &vz, &phi, &theta, &psi, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi,&cmd_thrust);
       //printf("counter: %d x: %lf, y:%lf, z:%lf, vx:%lf, vy:%lf, vz:%lf, phi:%lf, theta:%lf, psi:%lf, phi_i %d, theta_i %d, psi_d %d \n",counter, x,y,z,vx,vy,vz,phi,theta,psi,phi_i, theta_i, psi_i);
 

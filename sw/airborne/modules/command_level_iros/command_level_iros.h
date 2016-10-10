@@ -32,36 +32,38 @@
 #endif
 
 #ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 3               //second part
+#define NUMBER_OF_GATES 6               //second part
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
-#define ANGLE_AFTER_HALF_GATE 90.0     //degree
+#define ANGLE_AFTER_HALF_GATE 100.0/180.0*PI     //degree
 #endif
 
 #ifndef VELOCITY_IN_FIRST_PART
-#define VELOCITY_IN_FIRST_PART 0.8
+#define VELOCITY_IN_FIRST_PART 0.5
 #endif
 
 
-#ifndef TIME_IN_FIRST_PART
-#define TIME_IN_FIRST_PART 6
-#endif
+
 
 #ifndef HOVER_TIME
 #define HOVER_TIME 2
 #endif
 
 #ifndef NUMBER_OF_ZIGZAG
-#define NUMBER_OF_ZIGZAG 2
+#define NUMBER_OF_ZIGZAG 5
 #endif
 
 #ifndef STRAIGHT_TIME
-#define STRAIGHT_TIME 5.0
+#define STRAIGHT_TIME 8.5
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE
-#define TAKE_OFF_ALTITUDE -1.5
+#define TAKE_OFF_ALTITUDE -2
+#endif
+
+#ifndef APPROACH_TIME
+#define APPROACH_TIME 3
 #endif
 
 #ifndef PREPARE_TIME
@@ -84,8 +86,8 @@ struct parameters_to_be_tuned{
     float approach_after_gate[NUMBER_OF_GATES];
     bool flag_zigzag[NUMBER_OF_ZIGZAG];
     float distance_after_zigzag[NUMBER_OF_ZIGZAG];
-    //float heading_after_first_part;
     float heading_after_zigzag[NUMBER_OF_ZIGZAG];
+    int search_gate_flag_in_zigzag[NUMBER_OF_ZIGZAG];
 };
 
 extern enum states_lower_level state_lower_level;
