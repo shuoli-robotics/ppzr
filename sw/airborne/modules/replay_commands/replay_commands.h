@@ -51,5 +51,6 @@ extern int replay;
 extern struct Int32Eulers guidance_replay;
 extern struct guidance_module_st guidance_module;
 extern struct Int32Eulers guidance_replay;
+extern int cmd_thrust;
 
 #endif

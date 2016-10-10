@@ -108,6 +108,7 @@ int get_QR_class(struct image_t *img, float* uncertainty)
     get_closest_template(img, 0, 0, (uint32_t) img->w, (uint32_t) img->h, &class, &cost_ratio);
     
   }
+
   return class;
 }
 

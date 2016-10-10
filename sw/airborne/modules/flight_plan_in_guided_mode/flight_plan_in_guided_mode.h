@@ -26,6 +26,8 @@
 #ifndef FLIGHT_PLAN_IN_GUIDED_MODE_H
 #define FLIGHT_PLAN_IN_GUIDED_MODE_H
 #include "flight_plan_clock.h"
+#include "modules/vertical_loop_control_module/vertical_loop_control_module.h"
+#include "firmwares/rotorcraft/guidance/guidance_v.h"
 
 #define NO_PRIMITIVE             0
 #define HOVER                    1
@@ -40,6 +42,9 @@
 #define SEARCH_GATE              10
 #define TAKE_OFF                 11
 #define LAND                     12
+#define ADJUST_HEADING           13
+#define LEFT_RIGHT_BACK          14
+#define HOLD_ALTITUDE            15
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
@@ -58,6 +63,9 @@
  extern void search_gate(void);
  extern void take_off(float desired_altitude);
  extern void land(void);
+ extern void adjust_heading(float delta_heading);
+ extern void left_right_back(float velocity_in_body_x,float velocity_in_body_y);
+ extern void hold_altitude(float desired_altitude);
 
 
 #endif

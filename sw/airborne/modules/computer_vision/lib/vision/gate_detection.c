@@ -53,7 +53,8 @@ float outlier_threshold = 20.0f;
   #define N_GENES 5
 #endif
 #define N_GENES_CLOCK 2
-uint16_t n_generations = 10; // could be reduced for instance when there are many points
+//printf N_GENES
+uint16_t n_generations = 20;//10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
 // whether to draw on the image:
@@ -261,7 +262,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 		// if better than any previous individual, remember it:
 		if (min_fit < (*fitness))
 		{
-			for (ge = 0; ge < 3; ge++)
+			for (ge = 0; ge < N_GENES; ge++)//was ge < 3 therefore last two genes were not updated
 			{
 				best_genome[ge] = min_genome[ge];
 			}
@@ -294,7 +295,6 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
     (*s_left) = best_genome[3];
     (*s_right) = best_genome[4];
   }
-
   return;
 }
 
@@ -537,6 +537,8 @@ float mean_distance_to_polygon(float* genome)
     side_distances[2] = distance_to_segment(square_top_left, square_top_right, point);
     side_distances[3] = distance_to_segment(square_bottom_left, square_bottom_right, point);
     error = get_minimum(side_distances, n_sides, &index);
+    
+    //printf(side_distances);
 
 		if (STICK)
 		{

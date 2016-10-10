@@ -22,36 +22,76 @@
  * @author Shuo Li
  * This module is the highest level
  */
+#include "state.h"
 
 #ifndef COMMAND_LEVEL_IROS_H
 #define COMMAND_LEVEL_IROS_H
 
 #ifndef CONSTANT_VELOCITY_STRAIGHT
-#define CONSTANT_VELOCITY_STRAIGHT 0.6
+#define CONSTANT_VELOCITY_STRAIGHT 0.8
+#endif
+
+#ifndef NUMBER_OF_GATES
+#define NUMBER_OF_GATES 2               //second part
+#endif
+
+#ifndef ANGLE_AFTER_HALF_GATE
+#define ANGLE_AFTER_HALF_GATE 90.0     //degree
+#endif
+
+#ifndef VELOCITY_IN_FIRST_PART
+#define VELOCITY_IN_FIRST_PART 0.8
+#endif
+
+
+#ifndef TIME_IN_FIRST_PART
+#define TIME_IN_FIRST_PART 6
+#endif
+
+#ifndef HOVER_TIME
+#define HOVER_TIME 2
+#endif
+
+#ifndef NUMBER_OF_ZIGZAG
+#define NUMBER_OF_ZIGZAG 2
+#endif
+
+#ifndef STRAIGHT_TIME
+#define STRAIGHT_TIME 5.0
+#endif
+
+#ifndef TAKE_OFF_ALTITUDE
+#define TAKE_OFF_ALTITUDE -1.5
+#endif
+
+#ifndef PREPARE_TIME
+#define PREPARE_TIME 3
 #endif
 
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
 enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
-TURN_CM,SEARCH_GATE_CM,TAKE_OFF_CM,LAND_CM,GO_STRAIGHT_CM};
-enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART};
+TURN_CM,SEARCH_GATE_CM,TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM,PREPARE_CM,
+    REPLAY_CM};
+
+enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART};
 
 struct parameters_to_be_tuned{
-    float distance_first_gate;
-    float distance_second_gate;
-    float distance_third_gate;
-    float distance_fourth_gate;
-    float heading_after_first_gate;
-    float heading_after_second_gate;
-    float heading_after_third_gate;
-    float heading_after_fourth_gate;
+    float heading_after_gate[NUMBER_OF_GATES];
+    float distance_after_gate[NUMBER_OF_GATES];
+    float height_after_gate[NUMBER_OF_GATES];
+    bool flag_zigzag[NUMBER_OF_ZIGZAG];
+    float distance_after_zigzag[NUMBER_OF_ZIGZAG];
+    //float heading_after_first_part;
+    float heading_after_zigzag[NUMBER_OF_ZIGZAG];
 };
 
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
 
 extern struct parameters_to_be_tuned parameter_to_be_tuned;
+extern uint8_t previous_lower_level;
 
 #endif
 

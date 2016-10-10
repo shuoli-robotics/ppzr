@@ -44,11 +44,12 @@ struct Int32Eulers guidance_replay;
 
 
 int replay = 0;
-int counter, phi_i, theta_i, psi_i, cmd_phi, cmd_theta, cmd_psi;
+int counter, phi_i, theta_i, psi_i, cmd_phi, cmd_theta, cmd_psi,cmd_thrust;
 double x, y, z, vx, vy, vz, phi, theta, psi;
 int32_t phi_euler = 0;
 int32_t theta_euler = 0;
 int32_t psi_euler = 0;
+
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -63,7 +64,7 @@ FILE * file;
 
 static void replay_cmd_send(struct transport_tx *trans, struct link_device *dev)
 {
-  pprz_msg_send_REPLAY_CMD_INFO(trans, dev, AC_ID, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi, &phi_euler, &theta_euler, &psi_euler);
+  pprz_msg_send_REPLAY_CMD_INFO(trans, dev, AC_ID, &cmd_thrust, &replay, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi, &phi_euler, &theta_euler, &psi_euler);
 }
 
 
@@ -71,20 +72,25 @@ void replay_commands_start(void)
 {
   //command_run();
   replay = 1;
-
+    guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 26; //set the primitive number manually for now.
+  int primitive_number = 7;//32;//30;//29; //set the primitive number manually for now.
+  //30 straight 3m turn 90 deg left and straith 3m while going up.(blue drone?)
+  //32 around the cyberzoo with one meter drift blue drone (shuo)
+  //1 red drone (no stereo) first part small scale test
+  //5 red drone same but start from hover
+  //6 red start from ground and land on ground
+  //7 
+  
 
   char filename[512];
   sprintf(filename, "%s/%05d.csv", STRINGIFY(FILE_LOGGER_PATH), primitive_number);
-
   file = fopen(filename , "r");
-
+  
   if (file == NULL) {
-    printf("\n file opening failed ");
-
+    printf("\n file opening failed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   }
 }
 
@@ -98,10 +104,10 @@ void replay_commands_init(void)
 
 void replay_commands_periodic(void)
 {
-  int n = 200; //maximum number of characters in the line
-  char str[200];
+  int n = 400; //maximum number of characters in the line
+  char str[400];
 
-  if (replay == 1 && file != NULL && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
+  if (replay == 1 && file != NULL){// && autopilot_mode == AP_MODE_MODULE) { //while(fgets(str,n,file)!=NULL){
     printf("Here is the start\n");
 
     if( fgets(str, n, file) != NULL ){
@@ -111,7 +117,7 @@ void replay_commands_periodic(void)
         }
       }
       printf("%s", str);
-      sscanf(str, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d %d %d", &counter, &x, &y, &z, &vx, &vy, &vz, &phi, &theta, &psi, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi);
+      sscanf(str, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d %d %d %d", &counter, &x, &y, &z, &vx, &vy, &vz, &phi, &theta, &psi, &phi_i, &theta_i, &psi_i, &cmd_phi, &cmd_theta, &cmd_psi,&cmd_thrust);
       //printf("counter: %d x: %lf, y:%lf, z:%lf, vx:%lf, vy:%lf, vz:%lf, phi:%lf, theta:%lf, psi:%lf, phi_i %d, theta_i %d, psi_d %d \n",counter, x,y,z,vx,vy,vz,phi,theta,psi,phi_i, theta_i, psi_i);
 
 
@@ -132,9 +138,9 @@ void replay_commands_periodic(void)
     }
   }
 
-  phi_euler   = stateGetNedToBodyEulers_i()->phi;
-  theta_euler = stateGetNedToBodyEulers_i()->theta;
-  psi_euler   = stateGetNedToBodyEulers_i()->psi;
+//  phi_euler   = stateGetNedToBodyEulers_i()->phi;
+//  theta_euler = stateGetNedToBodyEulers_i()->theta;
+//  psi_euler   = stateGetNedToBodyEulers_i()->psi;
 
 }
 
@@ -142,6 +148,7 @@ void replay_commands_stop(void)
 {
   //if(autopilot_mode != AP_MODE_MODULE)
   replay = 0;
+    guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
   if (file != NULL) {
     fclose(file);
     file = NULL;

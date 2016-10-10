@@ -19,5 +19,9 @@
 extern void stereo_to_state_init(void);
 extern void stereo_to_state_periodic(void);
 
+extern float s_flow_vel_x;
+extern float s_flow_vel_y;
+extern float s_flow_vel_z;
+
 #endif
 

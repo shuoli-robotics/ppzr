@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Roland
+ * Copyright (C) Shuo Li
  *
  * This file is part of paparazzi
  *
@@ -18,28 +18,21 @@
  * <http://www.gnu.org/licenses/>.
  */
 /**
- * @file "modules/stereocam/state2camera/state2camera.h"
- * @author Roland
- * Sends rotation using the stereoboard protocol over the UART.
+ * @file "modules/vertical_loop_control_module/vertical_loop_control_module.h"
+ * @author Shuo Li
+ * vertical controller in module mode
  */
 
-#ifndef UARTROTATION_H
-#define UARTROTATION_H
+#ifndef VERTICAL_LOOP_CONTROL_MODULE_H
+#define VERTICAL_LOOP_CONTROL_MODULE_H
+#include "state.h"
 
-#include <inttypes.h>
 
-struct stereocam_edgeflow_t{
-  uint8_t window_size;
-  uint8_t search_distance;
-  uint8_t derotation;
-  uint8_t adaptive_time_horizon;
-  uint8_t snapshot;
-  uint8_t kalman;
-};
-extern struct stereocam_edgeflow_t edgeflow;
 
-void init_state2camera(void);
-extern void write_serial_rot(void);
+extern void guidance_v_module_init(void);
+extern void guidance_v_module_run(bool in_flight);
+extern void guidance_v_module_read_rc(void);
+extern void guidance_v_module_enter(void);
 
 #endif
 

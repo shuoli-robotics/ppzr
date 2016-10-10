@@ -47,11 +47,11 @@
 
 //initial position and speed safety margins
 
-#define X_POS_MARGIN 0.1//m
-#define Y_POS_MARGIN 0.3//m
-#define Z_POS_MARGIN 0.2//m
+#define X_POS_MARGIN 0.20//m
+#define Y_POS_MARGIN 0.5//m
+#define Z_POS_MARGIN 0.15//m
 #define X_SPEED_MARGIN 0.15//m/s
-#define Y_SPEED_MARGIN 0.15//m/s
+#define Y_SPEED_MARGIN 0.2//m/s
 
 #define GOOD_FIT 1.0
 
@@ -63,15 +63,15 @@ uint8_t color_lum_min = 60;//105;
 uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
-uint8_t color_cr_min  = 140;//was 180
+uint8_t color_cr_min  = 138;//146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
-int n_samples = 500;//1000;//500;
+int n_samples = 1000;//1000;//500;
 int min_pixel_size = 40;//100;
-float min_gate_quality = 0.4;
+float min_gate_quality = 0.2;
 float gate_thickness = 0;//0.05;//0.10;//
-float gate_size = 33;
+float gate_size = 34;
 
 
 int y_low = 0;
@@ -89,11 +89,15 @@ int szx2 = 0;
 int color_count = 0;
 #define MAX_GATES 50
 struct gate_img gates[MAX_GATES];
+struct gate_img best_gate;
 struct image_t img_result;
 int n_gates = 0;
 float best_quality = 0;
 float current_quality = 0;
-
+float best_fitness = 100000;
+float psi_gate = 0;
+float size_left = 0;
+float size_right = 0;
 //color picker
 uint8_t y_center_picker  = 0;
 uint8_t cb_center  = 0;
@@ -138,6 +142,7 @@ int uncertainty_gate = 0;
 //int gate_detected = 0;
 int init_pos_filter = 0;
 int safe_pass_counter = 0;
+int gate_gen = 0;
 
 float gate_quality = 0;
 
@@ -145,13 +150,18 @@ float fps_filter = 0;
 
 struct timeval stop, start;
 
+//QR code classification
+int QR_class = 0;
+float QR_uncertainty;
+
 //Debug messages
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
     pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist, &z_dist,
-				  &current_x_gate,&current_y_gate,&current_z_gate,&body_filter_x,&current_quality,
-				  &y_center_picker,&cb_center,&cr_center,&sz,&szx1,&states_race.gate_detected); //
+				  &current_x_gate,&current_y_gate,&current_z_gate,&best_fitness,&current_quality,
+				  &y_center_picker,&cb_center,&QR_class,&sz,&n_gates,&states_race.gate_detected,
+				  &psi_gate); //
 }
 
 
@@ -226,9 +236,10 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
 
 void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *img,struct gate_img gate)
 {
+  float hor_calib = 0.075;
   //calculate angles here
   vert_angle = (-(((float)x_pix*1.0)-((float)(img->w)/2.0))*radians_per_pix_w)-(stateGetNedToBodyEulers_f()->theta);
-  hor_angle = (((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h;
+  hor_angle = ((((float)y_pix*1.0)-((float)(img->h)/2.0))*radians_per_pix_h)+hor_calib;
   
   pix_x = x_pix;
   pix_y = y_pix;
@@ -252,7 +263,8 @@ void calculate_gate_position(int x_pix,int y_pix, int sz_pix, struct image_t *im
 void snake_gate_periodic(void)
 {
   	//SAFETY  gate_detected
-	if(y_dist > 0.6 && y_dist < 5 && current_quality>min_gate_quality){
+	if(y_dist > 0.6 && y_dist < 5)// && gate_gen == 1) 
+	{
         states_race.gate_detected = 1;
         counter_gate_detected = 0;
         time_gate_detected = 0;
@@ -273,14 +285,12 @@ void snake_gate_periodic(void)
 	 states_race.ready_pass_through = 0;
 	}
 
-    if(safe_pass_counter > 20)
+    if(safe_pass_counter > 5)
     {
         safe_pass_counter = 0;
         states_race.ready_pass_through = 1;
     }
 
-	  
-	
 	// Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
 	if(init_pos_filter == 1)
 	{
@@ -337,11 +347,17 @@ void snake_gate_periodic(void)
 			uncertainty_gate = 151;//max
 		}
 		else
-			weight_measurement = (GOOD_FIT-best_quality)/GOOD_FIT;//check constant weight
+			weight_measurement = 0.7;//(GOOD_FIT-best_quality)/GOOD_FIT;//check constant weight
 
 		current_x_gate = weight_measurement * x_dist + (1.0f - weight_measurement) * predicted_x_gate;
 		current_y_gate = weight_measurement * y_dist + (1.0f - weight_measurement) * predicted_y_gate;
 		current_z_gate = weight_measurement * (z_dist + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
+		
+		//psi_bias
+		//if state is adjust position then slowly add bias using the fitness as weight
+		//keep always updating bias based on current angle and limit
+		//psi_filter_weight = GOOD_POLY_FIT - best_fitness;
+		//psi_increment = psi_filter_weight * psi_gate;
 	
 		// reset uncertainty:
 		uncertainty_gate = 0;
@@ -373,6 +389,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
   int filter = 1;
+  int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;  
   float quality;
@@ -397,9 +414,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //check_color(img, 1, 1);
     // check if it has the right color
-      int check_seg = y * (img->w) * 2 + x * 4;
-      //printf("check_seg:%d\n",check_seg);
-      //printf("x = %d,y = %d\n",x,y);
     if(check_color(img, x, y))
     {
       // snake up and down:
@@ -445,6 +459,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
           {
+	    //draw_gate(img, gates[n_gates]);
             best_quality = quality;
             n_gates++;
           }
@@ -465,6 +480,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           // else it will be overwritten by the next one
           if(quality > best_quality)//min_gate_quality)
           {
+	    //draw_gate(img, gates[n_gates]);
             best_quality = quality;
             n_gates++;
           }
@@ -483,45 +499,106 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   // do an additional fit to improve the gate detection:
   if(best_quality > min_gate_quality && n_gates>0)
   {
-    // temporary variables:
-    float x_center, y_center, radius, fitness;
-    // whether to detect clock arms:
+        // temporary variables:
+    float x_center, y_center, radius, fitness, angle_1, angle_2,s_left,s_right;
     int clock_arms = 1;
-    // these vars may be filled depending on the settings:
-    float angle_1 = 0;
-    float angle_2 = 0;
-    float psi = 0;
-    float size_left = 0;
-    float size_right = 0;
 
     // prepare the Region of Interest (ROI), which is larger than the gate:
-    float size_factor = 1.25;
-    int16_t ROI_size = (int16_t) (((float) gates[n_gates-1].sz) * size_factor);
-    int16_t min_x = gates[n_gates-1].x - ROI_size;
-    min_x = (min_x < 0) ? 0 : min_x;
-    int16_t max_x = gates[n_gates-1].x + ROI_size;
-    max_x = (max_x < img->w) ? max_x : img->w;
-    int16_t min_y = gates[n_gates-1].y - ROI_size;
-    min_y = (min_y < 0) ? 0 : min_y;
-    int16_t max_y = gates[n_gates-1].y + ROI_size;
-    max_y = (max_y < img->h) ? max_y : img->h;
-
-    // detect the gate:
-    gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
-                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi, &size_left, &size_right);
-  
-    // store the information in the gate:
-    gates[n_gates-1].x = (int) x_center;
-    gates[n_gates-1].y = (int) y_center;
-    gates[n_gates-1].sz = (int) radius;
-    gates[n_gates-1].sz_left = (int) size_left;
-    gates[n_gates-1].sz_right = (int) size_right;
+    float size_factor = 1.5;//2;//1.25;
+    
+    if(gen_alg)
+    {
+      int max_candidate_gates = 5;//5;
+      best_fitness = 100;
+      if(n_gates > 0 && n_gates < max_candidate_gates)
+      {
+	for(int gate_nr = 0; gate_nr < n_gates; gate_nr +=1)
+	{
+	    int16_t ROI_size = (int16_t) (((float) gates[gate_nr].sz) * size_factor);
+	    int16_t min_x = gates[gate_nr].x - ROI_size;
+	    min_x = (min_x < 0) ? 0 : min_x;
+	    int16_t max_x = gates[gate_nr].x + ROI_size;
+	    max_x = (max_x < img->w) ? max_x : img->w;
+	    int16_t min_y = gates[gate_nr].y - ROI_size;
+	    min_y = (min_y < 0) ? 0 : min_y;
+	    int16_t max_y = gates[gate_nr].y + ROI_size;
+	    max_y = (max_y < img->h) ? max_y : img->h;
+	  
+	  //draw_gate(img, gates[gate_nr]);
+	    
+	    int gates_x = gates[gate_nr].x;
+	    int gates_y = gates[gate_nr].y;
+	    int gates_sz = gates[gate_nr].sz;
+	    
+	  // detect the gate:
+	  gate_detection(img, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi_gate,&s_left,&s_right);
+	  if(fitness < best_fitness)
+	  {
+	    best_fitness = fitness;
+	    // store the information in the gate:
+	    best_gate.x = (int) x_center;
+	    best_gate.y = (int) y_center;
+	    best_gate.sz = (int) radius;
+	    best_gate.sz_left = (int) s_left;
+            best_gate.sz_right = (int) s_right;
+	  }
+	  
+	}
+	for(int gate_nr = 0; gate_nr < n_gates; gate_nr +=1)
+	{
+	  draw_gate(img, gates[gate_nr]);
+	}
+      }
+      else if(n_gates >= max_candidate_gates)
+      { 
+	for(int gate_nr = n_gates-max_candidate_gates; gate_nr < n_gates; gate_nr +=1)
+	{
+	    int16_t ROI_size = (int16_t) (((float) gates[gate_nr].sz) * size_factor);
+	    int16_t min_x = gates[gate_nr].x - ROI_size;
+	    min_x = (min_x < 0) ? 0 : min_x;
+	    int16_t max_x = gates[gate_nr].x + ROI_size;
+	    max_x = (max_x < img->w) ? max_x : img->w;
+	    int16_t min_y = gates[gate_nr].y - ROI_size;
+	    min_y = (min_y < 0) ? 0 : min_y;
+	    int16_t max_y = gates[gate_nr].y + ROI_size;
+	    max_y = (max_y < img->h) ? max_y : img->h;
+	  //draw_gate(img, gates[gate_nr]);
+	  // detect the gate:
+	  gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y), &(gates[gate_nr].sz),
+                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2,&psi_gate,&s_left,&s_right);
+	  if(fitness < best_fitness)
+	  {
+	    best_fitness = fitness;
+	    // store the information in the gate:
+	    best_gate.x = (int) x_center;
+	    best_gate.y = (int) y_center;
+	    best_gate.sz = (int) radius;
+	    best_gate.sz_left = (int) s_left;
+            best_gate.sz_right = (int) s_right;
+	  }
+	}
+	
+	for(int gate_nr = n_gates-max_candidate_gates; gate_nr < n_gates; gate_nr +=1)
+	{
+	  draw_gate(img, gates[gate_nr]);
+	}
+	
+      }
+      //draw_gate(img, best_gate);
+    }
 
     // read the QR code:
-    float uncertainty;
     // get the class of the QR, given a region of interest (TODO: find out the right parameters for the region next to the gate that has the QR code)
-    int QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &uncertainty);
+    //QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &QR_uncertainty);
+    
   }
+  else
+  {
+    //random position guesses here and then genetic algorithm
+    //use random sizes and positions bounded by minimum size 
+  }
+  QR_class = get_QR_class(img,&QR_uncertainty);
           
   //color filtered version of image for overlay and debugging
   if(filter)
@@ -536,16 +613,22 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   if(best_quality > min_gate_quality && n_gates>0)
   {
       current_quality = best_quality;
-  draw_gate(img, gates[n_gates-1]);
+      size_left = best_gate.sz_left;
+      size_right = best_gate.sz_right;
+  //draw_gate(img, gates[n_gates-1]);
+  draw_gate(img, best_gate);
   gate_quality = gates[n_gates-1].gate_q;
   //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);  
   
-  calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
-  
+  //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
+  calculate_gate_position(best_gate.x,best_gate.y,best_gate.sz,img,best_gate);
+  gate_gen = 0;
   }
     else{
       states_race.gate_detected = 0;
-      current_quality = 0;}
+      current_quality = 0;
+      gate_gen = 1;
+    }
   return img; // snake_gate_detection did not make a new image
 }
 

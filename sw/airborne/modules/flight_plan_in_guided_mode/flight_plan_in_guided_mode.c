@@ -33,16 +33,15 @@
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
 #include <math.h>
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
-//#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
-//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/snake_gate_detection.h"
 #include "subsystems/ins.h"
 
 
 
-#define p_x_position 0.1
-#define p_y_position 0.1
+
+#define p_x_position 0.12
+#define p_y_position 0.12
 
 #define Y_ADJUST_POSITION 2.5
 
@@ -70,7 +69,7 @@ bool arc_is_finished = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
-#define Z_BIAS 0//was .2
+#define Z_BIAS 0.2//was .2
 
 void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
@@ -116,10 +115,10 @@ void go_straight(float velocity){
         vx_earth = cosf(psi0)*velocity;
         vy_earth = sinf(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
-        //z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_z(z0);
+        z0 = stateGetPositionNed_f()->z;
+       
     }
-
+   // guidance_v_set_guided_z(z0);
 }
 
 void change_heading_hover(float derta_psi){
@@ -133,7 +132,9 @@ void change_heading_hover(float derta_psi){
         psi0 = stateGetNedToBodyEulers_f()->psi;
 	    guidance_loop_set_heading(psi0+derta_psi);
         states_race.turning = TRUE;
+	z0 = stateGetPositionNed_f()->z;
     }
+    //guidance_v_set_guided_z(z0);
 
     if (time_primitive > 1)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
     {
@@ -234,10 +235,12 @@ void go_left_right(float velocity){
         vx_earth = -sinf(psi0)*velocity;
         vy_earth = cos(psi0)*velocity;
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
+        //z0 = stateGetPositionNed_f()->z;
+        //guidance_v_set_guided_z(z0);
     }
 }
 
-void go_up_down(float derta_altitude){
+void go_up_down(float altitude){
     if(primitive_in_use != GO_UP_DOWN){
         primitive_in_use = GO_UP_DOWN;
         counter_primitive = 0;
@@ -245,9 +248,16 @@ void go_up_down(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         guidance_loop_set_velocity(0,0);   // earth coordinate
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0 - derta_altitude);
+        //z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(altitude);
+	    psi0 = stateGetNedToBodyEulers_f()->psi;
+	    guidance_loop_set_heading(psi0);
+        states_race.altitude_is_achieved = FALSE;
     }
+    if (fabs(stateGetPositionNed_f()->z-altitude)<0.2){
+        states_race.altitude_is_achieved = TRUE;
+    }
+
 }
 
 
@@ -262,7 +272,7 @@ void adjust_position(float derta_altitude){
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         z0 = stateGetPositionNed_f()->z;
-	float z_setpoint = z0 - derta_altitude+Z_BIAS;
+	float z_setpoint = derta_altitude+Z_BIAS; //was z0 - derta_altitude+Z_BIAS;
 	if (z_setpoint>-1)
 	  z_setpoint = -1;
 	else if (z_setpoint<-3.9)
@@ -336,17 +346,16 @@ void take_off(float desired_altitude)
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        //psi0 = stateGetNedToBodyEulers_f()->psi;
-        //guidance_loop_set_heading(psi0);
-        //ins_reset_altitude_ref();
-        z0 = stateGetPositionNed_f()->z;
-        //guidance_v_set_guided_vz(-0.2);
-        guidance_v_set_guided_z(desired_altitude);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);  // vertical module should be called!
+        guidance_loop_set_velocity(0,0);
+        states_race.altitude_is_achieved = 0;
     }
+
 
     if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1)
     {
+        //guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        //guidance_v_set_guided_z(desired_altitude);
         states_race.altitude_is_achieved = 1;
     }
 }
@@ -369,5 +378,76 @@ void land()
     if (fabs(stateGetPositionNed_f()->z)<0.1)
     {
         states_race.land_is_finished = 1;
+    }
+}
+
+void adjust_heading(float delta_heading) {
+
+    // set z
+    if (primitive_in_use != ADJUST_HEADING) {
+        primitive_in_use = ADJUST_HEADING;
+    }
+
+    psi0 = stateGetNedToBodyEulers_f()->psi;
+    //todo: guidance_loop_set_heading(psi0+delta_heading);
+}
+
+void left_right_back(float velocity_in_body_x,float velocity_in_body_y)
+{
+    if (primitive_in_use != LEFT_RIGHT_BACK)
+    {
+        primitive_in_use = LEFT_RIGHT_BACK;
+        z0 = stateGetPositionNed_f()->z;
+	 counter_primitive = 0;
+        time_primitive = 0;
+        //psi1 = stateGetNedToBodyEulers_f()->psi;
+    }
+    //printf("!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+    guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+    psi0 = stateGetNedToBodyEulers_f()->psi;
+    //guidance_v_set_guided_z(z0);
+    //guidance_loop_set_heading(psi1);
+    // set vx and vy
+
+        velocity_body_y = velocity_in_body_y;
+        velocity_body_x = velocity_in_body_x;
+
+    velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
+    velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
+
+    guidance_loop_set_velocity(velocity_earth_x,velocity_earth_y);
+}
+
+
+
+void hold_altitude(float desired_altitude)
+{
+    if (primitive_in_use != HOLD_ALTITUDE)
+    {
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        primitive_in_use = HOLD_ALTITUDE;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        guidance_loop_set_velocity(0,0);
+        states_race.altitude_is_achieved = 0;
+        //z0 = stateGetPositionNed_f()->z;
+        guidance_v_set_guided_z(desired_altitude);
+        psi1 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi1);
+        return;
+    }
+//    if (time_primitive > 1)
+//    {
+//        guidance_v_set_guided_z(desired_altitude);
+//    }
+//
+    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 1)
+    {
+        states_race.altitude_is_achieved = 1;
     }
 }
