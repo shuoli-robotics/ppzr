@@ -582,9 +582,11 @@ float get_angle_from_polygon(float s_left, float s_right, struct image_t* color_
 
   // since the sides of the square gate are straight up, we only need FOV_H to determine the 
   // distance of the camera to the sides.
-  float gamma_left = (s_left / color_image->h) * FOV_H;
+  // float gamma_left = (s_left / color_image->h) * FOV_H;
+  float gamma_left = (s_left / color_image->w) * FOV_H;
   float d_left = (0.5 * s_left) / tanf(0.5 * gamma_left);
-  float gamma_right = (s_right / color_image->h) * FOV_H;
+  // float gamma_right = (s_right / color_image->h) * FOV_H;
+  float gamma_right = (s_right / color_image->w) * FOV_H;
   float d_right = (0.5 * s_right) / tanf(0.5 * gamma_right);
   
   // angles seen from a top view, with the GATE_SIZE gate on top
@@ -777,12 +779,19 @@ void draw_circle(struct image_t* Im, float x_center, float y_center, float radiu
 	{
 		x = (int)x_center + (int)(cosf(t)*radius);
 		y = (int)y_center + (int)(sinf(t)*radius);
-		if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+		// if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->h-1 && y >= 0 && y < Im->w)
 		{
+      /*
       dest[y*Im->w*2+x*2] = color[1];
       dest[y*Im->w*2+x*2+1] = color[0];
       dest[y*Im->w*2+x*2+2] = color[2];
       dest[y*Im->w*2+x*2+3] = color[0];
+      */
+      dest[x*Im->w*2+y*2] = color[1];
+      dest[x*Im->w*2+y*2+1] = color[0];
+      dest[x*Im->w*2+y*2+2] = color[2];
+      dest[x*Im->w*2+y*2+3] = color[0];
 		}
 	}
   return;
@@ -796,12 +805,19 @@ void draw_stick(struct image_t* Im, float x_center, float y_center, float radius
   x = (int) x_center;
   for(y = (int)(y_center + radius); y <  (int)(y_center + 2*radius); y++)
   {
-    if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    // if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->h-1 && y >= 0 && y < Im->w)
 		{
+      /* x,y swap due to crappy bebop image:
       dest[y*Im->w*2+x*2] = color[1];
       dest[y*Im->w*2+x*2+1] = color[0];
       dest[y*Im->w*2+x*2+2] = color[2];
       dest[y*Im->w*2+x*2+3] = color[0];
+      */
+      dest[x*Im->w*2+y*2] = color[1];
+      dest[x*Im->w*2+y*2+1] = color[0];
+      dest[x*Im->w*2+y*2+2] = color[2];
+      dest[x*Im->w*2+y*2+3] = color[0];
 		} 
   }
 }
@@ -818,12 +834,19 @@ void draw_line_segment(struct image_t* Im, struct point_f Q1, struct point_f Q2,
 	{
 		x = (int)(t * Q1.x + (1.0f - t) * Q2.x);
 		y = (int)(t * Q1.y + (1.0f - t) * Q2.y);
-		if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+		// if (x >= 0 && x < Im->w-1 && y >= 0 && y < Im->h)
+    if (x >= 0 && x < Im->h-1 && y >= 0 && y < Im->w)
 		{
+      /*
       dest[y*Im->w*2+x*2] = color[1];
       dest[y*Im->w*2+x*2+1] = color[0];
       dest[y*Im->w*2+x*2+2] = color[2];
       dest[y*Im->w*2+x*2+3] = color[0];
+      */
+      dest[x*Im->w*2+y*2] = color[1];
+      dest[x*Im->w*2+y*2+1] = color[0];
+      dest[x*Im->w*2+y*2+2] = color[2];
+      dest[x*Im->w*2+y*2+3] = color[0];
 		}
 	}
   return;
