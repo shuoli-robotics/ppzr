@@ -137,6 +137,9 @@ float previous_x_gate = 0;
 float previous_y_gate = 0;
 float previous_z_gate = 0;
 
+// previous best gate:
+struct gate_img previous_best_gate;
+
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
 //int gate_detected = 0;
@@ -482,14 +485,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   }
 
+  // variables used for fitting:
+  float x_center, y_center, radius, fitness, angle_1, angle_2, s_left, s_right;
+  int clock_arms = 1;
+  // prepare the Region of Interest (ROI), which is larger than the gate:
+  float size_factor = 1.5;//2;//1.25;
+
+
   // do an additional fit to improve the gate detection:
   if (best_quality > min_gate_quality && n_gates > 0) {
     // temporary variables:
-    float x_center, y_center, radius, fitness, angle_1, angle_2, s_left, s_right;
-    int clock_arms = 1;
-
-    // prepare the Region of Interest (ROI), which is larger than the gate:
-    float size_factor = 1.5;//2;//1.25;
 
     if (gen_alg) {
       int max_candidate_gates = 5;//5;
@@ -591,19 +596,74 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                                             );
   }
 
+  /*
+  * What is better? The current or previous gate?
+  */
+  if(previous_best_gate.sz != 0)
+  {
+    // refit the previous best gate in the current image and compare the quality:
+    int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor);
+    int16_t min_x = previous_best_gate.x - ROI_size;
+    min_x = (min_x < 0) ? 0 : min_x;
+    int16_t max_x = previous_best_gate.x + ROI_size;
+    max_x = (max_x < img->w) ? max_x : img->w;
+    int16_t min_y = previous_best_gate.y - ROI_size;
+    min_y = (min_y < 0) ? 0 : min_y;
+    int16_t max_y = previous_best_gate.y + ROI_size;
+    max_y = (max_y < img->h) ? max_y : img->h;
+
+    // detect the gate:
+    gate_detection(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
+                   &(previous_best_gate.sz),
+                   (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
+                   &s_left, &s_right);
+
+    // store the information in the gate:
+    previous_best_gate.x = (int) x_center;
+    previous_best_gate.y = (int) y_center;
+    previous_best_gate.sz = (int) radius;
+    previous_best_gate.sz_left = (int) s_left;
+    previous_best_gate.sz_right = (int) s_right;
+
+    // also get the color fitness
+    check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
+
+    // if the quality of the "old" gate is better, keep the old gate:
+    if(previous_best_gate.gate_q > best_gate.gate_q)
+    {
+      best_gate.x = previous_best_gate.x;
+      best_gate.y = previous_best_gate.y;
+      best_gate.sz = previous_best_gate.sz;
+      best_gate.sz_left = previous_best_gate.sz_left;
+      best_gate.sz_right = previous_best_gate.sz_right;
+      best_gate.gate_q = previous_best_gate.gate_q;
+      best_gate.n_sides = previous_best_gate.n_sides;
+    }
+  }
+
+  // prepare for the next time:
+  previous_best_gate.x = best_gate.x;
+  previous_best_gate.y = best_gate.y;
+  previous_best_gate.sz = best_gate.sz;
+  previous_best_gate.sz_left = best_gate.sz_left;
+  previous_best_gate.sz_right = best_gate.sz_right;
+  previous_best_gate.gate_q = best_gate.gate_q;
+  previous_best_gate.n_sides = best_gate.n_sides;
 
   /**************************************
   * BEST GATE -> TRANSFORM TO COORDINATES
   ***************************************/
 
   if (best_quality > min_gate_quality && n_gates > 0) {
+
+
     current_quality = best_quality;
     size_left = best_gate.sz_left;
     size_right = best_gate.sz_right;
-    //draw_gate(img, gates[n_gates-1]);
     draw_gate(img, best_gate);
     gate_quality = best_gate.gate_q;
     
+
     back_side = check_back_side_QR_code(img, best_gate);
 
     //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);
@@ -972,6 +1032,7 @@ void snake_left_and_right(struct image_t *im, int x, int y, int *x_low, int *x_h
 
 void snake_gate_detection_init(void)
 {
+  previous_best_gate.sz = 0;
   listener = cv_add_to_device(&SGD_CAMERA, snake_gate_detection_func);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SNAKE_GATE_INFO, snake_gate_send);
   gettimeofday(&start, NULL);
