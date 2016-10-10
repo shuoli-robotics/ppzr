@@ -72,7 +72,7 @@ void command_init(){
                                                          0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                          0.5,0.5,0.5,0.5,0.5};  // 11-15
 
-    int search_gate_flag_in_zigzag_temp[100] = {-1,1,-1,0,0};
+    int search_gate_flag_in_zigzag_temp[100] = {-1,1,-1,0,0};  // -1 is adjusting to right
     for(i = 0;i <NUMBER_OF_ZIGZAG; i++)
     {
         parameter_to_be_tuned.distance_after_zigzag[i] = distance_after_zigzag_temp[i];
@@ -81,18 +81,18 @@ void command_init(){
     }
     // delta heading after passing through each gate (degree!)
 
-    float heading_after_gates_temp[100] = {            -90,100,110,60,0,      // 1-5
+    float heading_after_gates_temp[100] = {            -90,-100,-45,-30,-45,      // 1-5
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            0.5,0.5,0.5,0.5,4,    // 1-5
+    float distance_after_gates_temp[100] = {            0.5,0.5,1,0.5,5.0,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
-    float height_after_gates_temp[100]   ={             0,0,-2.5,0,0,            // absolute height
+    float height_after_gates_temp[100]   ={             0,0,-2.5,-2,0,            // absolute height
                                                         0,0,0,0,0};             // 1-5
 
-    float approach_after_gates_temp[100]   ={             0.5,0,0.8,0,0,            // time for approach
+    float approach_after_gates_temp[100]   ={             0.5,0,1.5,0,0,            // time for approach
                                                           0,0,0,0,0};             // 1-5
 
 
@@ -116,8 +116,8 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = PREPARE_CM;
-        state_upper_level = FIRST_PART;
+        state_lower_level = WAIT_FOR_DETECTION_CM; //PREPARE_CM;
+        state_upper_level = SECOND_PART;
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
         replay_flag = 0;
