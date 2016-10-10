@@ -598,6 +598,16 @@ void image_show_flow(struct image_t *img, struct flow_t *vectors, uint16_t point
  */
 void image_draw_line(struct image_t *img, struct point_t *from, struct point_t *to)
 {
+  
+  // swap x and y:
+  int16_t temp;
+  temp = from->x;
+  from->x = from->y;
+  from->y = temp;
+  temp = to->x;
+  to->x = to->y;
+  to->y = temp;  
+
   int xerr = 0, yerr = 0;
   uint8_t *img_buf = (uint8_t *)img->buf;
   uint8_t pixel_width = (img->type == IMAGE_YUV422) ? 2 : 1;
