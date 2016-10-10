@@ -176,8 +176,9 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 // 1 means that it passes the filter
 int check_color(struct image_t *im, int x, int y)
 {
-  if (x % 2 == 1) { x--; }
-
+  // if (x % 2 == 1) { x--; }
+  if (y % 2 == 1) { y--; }
+  
   // if (x < 0 || x >= im->w || y < 0 || y >= im->h) {
   if (x < 0 || x >= im->h || y < 0 || y >= im->w) {
     return 0;
