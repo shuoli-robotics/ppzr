@@ -76,7 +76,7 @@ void replay_commands_start(void)
   guidance_replay.phi = 0;
   guidance_replay.theta = 0;
   guidance_replay.psi = BFP_OF_REAL(stateGetNedToBodyEulers_f()->psi, INT32_ANGLE_FRAC);
-  int primitive_number = 7;//32;//30;//29; //set the primitive number manually for now.
+  int primitive_number = 3;//7;//32;//30;//29; //set the primitive number manually for now.
   //30 straight 3m turn 90 deg left and straith 3m while going up.(blue drone?)
   //32 around the cyberzoo with one meter drift blue drone (shuo)
   //1 red drone (no stereo) first part small scale test

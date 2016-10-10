@@ -388,7 +388,7 @@ void snake_gate_periodic(void)
 struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
-  int filter = 1;
+  int filter = 0;
   int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;  
