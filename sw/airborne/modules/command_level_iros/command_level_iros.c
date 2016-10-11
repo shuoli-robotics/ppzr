@@ -88,7 +88,7 @@ void command_init(){
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            0.5,0.3,1,0.5,5.0,    // 1-5
+    float distance_after_gates_temp[100] = {            0.5,0.6,1,0.5,5.0,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
@@ -273,6 +273,8 @@ void first_part_logic()
                  state_lower_level = HOVER_CM;
              }
              break;
+        default:
+            break;
     }
 }
 
@@ -555,6 +557,7 @@ void third_part_logic()
                 states_race.gate_counter_in_third_part++;    //!!!!!!!!!!!!!! finally every gate will arrive here
                 init_pos_filter = 1;
             }
+            break;
         default:
             break;
     }
@@ -591,6 +594,9 @@ void fourth_part_logic()
                  primitive_in_use = NO_PRIMITIVE;
 
              }
+             break;
+         default:
+             //printf("It is in APPROACH_GATE\n");
              break;
      }
  //hover();

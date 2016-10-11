@@ -117,6 +117,9 @@ void display_lower_state()
         case APPROACH_GATE_CM:
             printf("It is in APPROACH_GATE\n");
             break;
+        default:
+            printf("It is in APPROACH_GATE\n");
+            break;
 
     }
 }
@@ -136,6 +139,9 @@ void display_upper_state()
             break;
         case FOURTH_PART:
             printf("It is in FOURTH_PART\n");
+            break;
+        default:
+            printf("It is in APPROACH_GATE\n");
             break;
     }
 };
