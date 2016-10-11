@@ -64,7 +64,7 @@ void command_init(){
     states_race.distance_before_gate = 1.5;
     replay_flag = 0;
 
-    float distance_after_zigzag_temp[100] = {           0.5,0.5,0.5,0.2,0.5,    // 1-5
+    float distance_after_zigzag_temp[100] = {           0.8,0.5,0.5,0.2,0.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
@@ -84,7 +84,7 @@ void command_init(){
     }
     // delta heading after passing through each gate (degree!)
 
-    float heading_after_gates_temp[100] = {            -90,-100,-45,-30,-45,      // 1-5
+    float heading_after_gates_temp[100] = {            -85,-100,-45,-30,-45,      // 1-5
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 

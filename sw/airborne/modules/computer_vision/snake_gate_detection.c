@@ -43,7 +43,7 @@
 //initial position after gate pass
 #define INITIAL_X 0
 #define INITIAL_Y 2
-#define INITIAL_Z 0
+#define INITIAL_Z -2.5
 
 //initial position and speed safety margins
 
@@ -304,7 +304,7 @@ void snake_gate_periodic(void)
 
   //SAFETY ready_pass_trough
   if (states_race.gate_detected == 1 && fabs(x_dist - INITIAL_X) < X_POS_MARGIN && fabs(y_dist - INITIAL_Y) < Y_POS_MARGIN
-      && fabs(z_dist - INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x) < Y_SPEED_MARGIN
+      && fabs(z_dist - 0) < Z_POS_MARGIN && fabs(opt_body_v_x) < Y_SPEED_MARGIN
       && fabs(opt_body_v_x) < Y_SPEED_MARGIN) {
     safe_pass_counter += 1;
   } else {
@@ -321,8 +321,11 @@ void snake_gate_periodic(void)
   if (init_pos_filter == 1) {
     init_pos_filter = 0;
     //assumed initial position at other end of the gate
-    predicted_x_gate = INITIAL_X;//0;
-    predicted_y_gate = INITIAL_Y;//1.5;
+    //predicted_x_gate = INITIAL_X;//0;
+    //predicted_y_gate = INITIAL_Y;//1.5;
+      current_x_gate = INITIAL_X;//0;
+      current_y_gate = INITIAL_Y;
+      current_z_gate = INITIAL_Z;
 
   }
 

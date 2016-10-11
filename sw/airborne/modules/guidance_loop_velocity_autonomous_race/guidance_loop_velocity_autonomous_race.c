@@ -31,6 +31,7 @@
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 #include "modules/command_level_iros/command_level_iros.h"
 //#include "modules/replay_commands/replay_commands.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
 
@@ -177,7 +178,7 @@ void guidance_loop_pid()
     guidance_h_module_speed_error_x = guidance_module.desired_vx - current_vel_x;
     guidance_h_module_speed_error_y = guidance_module.desired_vy - current_vel_y;
 
-    if (state_lower_level == TURN_CM)
+    if (state_lower_level == TURN_CM || state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
     {
         guidance_h_module_speed_error_x = 0;
         guidance_h_module_speed_error_y = 0;
@@ -207,8 +208,13 @@ void guidance_loop_pid()
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
+    if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM && time_primitive < 3)
+    {
+        theta_desired_f = -6.0/180.0*3.14; //-3
+    }
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
+
     /* Bound the roll and pitch commands */
     BoundAbs(guidance_module.cmd.phi, CMD_OF_SAT);
     BoundAbs(guidance_module.cmd.theta, CMD_OF_SAT);
