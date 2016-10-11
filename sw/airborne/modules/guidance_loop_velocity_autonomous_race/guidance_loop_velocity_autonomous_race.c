@@ -29,6 +29,7 @@
 #include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
+#include "modules/command_level_iros/command_level_iros.h"
 //#include "modules/replay_commands/replay_commands.h"
 
 //#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
@@ -176,9 +177,19 @@ void guidance_loop_pid()
     guidance_h_module_speed_error_x = guidance_module.desired_vx - current_vel_x;
     guidance_h_module_speed_error_y = guidance_module.desired_vy - current_vel_y;
 
+    if (state_lower_level == TURN_CM)
+    {
+        guidance_h_module_speed_error_x = 0;
+        guidance_h_module_speed_error_y = 0;
+        guidance_module.err_vx_int = 0;
+        guidance_module.err_vy_int = 0;
+    }
+
     /* Calculate the integrated errors (TODO: bound??) */
     guidance_module.err_vx_int += guidance_h_module_speed_error_x / 512;
     guidance_module.err_vy_int += guidance_h_module_speed_error_y / 512;
+
+
 
     guidance_module.err_vx_deri = (guidance_h_module_speed_error_x - guidance_h_module_speed_error_x_previous)*512;
     guidance_module.err_vy_deri = (guidance_h_module_speed_error_y - guidance_h_module_speed_error_y_previous)*512;

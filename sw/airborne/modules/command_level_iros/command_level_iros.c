@@ -88,14 +88,14 @@ void command_init(){
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            0.5,1,1,0.5,5.0,    // 1-5
+    float distance_after_gates_temp[100] = {            0.8,0.5,0.5,0.5,5.0,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
     float height_after_gates_temp[100]   ={             0,0,-2.5,-2,0,            // absolute height
                                                         0,0,0,0,0};             // 1-5
 
-    float approach_after_gates_temp[100]   ={             2,0,1,0,0,            // time for approach
+    float approach_after_gates_temp[100]   ={             1,0,1,0,0,            // time for approach
                                                           0,0,0,0,0};             // 1-5
 
 
@@ -119,8 +119,8 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = WAIT_FOR_DETECTION_CM; //PREPARE_CM;
-        state_upper_level = SECOND_PART;
+        state_lower_level = PREPARE_CM; //PREPARE_CM;
+        state_upper_level = FIRST_PART;
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
         replay_flag = 0;
@@ -211,6 +211,7 @@ void first_part_logic()
                     {
                         previous_lower_level = HOVER_CM;
                         state_lower_level = TURN_CM;
+                        printf("??????????????????????????????\n");
                     }
 
                 }

@@ -55,7 +55,7 @@
 #endif
 
 #ifndef STRAIGHT_TIME
-#define STRAIGHT_TIME 9.0
+#define STRAIGHT_TIME 11.0
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE
