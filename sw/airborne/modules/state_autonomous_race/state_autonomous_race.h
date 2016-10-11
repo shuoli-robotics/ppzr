@@ -28,7 +28,7 @@
 
 #include "state.h"
 #include "firmwares/rotorcraft/autopilot.h"
-#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
+//#include "modules/stereocam/stereo_gate_position/stereo_gate_position.h"
 #include "modules/command_level_iros/command_level_iros.h"
 #include <stdio.h>
 #include "modules/command_level_iros/command_level_iros.h"

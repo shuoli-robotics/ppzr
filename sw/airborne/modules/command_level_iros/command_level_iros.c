@@ -88,14 +88,14 @@ void command_init(){
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            0.5,0.6,1,0.5,5.0,    // 1-5
+    float distance_after_gates_temp[100] = {            0.5,1,1,0.5,5.0,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
     float height_after_gates_temp[100]   ={             0,0,-2.5,-2,0,            // absolute height
                                                         0,0,0,0,0};             // 1-5
 
-    float approach_after_gates_temp[100]   ={             2,0,1.5,0,0,            // time for approach
+    float approach_after_gates_temp[100]   ={             2,0,1,0,0,            // time for approach
                                                           0,0,0,0,0};             // 1-5
 
 
