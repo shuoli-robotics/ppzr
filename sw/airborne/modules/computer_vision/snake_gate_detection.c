@@ -144,7 +144,7 @@ struct gate_img previous_best_gate;
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
 //int gate_detected = 0;
-int init_pos_filter = 0;
+init_pos_filter = 0;
 int safe_pass_counter = 0;
 int gate_gen = 0;
 
