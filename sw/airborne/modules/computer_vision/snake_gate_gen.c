@@ -554,7 +554,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	}
 	
       }
-      draw_gate(img, best_gate);
+      // draw_gate(img, best_gate);
     // detect the gate:
     //gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[n_gates-1].x), &(gates[n_gates-1].y), &(gates[n_gates-1].sz),
       //              (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2);
@@ -579,7 +579,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //DRAW gate
   if(best_quality > min_gate_quality && n_gates>0)
   {
-    draw_gate(img, best_gate);
+    // draw_gate(img, best_gate);
   //draw_gate(img, gates[n_gates-1]);
   gate_quality = gates[n_gates-1].gate_q;
   

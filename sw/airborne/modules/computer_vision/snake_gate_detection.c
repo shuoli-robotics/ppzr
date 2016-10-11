@@ -73,6 +73,9 @@ float min_gate_quality = 0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
 
+//color I dont know
+uint8_t green_color[4] = {255,128,255,128}; //{0,250,0,250};
+uint8_t blue_color[4] = {0,128,0,128};//{250,250,0,250};
 
 int y_low = 0;
 int y_high = 0;
@@ -566,9 +569,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           //}
 
         }
-        for (int gate_nr = 0; gate_nr < n_gates; gate_nr += 1) {
+        /*for (int gate_nr = 0; gate_nr < n_gates; gate_nr += 1) {
           draw_gate(img, gates[gate_nr]);
-        }
+        }*/
       } else if (n_gates >= max_candidate_gates) {
         for (int gate_nr = n_gates - max_candidate_gates; gate_nr < n_gates; gate_nr += 1) {
           int16_t ROI_size = (int16_t)(((float) gates[gate_nr].sz) * size_factor);
@@ -612,9 +615,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
          // }
         }
 
-        for (int gate_nr = n_gates - max_candidate_gates; gate_nr < n_gates; gate_nr += 1) {
+        /*for (int gate_nr = n_gates - max_candidate_gates; gate_nr < n_gates; gate_nr += 1) {
           draw_gate(img, gates[gate_nr]);
-        }
+        }*/
 
       }
       //draw_gate(img, best_gate);
@@ -704,7 +707,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     current_quality = best_quality;
     size_left = best_gate.sz_left;
     size_right = best_gate.sz_right;
-    draw_gate(img, best_gate);
+    
+    draw_gate_color(img, best_gate, blue_color);
+    
     gate_quality = best_gate.gate_q;
     
 
@@ -756,7 +761,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       gate_gen = 1;
       states_race.gate_detected = 1;
       
-      draw_gate(img, previous_best_gate);
+      draw_gate_color(img, previous_best_gate, green_color);
     }
     else
     {
@@ -817,6 +822,67 @@ void draw_gate(struct image_t *im, struct gate_img gate)
     to.x = (gate.x - gate.sz);
     to.y = gate.y - gate.sz_left;
     image_draw_line(im, &from, &to);
+  }
+}
+
+void draw_gate_color(struct image_t *im, struct gate_img gate, uint8_t* color)
+{
+  
+  
+  // draw four lines on the image:
+  struct point_t from, to;
+  if (gate.sz_left == gate.sz_right) {
+    // square
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y - gate.sz;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y + gate.sz;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y + gate.sz;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y + gate.sz;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y + gate.sz;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y - gate.sz;
+    image_draw_line_color(im, &from, &to, color);
+    // draw_line_segment(im, from, to, color);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y - gate.sz;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y - gate.sz;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+  } else {
+    // polygon
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y - gate.sz_left;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y + gate.sz_left;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = (gate.x - gate.sz);
+    from.y = gate.y + gate.sz_left;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y + gate.sz_right;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y + gate.sz_right;
+    to.x = (gate.x + gate.sz);
+    to.y = gate.y - gate.sz_right;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = (gate.x + gate.sz);
+    from.y = gate.y - gate.sz_right;
+    to.x = (gate.x - gate.sz);
+    to.y = gate.y - gate.sz_left;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
   }
 }
 
@@ -959,7 +1025,7 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     bs_square.sz = (max_x - min_x) / 2;
     bs_square.sz_left = bs_square.sz;
     bs_square.sz_right = bs_square.sz;
-    draw_gate(im, bs_square);
+    //draw_gate(im, bs_square);
 
     // go over the back side square and see if it is orange enough:
     for(y = min_y; y < max_y; y++)
@@ -995,7 +1061,7 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
     bs_square.sz = (max_x - min_x) / 2;
     bs_square.sz_left = bs_square.sz_left;
     bs_square.sz_right = bs_square.sz_right;
-    draw_gate(im, bs_square);
+    //draw_gate(im, bs_square);
     
     for(y = min_y; y < max_y; y++)
     {
