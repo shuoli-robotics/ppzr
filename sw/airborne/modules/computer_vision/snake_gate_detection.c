@@ -290,7 +290,7 @@ void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *i
 void snake_gate_periodic(void)
 {
   //SAFETY  gate_detected
-  if (y_dist > 0.6 && y_dist < 5) { // && gate_gen == 1)
+  if (y_dist > 0.6 && y_dist < 4) { // && gate_gen == 1)
     states_race.gate_detected = 1;
     counter_gate_detected = 0;
     time_gate_detected = 0;
@@ -1121,10 +1121,10 @@ void snake_up_and_down(struct image_t *im, int x, int y, int *y_low, int *y_high
   while ((*y_low) > 0 && !done) {
     if (check_color(im, x, (*y_low) - 1)) {
       (*y_low)--;
-    } else if (check_color(im, x + 1, (*y_low) - 1)) {
+    } else if (x+1 < im->h && check_color(im, x + 1, (*y_low) - 1)) {
       x++;
       (*y_low)--;
-    } else if (check_color(im, x - 1, (*y_low) - 1)) {
+    } else if (x-1 >= 0 && check_color(im, x - 1, (*y_low) - 1)) {
       x--;
       (*y_low)--;
     } else {
