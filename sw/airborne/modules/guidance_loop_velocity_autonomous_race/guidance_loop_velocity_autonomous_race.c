@@ -82,14 +82,16 @@ PRINT_CONFIG_VAR(VISION_DESIRED_VX)
 PRINT_CONFIG_VAR(VISION_DESIRED_VY)
 
 struct guidance_module_st guidance_module = {
-        .phi_pgain = PHI_PGAIN,
-        .phi_igain = PHI_IGAIN,
-        .phi_dgain = PHI_DGAIN,
-        .theta_pgain = THETA_PGAIN,
-        .theta_igain = THETA_IGAIN,
-        .theta_dgain = THETA_DGAIN,
+
+.phi_pgain = PHI_PGAIN,
+.phi_igain = PHI_IGAIN,
+.phi_dgain = PHI_DGAIN,
+.theta_pgain = THETA_PGAIN,
+.theta_igain = THETA_IGAIN,
+.theta_dgain = THETA_DGAIN,
         .desired_vx = DESIRED_VX,
-        .desired_vy = DESIRED_VY
+        .desired_vy = DESIRED_VY,
+
 };
 
 float guidance_h_module_speed_error_x;

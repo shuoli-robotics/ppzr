@@ -50,8 +50,8 @@ bool replay_flag;
 bool approach_first_part;
 enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
 enum states_upper_level state_upper_level = SECOND_PART;
-float velocity_x_zigzag;
-float velocity_y_zigzag;
+
+float v_x_search_gate,v_y_search_gate,adjusting_time_search_gate;
 
 struct parameters_to_be_tuned parameter_to_be_tuned;
 
@@ -72,12 +72,15 @@ void command_init(){
                                                          0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                          0.5,0.5,0.5,0.5,0.5};  // 11-15
 
-    int search_gate_flag_in_zigzag_temp[100] = {-1,1,-1,0,0};  // -1 is adjusting to right
+    int search_gate_velocity_in_zigzag_temp[100] = {-0.5,0.5,-0.5,0,0};  // -1 is adjusting to right
+
+    float search_time_in_zigzag_temp[100] = {3,3,3,3,3};
     for(i = 0;i <NUMBER_OF_ZIGZAG; i++)
     {
         parameter_to_be_tuned.distance_after_zigzag[i] = distance_after_zigzag_temp[i];
         parameter_to_be_tuned.heading_after_zigzag[i] = heading_after_zigzag_temp[i]/180.0*PI;
-        parameter_to_be_tuned.search_gate_flag_in_zigzag[i] = search_gate_flag_in_zigzag_temp[i];
+        parameter_to_be_tuned.search_gate_velocity_in_zigzag[i] = search_gate_velocity_in_zigzag_temp[i];
+        parameter_to_be_tuned.search_time_in_zigzag[i] = search_time_in_zigzag_temp[i];
     }
     // delta heading after passing through each gate (degree!)
 
@@ -85,14 +88,14 @@ void command_init(){
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            0.5,0.5,1,0.5,5.0,    // 1-5
+    float distance_after_gates_temp[100] = {            0.5,0.3,1,0.5,5.0,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
     float height_after_gates_temp[100]   ={             0,0,-2.5,-2,0,            // absolute height
                                                         0,0,0,0,0};             // 1-5
 
-    float approach_after_gates_temp[100]   ={             0.5,0,1.5,0,0,            // time for approach
+    float approach_after_gates_temp[100]   ={             2,0,1.5,0,0,            // time for approach
                                                           0,0,0,0,0};             // 1-5
 
 
@@ -286,7 +289,7 @@ void second_part_logic()
         state_lower_level = WAIT_FOR_DETECTION_CM;
         return;
     }
-    
+
     switch (state_lower_level)
     {
         case WAIT_FOR_DETECTION_CM:
@@ -529,15 +532,11 @@ void third_part_logic()
 
         case SEARCH_GATE_CM:
 
-            if (parameter_to_be_tuned.search_gate_flag_in_zigzag[states_race.gate_counter_in_third_part] == 1)
+            if (parameter_to_be_tuned.search_gate_velocity_in_zigzag[states_race.gate_counter_in_third_part] != 0)
             {
-                velocity_x_zigzag = -0.5;
-                velocity_y_zigzag = -0.5;
-            }
-            else if (parameter_to_be_tuned.search_gate_flag_in_zigzag[states_race.gate_counter_in_third_part] == -1)
-            {
-                velocity_x_zigzag = -0.5;
-                velocity_y_zigzag = 0.5;
+                v_x_search_gate = parameter_to_be_tuned.search_gate_velocity_in_zigzag[states_race.gate_counter_in_third_part];
+                v_y_search_gate = -0.5;
+                adjusting_time_search_gate = parameter_to_be_tuned.search_time_in_zigzag[states_race.gate_counter_in_third_part];
             }
             else
             {
@@ -548,24 +547,8 @@ void third_part_logic()
                 init_pos_filter = 1;
                 break;
             }
-            left_right_back(velocity_x_zigzag,velocity_y_zigzag);
-            float adjusting_time;
-            switch(states_race.gate_counter_in_third_part)
-            {
-                case 0: adjusting_time = 3;
-                    break;
-                case 1: adjusting_time = 3;
-                    break;
-                case 2: adjusting_time = 3;
-                    break;
-                case 3: adjusting_time = 3;
-                    break;
-                case 4:
-                    adjusting_time = 3;
-                    break;
-            }
-
-            if (time_primitive > adjusting_time)
+            left_right_back(v_x_search_gate,v_y_search_gate);
+            if (time_primitive > adjusting_time_search_gate)
             {
                 previous_lower_level = SEARCH_GATE_CM;
                 state_lower_level = WAIT_FOR_DETECTION_CM;

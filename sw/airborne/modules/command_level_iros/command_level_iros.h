@@ -87,7 +87,8 @@ struct parameters_to_be_tuned{
     bool flag_zigzag[NUMBER_OF_ZIGZAG];
     float distance_after_zigzag[NUMBER_OF_ZIGZAG];
     float heading_after_zigzag[NUMBER_OF_ZIGZAG];
-    int search_gate_flag_in_zigzag[NUMBER_OF_ZIGZAG];
+    int search_gate_velocity_in_zigzag[NUMBER_OF_ZIGZAG];
+    float search_time_in_zigzag[NUMBER_OF_ZIGZAG];
 };
 
 extern enum states_lower_level state_lower_level;
