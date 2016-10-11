@@ -84,7 +84,7 @@ void command_init(){
     }
     // delta heading after passing through each gate (degree!)
 
-    float heading_after_gates_temp[100] = {            -85,-100,-45,-30,-45,      // 1-5
+    float heading_after_gates_temp[100] = {            -90,-100,-45,-30,-45,      // 1-5
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
