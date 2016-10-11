@@ -49,6 +49,7 @@
 
 float psi0;//
 float psi1;
+float psi_startup;
 float z0;
 float omega_psi;
 float omega_gamma;
@@ -117,6 +118,11 @@ void go_straight(float velocity){
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
        
+	if(approach_first_part == FALSE)
+	{
+	  guidance_loop_set_heading(psi_startup);
+	}
+	
     }
    // guidance_v_set_guided_z(z0);
 }
@@ -342,6 +348,7 @@ void take_off(float desired_altitude)
 {
     if (primitive_in_use != TAKE_OFF)
     {
+	psi_startup = stateGetNedToBodyEulers_f()->psi;
         primitive_in_use = TAKE_OFF;
         counter_primitive = 0;
         time_primitive = 0;
@@ -437,8 +444,8 @@ void hold_altitude(float desired_altitude)
         states_race.altitude_is_achieved = 0;
         //z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(desired_altitude);
-        psi1 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_heading(psi1);
+        // psi1 = stateGetNedToBodyEulers_f()->psi;
+        guidance_loop_set_heading(psi_startup);
         return;
     }
 //    if (time_primitive > 1)
@@ -446,7 +453,7 @@ void hold_altitude(float desired_altitude)
 //        guidance_v_set_guided_z(desired_altitude);
 //    }
 //
-    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 1)
+    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.2 && time_primitive > 1)
     {
         states_race.altitude_is_achieved = 1;
     }

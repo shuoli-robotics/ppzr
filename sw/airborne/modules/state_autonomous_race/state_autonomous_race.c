@@ -53,7 +53,7 @@ void state_autonomous_race_init() {
 
 void display_states()
 {
-    printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
+    //printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
     if (autopilot_mode != AP_MODE_MODULE)
         return;
    // printf("gate_counter is %d \n",states_race.gate_counter);
@@ -63,17 +63,12 @@ void display_states()
     printf("\n");
     printf("\n");
     printf("\n");
-    display_guidance_mode();
+   // display_guidance_mode();
     printf("\n");
     printf("\n");
     printf("\n");
-    //printf("Primitive in use is %d\n",primitive_in_use);
-    printf("Time in primitve is %f\n",time_primitive);
+   // printf("Time in primitve is %f\n",time_primitive);
 
-
-    printf("\n");
-    printf("\n");
-    printf("\n");
 
 }
 
@@ -119,6 +114,12 @@ void display_lower_state()
         case REPLAY_CM:
             printf("It is in REPLAY\n");
             break;
+        case APPROACH_GATE_CM:
+            printf("It is in APPROACH_GATE\n");
+            break;
+        default:
+            printf("It is in APPROACH_GATE\n");
+            break;
 
     }
 }
@@ -135,6 +136,12 @@ void display_upper_state()
             break;
         case THIRD_PART:
             printf("It is in THIRD_PART\n");
+            break;
+        case FOURTH_PART:
+            printf("It is in FOURTH_PART\n");
+            break;
+        default:
+            printf("It is in APPROACH_GATE\n");
             break;
     }
 };

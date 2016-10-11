@@ -43,7 +43,7 @@
 //initial position after gate pass
 #define INITIAL_X 0
 #define INITIAL_Y 2
-#define INITIAL_Z 0
+#define INITIAL_Z -2.5
 
 //initial position and speed safety margins
 
@@ -63,13 +63,15 @@ uint8_t color_lum_min = 60;//105;
 uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
+
 uint8_t color_cr_min  = 131;//138;//146;//was 180
+
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
 int n_samples = 1000;//1000;//500;
-int min_pixel_size = 40;//100;
-float min_gate_quality = 0.2;
+int min_pixel_size = 20;//40;//100;
+float min_gate_quality = 0.20;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
 
@@ -302,7 +304,7 @@ void snake_gate_periodic(void)
 
   //SAFETY ready_pass_trough
   if (states_race.gate_detected == 1 && fabs(x_dist - INITIAL_X) < X_POS_MARGIN && fabs(y_dist - INITIAL_Y) < Y_POS_MARGIN
-      && fabs(z_dist - INITIAL_Z) < Z_POS_MARGIN && fabs(opt_body_v_x) < Y_SPEED_MARGIN
+      && fabs(z_dist - 0) < Z_POS_MARGIN && fabs(opt_body_v_x) < Y_SPEED_MARGIN
       && fabs(opt_body_v_x) < Y_SPEED_MARGIN) {
     safe_pass_counter += 1;
   } else {
@@ -319,8 +321,11 @@ void snake_gate_periodic(void)
   if (init_pos_filter == 1) {
     init_pos_filter = 0;
     //assumed initial position at other end of the gate
-    predicted_x_gate = INITIAL_X;//0;
-    predicted_y_gate = INITIAL_Y;//1.5;
+    //predicted_x_gate = INITIAL_X;//0;
+    //predicted_y_gate = INITIAL_Y;//1.5;
+      current_x_gate = INITIAL_X;//0;
+      current_y_gate = INITIAL_Y;
+      current_z_gate = INITIAL_Z;
 
   }
 
@@ -365,14 +370,16 @@ void snake_gate_periodic(void)
     float weight_measurement;
     if (uncertainty_gate > 150) {
       weight_measurement = 1.0f;
-      uncertainty_gate = 151;//max
+      uncertainty_gate = 151;//max: does not matter - is replaced below
     } else {
       weight_measurement = 0.7;  //(GOOD_FIT-best_quality)/GOOD_FIT;//check constant weight
     }
 
+     float z_weight = 0.2;
+
     current_x_gate = weight_measurement * x_dist + (1.0f - weight_measurement) * predicted_x_gate;
     current_y_gate = weight_measurement * y_dist + (1.0f - weight_measurement) * predicted_y_gate;
-    current_z_gate = weight_measurement * (z_dist + sonar_alt) + (1.0f - weight_measurement) * predicted_z_gate;
+    current_z_gate = z_weight * (z_dist + sonar_alt) + (1.0f - z_weight) * predicted_z_gate;
 
     //psi_bias
     //if state is adjust position then slowly add bias using the fitness as weight
@@ -517,8 +524,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   if (best_quality > min_gate_quality && n_gates > 0) {
     // temporary variables:
 
+
     //if (gen_alg) {
+
       int max_candidate_gates = 10;//10;
+
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
         for (int gate_nr = 0; gate_nr < n_gates; gate_nr += 1) {
@@ -702,14 +712,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   * BEST GATE -> TRANSFORM TO COORDINATES
   ***************************************/
 
-  if (best_gate.gate_q > min_gate_quality && best_gate.n_sides > 2) {//n_sides
+  if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 2) {//n_sides
 
     current_quality = best_quality;
     size_left = best_gate.sz_left;
     size_right = best_gate.sz_right;
     
-    draw_gate_color(img, best_gate, blue_color);
-    
+
     gate_quality = best_gate.gate_q;
     
 
@@ -719,15 +728,24 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    gate_gen = 1;//0;
-    states_race.gate_detected = 1;
+    if(z_dist + stateGetPositionNed_f()->z > -2.0)
+    {
+        // invalid gate because too low:
+        states_race.gate_detected = 0;
+    }
+    else {
+        gate_gen = 1;//0;
+        states_race.gate_detected = 1;
+        draw_gate_color(img, best_gate, blue_color);
+    }
   } else {
-    
+
+      /*
     if(previous_best_gate.sz != 0)
     {
       printf("previous gate\n");
       // refit the previous best gate in the current image and compare the quality:
-      int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor * 1.25);
+      int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor);
       int16_t min_x = previous_best_gate.x - ROI_size;
       min_x = (min_x < 0) ? 0 : min_x;
       int16_t max_x = previous_best_gate.x + ROI_size;
@@ -754,21 +772,24 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
     }
     
-    if (previous_best_gate.gate_q > min_gate_quality && previous_best_gate.n_sides > 2)
+    if (previous_best_gate.gate_q > (min_gate_quality*2) && previous_best_gate.n_sides > 2)
     { 
       printf("previous gate quality\n");
       current_quality = previous_best_gate.gate_q;
       gate_gen = 1;
       states_race.gate_detected = 1;
       
-      draw_gate_color(img, previous_best_gate, green_color);
+
+      draw_gate(img, previous_best_gate);
+        calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
     }
     else
     {
+       */
       states_race.gate_detected = 0;
       current_quality = 0;
       gate_gen = 1;
-    }
+    //}
   }
   return img; // snake_gate_detection did not make a new image
 }
@@ -894,6 +915,7 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
   n_points = 0;
   n_colored_points = 0;
   int np, nc;
+    int bottom;
   // how much of the side should be visible to count as a detected side?
   float min_ratio_side = 0.30;
   (*n_sides) = 0;
@@ -943,6 +965,9 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
     if ((float) nc / (float) np >= min_ratio_side) {
       (*n_sides)++;
     }
+    /*else{
+        (*n_sides) = 0;
+    }*/
     n_points += np;
     n_colored_points += nc;
   } else {
@@ -987,6 +1012,9 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
     if ((float) nc / (float) np >= min_ratio_side) {
       (*n_sides)++;
     }
+    /*else{
+        (*n_sides) = 0;
+    }*/
     n_points += np;
     n_colored_points += nc;
   }
@@ -1121,6 +1149,7 @@ void snake_up_and_down(struct image_t *im, int x, int y, int *y_low, int *y_high
   while ((*y_low) > 0 && !done) {
     if (check_color(im, x, (*y_low) - 1)) {
       (*y_low)--;
+
     } else if (x+1 < im->h && check_color(im, x + 1, (*y_low) - 1)) {
       x++;
       (*y_low)--;

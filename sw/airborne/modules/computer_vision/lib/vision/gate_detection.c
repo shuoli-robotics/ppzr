@@ -36,11 +36,11 @@ uint16_t n_points, n_clock_arm_points;
 float weights[MAX_POINTS];
 int min_points = 5;
 int WEIGHTED = 0; // color has no weight at the moment, since it is thresholded 
-int STICK = 1; // the stick we assume not to be red
+int STICK = 0; // the stick we assume not to be red
 #define CIRCLE 0
 #define SQUARE 1
 #define POLYGON 2
-#define SHAPE POLYGON
+#define SHAPE SQUARE
 float outlier_threshold = 20.0f;
 
 // Settings for the evolution:
