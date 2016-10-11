@@ -63,7 +63,7 @@ uint8_t color_lum_min = 60;//105;
 uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
-uint8_t color_cr_min  = 138;//146;//was 180
+uint8_t color_cr_min  = 131;//138;//146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
@@ -90,6 +90,7 @@ int color_count = 0;
 #define MAX_GATES 50
 struct gate_img gates[MAX_GATES];
 struct gate_img best_gate;
+struct gate_img temp_check_gate;
 struct image_t img_result;
 int n_gates = 0;
 float best_quality = 0;
@@ -514,7 +515,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     // temporary variables:
 
     //if (gen_alg) {
-      int max_candidate_gates = 5;//5;
+      int max_candidate_gates = 10;//10;
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
         for (int gate_nr = 0; gate_nr < n_gates; gate_nr += 1) {
@@ -538,17 +539,31 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           gate_detection(img, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
-          if (fitness < best_fitness) {
-            best_fitness = fitness;
+          //if (fitness < best_fitness) {
+            //best_fitness = fitness;
             // store the information in the gate:
-            best_gate.x = (int) x_center;
-            best_gate.y = (int) y_center;
-            best_gate.sz = (int) radius;
-            best_gate.sz_left = (int) s_left;
-            best_gate.sz_right = (int) s_right;
+            temp_check_gate.x = (int) x_center;
+            temp_check_gate.y = (int) y_center;
+            temp_check_gate.sz = (int) radius;
+            temp_check_gate.sz_left = (int) s_left;
+            temp_check_gate.sz_right = (int) s_right;
             // also get the color fitness
-            check_gate(img, best_gate, &best_gate.gate_q, &best_gate.n_sides);
-          }
+            check_gate(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
+	    
+	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
+	    {
+	    best_fitness = fitness;
+	    //best_quality = .gate_q(first maybe zero
+            // store the information in the gate:
+            best_gate.x = temp_check_gate.x;
+            best_gate.y = temp_check_gate.y;
+            best_gate.sz = temp_check_gate.sz;
+            best_gate.sz_left = temp_check_gate.sz_left;
+            best_gate.sz_right = temp_check_gate.sz_right;
+	    best_gate.gate_q = temp_check_gate.gate_q;
+	    best_gate.n_sides = temp_check_gate.n_sides;
+	    }
+          //}
 
         }
         for (int gate_nr = 0; gate_nr < n_gates; gate_nr += 1) {
@@ -571,17 +586,30 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                          &(gates[gate_nr].sz),
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
-          if (fitness < best_fitness) {
-            best_fitness = fitness;
+          //if (fitness < best_fitness) {
+            //best_fitness = fitness;
             // store the information in the gate:
-            best_gate.x = (int) x_center;
-            best_gate.y = (int) y_center;
-            best_gate.sz = (int) radius;
-            best_gate.sz_left = (int) s_left;
-            best_gate.sz_right = (int) s_right;
+            temp_check_gate.x = (int) x_center;
+            temp_check_gate.y = (int) y_center;
+            temp_check_gate.sz = (int) radius;
+            temp_check_gate.sz_left = (int) s_left;
+            temp_check_gate.sz_right = (int) s_right;
             // also get the color fitness
-            check_gate(img, best_gate, &best_gate.gate_q, &best_gate.n_sides);
-          }
+            check_gate(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
+	    
+	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
+	    {
+	    //best_fitness = fitness;
+            // store the information in the gate:
+            best_gate.x = temp_check_gate.x;
+            best_gate.y = temp_check_gate.y;
+            best_gate.sz = temp_check_gate.sz;
+            best_gate.sz_left = temp_check_gate.sz_left;
+            best_gate.sz_right = temp_check_gate.sz_right;
+	    best_gate.gate_q = temp_check_gate.gate_q;
+	    best_gate.n_sides = temp_check_gate.n_sides;
+	    }
+         // }
         }
 
         for (int gate_nr = n_gates - max_candidate_gates; gate_nr < n_gates; gate_nr += 1) {
@@ -603,15 +631,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   }
   // QR_class = get_QR_class(img, &QR_uncertainty);
-
-  //color filtered version of image for overlay and debugging
-  if (filter) {
-    int color_count = image_yuv422_colorfilt(img, img,
-                      color_lum_min, color_lum_max,
-                      color_cb_min, color_cb_max,
-                      color_cr_min, color_cr_max
-                                            );
-  }
 
   /*
   * What is better? The current or previous gate?
@@ -646,7 +665,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
 
     // if the quality of the "old" gate is better, keep the old gate:
-    if(previous_best_gate.gate_q > best_gate.gate_q)
+    if(previous_best_gate.gate_q > best_gate.gate_q &&  previous_best_gate.n_sides > 2)//n_sides
     {
       best_gate.x = previous_best_gate.x;
       best_gate.y = previous_best_gate.y;
@@ -666,12 +685,21 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   previous_best_gate.sz_right = best_gate.sz_right;
   previous_best_gate.gate_q = best_gate.gate_q;
   previous_best_gate.n_sides = best_gate.n_sides;
+  
+    //color filtered version of image for overlay and debugging
+  if (filter) {
+    int color_count = image_yuv422_colorfilt(img, img,
+                      color_lum_min, color_lum_max,
+                      color_cb_min, color_cb_max,
+                      color_cr_min, color_cr_max
+                                            );
+  }
 
   /**************************************
   * BEST GATE -> TRANSFORM TO COORDINATES
   ***************************************/
 
-  if (best_gate.gate_q > min_gate_quality) {
+  if (best_gate.gate_q > min_gate_quality && best_gate.n_sides > 2) {//n_sides
 
     current_quality = best_quality;
     size_left = best_gate.sz_left;
@@ -686,7 +714,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    gate_gen = 0;
+    gate_gen = 1;//0;
+    states_race.gate_detected = 1;
   } else {
     
     if(previous_best_gate.sz != 0)
@@ -720,7 +749,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
     }
     
-    if (previous_best_gate.gate_q > min_gate_quality)
+    if (previous_best_gate.gate_q > min_gate_quality && previous_best_gate.n_sides > 2)
     { 
       printf("previous gate quality\n");
       current_quality = previous_best_gate.gate_q;
