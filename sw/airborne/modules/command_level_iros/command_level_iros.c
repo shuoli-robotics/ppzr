@@ -48,6 +48,11 @@ void fourth_part_logic(void);
 int counter_of_step;
 bool replay_flag;
 bool approach_first_part;
+float angle_after_half_gate;
+float velocity_in_first_part;
+float straight_time;
+float approach_time;
+
 enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
 enum states_upper_level state_upper_level = SECOND_PART;
 
@@ -63,6 +68,13 @@ void command_init(){
     states_race.time_to_go_straight = 0;
     states_race.distance_before_gate = 1.5;
     replay_flag = 0;
+    angle_after_half_gate = ANGLE_AFTER_HALF_GATE;
+    velocity_in_first_part = VELOCITY_IN_FIRST_PART;
+    straight_time = STRAIGHT_TIME;
+    approach_time = APPROACH_TIME;
+
+
+
 
     float distance_after_zigzag_temp[100] = {           0.8,0.5,0.5,0.2,0.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
@@ -84,18 +96,18 @@ void command_init(){
     }
     // delta heading after passing through each gate (degree!)
 
-    float heading_after_gates_temp[100] = {            -90,-100,-45,-30,-45,      // 1-5
+    float heading_after_gates_temp[100] = {            -78.5,-100,-45,-30,-45,      // 1-5
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            1.0,0.5,0.5,0.5,5.0,    // 1-5
+    float distance_after_gates_temp[100] = {            1.0,0.5,0.8,0.5,3.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
     float height_after_gates_temp[100]   ={             0,0,-2.5,-2,0,            // absolute height
                                                         0,0,0,0,0};             // 1-5
 
-    float approach_after_gates_temp[100]   ={             0.7,0,1,0,0,            // time for approach
+    float approach_after_gates_temp[100]   ={             0.7,0,1.5,0,0,            // time for approach
                                                           0,0,0,0,0};             // 1-5
 
 
@@ -244,7 +256,7 @@ void first_part_logic()
             go_straight(CONSTANT_VELOCITY_STRAIGHT);
             if (approach_first_part == TRUE)
             {
-                if(time_primitive > APPROACH_TIME)
+                if(time_primitive > approach_time)
                 {
                     previous_lower_level = GO_STRAIGHT_CM;
                     state_lower_level = HOVER_CM;
@@ -252,7 +264,7 @@ void first_part_logic()
             }
             else
             {
-                if (time_primitive > STRAIGHT_TIME)
+                if (time_primitive > straight_time)
                 {
                     previous_lower_level = GO_STRAIGHT_CM;
                     state_lower_level = HOVER_CM;
@@ -261,7 +273,7 @@ void first_part_logic()
 
             break;
         case TURN_CM:
-            change_heading_hover(ANGLE_AFTER_HALF_GATE);
+            change_heading_hover(angle_after_half_gate/180.0*PI);
             if (states_race.turning == FALSE)
             {
                 // turning is finished, go to next gate

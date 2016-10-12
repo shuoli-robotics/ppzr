@@ -208,7 +208,7 @@ void guidance_loop_pid()
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
-    if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM && time_primitive < 3)
+    if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM && time_primitive < 2)
     {
         theta_desired_f = -6.0/180.0*3.14; //-3
     }
