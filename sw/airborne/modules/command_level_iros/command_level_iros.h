@@ -36,7 +36,7 @@
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
-#define ANGLE_AFTER_HALF_GATE 100.0/180.0*PI     //degree
+#define ANGLE_AFTER_HALF_GATE 100.0     //degree
 #endif
 
 #ifndef VELOCITY_IN_FIRST_PART
@@ -96,6 +96,11 @@ extern enum states_upper_level state_upper_level;
 
 extern struct parameters_to_be_tuned parameter_to_be_tuned;
 extern uint8_t previous_lower_level;
+
+extern float angle_after_half_gate;
+extern float velocity_in_first_part;
+extern float straight_time;
+extern float approach_time;
 
 #endif
 
