@@ -118,10 +118,10 @@ void go_straight(float velocity){
         guidance_loop_set_velocity(vx_earth,vy_earth);   // earth coordinate
         z0 = stateGetPositionNed_f()->z;
        
-	if(approach_first_part == FALSE)
-	{
-	  guidance_loop_set_heading(psi_startup);
-	}
+// 	if(approach_first_part == FALSE)
+// 	{
+// 	  guidance_loop_set_heading(psi_startup);
+// 	}
 	
     }
    // guidance_v_set_guided_z(z0);

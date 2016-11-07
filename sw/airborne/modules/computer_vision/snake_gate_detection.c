@@ -276,7 +276,6 @@ void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *i
   pix_sz = gate.sz;
   current_quality = gate.gate_q;
 
-
   if (gate_size == 0) {
     gate_size = 1;
   }
@@ -728,7 +727,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    if(z_dist + stateGetPositionNed_f()->z > -2.0)
+    if(z_dist + stateGetPositionNed_f()->z > -0.4)
     {
         // invalid gate because too low:
         states_race.gate_detected = 0;

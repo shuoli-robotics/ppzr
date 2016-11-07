@@ -131,8 +131,8 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = PREPARE_CM; //PREPARE_CM;
-        state_upper_level = FIRST_PART;
+        state_lower_level = WAIT_FOR_DETECTION_CM; //PREPARE_CM;
+        state_upper_level = SECOND_PART;
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
         replay_flag = 0;
