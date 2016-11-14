@@ -70,6 +70,12 @@ bool arc_is_finished = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
+
+//temp fix not loading vision stuff
+float current_x_gate = 0;
+float current_y_gate = 0;
+float current_z_gate = 0;
+
 #define Z_BIAS 0.2//was .2
 
 void flight_plan_in_guided_mode_init() {

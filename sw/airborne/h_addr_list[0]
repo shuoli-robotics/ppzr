@@ -1,0 +1,2 @@
+arch/linux/udp_socket.c:    if (hp->h_addrtype == AF_INET && hp->h_length == 4) {
+arch/linux/udp_socket.c:      memcpy(&host_ip.s_addr, hp->h_addr_list[0], hp->h_length);

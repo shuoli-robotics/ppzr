@@ -60,6 +60,10 @@ float v_x_search_gate,v_y_search_gate,adjusting_time_search_gate;
 
 struct parameters_to_be_tuned parameter_to_be_tuned;
 
+//temp fix for data set recording
+int init_pos_filter = 0;
+
+
 void command_init(){
     int i;
 
