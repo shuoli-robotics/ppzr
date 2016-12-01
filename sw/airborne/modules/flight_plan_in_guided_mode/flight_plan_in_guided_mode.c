@@ -442,10 +442,6 @@ void hold_altitude(float desired_altitude)
         guidance_loop_set_heading(psi1);
         return;
     }
-//    if (time_primitive > 1)
-//    {
-//        guidance_v_set_guided_z(desired_altitude);
-//    }
 //
     if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 1)
     {

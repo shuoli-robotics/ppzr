@@ -309,7 +309,9 @@ void second_part_logic()
             if (gate_counter%2 == 1)
             {turn_heading = 3.14;}
             else
-            {turn_heading = 0;}
+            {
+					turn_heading = 0;
+			}
             change_heading_absolute(turn_heading);
             if (states_race.turning == FALSE)
             {
@@ -338,8 +340,8 @@ void third_part_logic()
 
         case WAIT_FOR_DETECTION_CM:
             hover();
-            if (time_primitive < HOVER_TIME)
-                break;
+			if (time_primitive < HOVER_TIME)
+				break;
             if (states_race.gate_detected == FALSE) {
                 hover();
             }
