@@ -64,7 +64,7 @@ uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
 
-uint8_t color_cr_min  = 131;//138;//146;//was 180
+uint8_t color_cr_min  = 139;//138;//146;//was 180
 
 uint8_t color_cr_max  = 230;//255;
 
@@ -728,7 +728,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    if(z_dist + stateGetPositionNed_f()->z > -2.0)
+    if(z_dist + stateGetPositionNed_f()->z > -0.7)
     {
         // invalid gate because too low:
         states_race.gate_detected = 0;

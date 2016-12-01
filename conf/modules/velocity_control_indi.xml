@@ -1,0 +1,17 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="velocity_control_indi">
+  <doc>
+    <description>guidance loop</description>
+  </doc>
+  <header>
+    <file name="velocity_control_indi.h"/>
+  </header>
+  <init fun="guidance_h_module_init()"/>
+  <periodic fun="guidance_loop_pid()"/>
+
+  <makefile>
+    <file name="velocity_control_indi.c"/>
+  </makefile>
+</module>
+

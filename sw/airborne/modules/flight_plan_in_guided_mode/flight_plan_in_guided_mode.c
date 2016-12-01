@@ -63,6 +63,7 @@ float velocity_body_x;
 float velocity_body_y;
 float velocity_earth_x;
 float velocity_earth_y;
+float init_heading;
 
 bool arc_is_finished = 0;
 
@@ -449,5 +450,26 @@ void hold_altitude(float desired_altitude)
     if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 1)
     {
         states_race.altitude_is_achieved = 1;
+    }
+}
+
+
+void change_heading_absolute(float psi){
+    if(primitive_in_use != CHANGE_HEADING_ABSOLUTE)
+    {
+        primitive_in_use = CHANGE_HEADING_ABSOLUTE;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        guidance_loop_set_heading(init_heading+psi);
+        states_race.turning = TRUE;
+        z0 = stateGetPositionNed_f()->z;
+    }
+    //guidance_v_set_guided_z(z0);
+
+    if (time_primitive > 2)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
+    {
+        states_race.turning = FALSE;
     }
 }

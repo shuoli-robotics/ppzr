@@ -1,0 +1,15 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="time">
+  <doc>
+    <description>used for time in flight</description>
+  </doc>
+  <header>
+    <file name="time.h"/>
+  </header>
+  <periodic fun="time_run()" freq="20"/>
+  <makefile>
+    <file name="time.c"/>
+  </makefile>
+</module>
+

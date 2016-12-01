@@ -1,0 +1,15 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="flight_plan_module_mode">
+  <doc>
+    <description></description>
+  </doc>
+  <header>
+    <file name="flight_plan_module_mode.h"/>
+  </header>
+  <periodic fun="flight_plan_run()" freq="50"/>
+  <makefile>
+    <file name="flight_plan_module_mode.c"/>
+  </makefile>
+</module>
+

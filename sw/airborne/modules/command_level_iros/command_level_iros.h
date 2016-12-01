@@ -28,7 +28,7 @@
 #define COMMAND_LEVEL_IROS_H
 
 #ifndef CONSTANT_VELOCITY_STRAIGHT
-#define CONSTANT_VELOCITY_STRAIGHT 0.8
+#define CONSTANT_VELOCITY_STRAIGHT 2.5
 #endif
 
 #ifndef NUMBER_OF_GATES
@@ -47,7 +47,7 @@
 
 
 #ifndef HOVER_TIME
-#define HOVER_TIME 2
+#define HOVER_TIME 1.5
 #endif
 
 #ifndef NUMBER_OF_ZIGZAG
@@ -59,7 +59,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE
-#define TAKE_OFF_ALTITUDE -2
+#define TAKE_OFF_ALTITUDE -1.5
 #endif
 
 #ifndef APPROACH_TIME
@@ -67,7 +67,7 @@
 #endif
 
 #ifndef PREPARE_TIME
-#define PREPARE_TIME 3
+#define PREPARE_TIME 1
 #endif
 
 extern void command_run(void);  // 20HZ

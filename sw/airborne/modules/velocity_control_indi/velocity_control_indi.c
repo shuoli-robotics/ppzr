@@ -18,28 +18,21 @@
  * <http://www.gnu.org/licenses/>.
  */
 /**
- * @file "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.c"
+ * @file "modules/velocity_control_indi/velocity_control_indi.c"
  * @author Shuo Li
- * This module is used to control velocity only in MODULE mode
+ * guidance loop
  */
 
-#include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
-//#include "modules/replay_commands/replay_commands.h"
+#include "modules/velocity_control_indi/velocity_control_indi.h"
+#include "firmwares/rotorcraft/guidance/guidance_indi.h"
+#include "firmwares/rotorcraft/stabilization/stabilization_indi.h"
 #include "state.h"
 #include "firmwares/rotorcraft/autopilot.h"
-#include "firmwares/rotorcraft/guidance/guidance_h.h"
-#include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
-#include "modules/command_level_iros/command_level_iros.h"
-//#include "modules/replay_commands/replay_commands.h"
-#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
-
-//#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
-
-
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
 
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
+
+#define DESIRED_ANGLE 10.0
 
 #ifndef PHI_PGAIN
 #define PHI_PGAIN 0.2
@@ -47,12 +40,12 @@
 PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
 
 #ifndef PHI_IGAIN
-#define PHI_IGAIN 0.07
+#define PHI_IGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
 
 #ifndef PHI_DGAIN
-#define PHI_DGAIN 0.6
+#define PHI_DGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_DGAIN)
 
@@ -64,12 +57,12 @@ PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
 #ifndef THETA_IGAIN
 
-#define THETA_IGAIN 0.07
+#define THETA_IGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
 
 #ifndef THETA_DGAIN
-#define THETA_DGAIN 0.6
+#define THETA_DGAIN 0
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
@@ -83,18 +76,21 @@ PRINT_CONFIG_VAR(VISION_DESIRED_VX)
 #endif
 PRINT_CONFIG_VAR(VISION_DESIRED_VY)
 
+
 struct guidance_module_st guidance_module = {
 
-.phi_pgain = PHI_PGAIN,
-.phi_igain = PHI_IGAIN,
-.phi_dgain = PHI_DGAIN,
-.theta_pgain = THETA_PGAIN,
-.theta_igain = THETA_IGAIN,
-.theta_dgain = THETA_DGAIN,
+        .phi_pgain = PHI_PGAIN,
+        .phi_igain = PHI_IGAIN,
+        .phi_dgain = PHI_DGAIN,
+        .theta_pgain = THETA_PGAIN,
+        .theta_igain = THETA_IGAIN,
+        .theta_dgain = THETA_DGAIN,
         .desired_vx = DESIRED_VX,
         .desired_vy = DESIRED_VY,
 
 };
+
+
 
 float guidance_h_module_speed_error_x;
 float guidance_h_module_speed_error_y;
@@ -102,10 +98,12 @@ float guidance_h_module_speed_error_x_previous = 0;
 float guidance_h_module_speed_error_y_previous =0;
 float phi_desired_f;
 float theta_desired_f;
+
 uint8_t previous_mode;
 uint8_t current_mode;
 
-void guidance_h_module_init(void) {
+void guidance_h_module_init(void)
+{
     guidance_module.err_vx_int = 0;
     guidance_module.err_vy_int = 0;
     guidance_module.cmd.phi = 0;
@@ -114,10 +112,9 @@ void guidance_h_module_init(void) {
     previous_mode = autopilot_mode;
     current_mode =  autopilot_mode;
 }
-
 void guidance_h_module_enter(void)
 {
-    /* Reset the integrated errors */
+/* Reset the integrated errors */
     guidance_module.err_vx_int = 0;
     guidance_module.err_vy_int = 0;
 
@@ -126,38 +123,26 @@ void guidance_h_module_enter(void)
     guidance_module.cmd.theta = 0;
     guidance_module.cmd.psi = stateGetNedToBodyEulers_i()->psi;
 }
-
-/**
- * Read the RC commands
- */
 void guidance_h_module_read_rc(void)
 {
-    // TODO: change the desired vx/vy
+
 }
 
-void guidance_h_module_run(bool in_flight)    // this function is called in higher level in guidance_h.c
+
+void guidance_h_module_run(bool in_flight)
 {
-	if(replay == 1)
-	{
-		stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);
-		printf("replay setpoints set -------------------------------------------------\n");
-	}
-	else{
-    /* Update the setpoint */
-    stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
-    //printf("My guidance module is running\n");
-    stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
-	}
-    stab_att_sp_euler.phi = phi_desired_f;
-    stab_att_sp_euler.theta = theta_desired_f;
-    /* Run the default attitude stabilization */
-    stabilization_attitude_run(in_flight);
+    if (autopilot_mode != AP_MODE_MODULE) {
+        return;
+    }
+    guidance_module.cmd.phi = BFP_OF_REAL(DESIRED_ANGLE, INT32_ANGLE_FRAC);
+    guidance_module.cmd.theta = BFP_OF_REAL(0, INT32_ANGLE_FRAC);
+    guidance_module.cmd.psi = BFP_OF_REAL(stateGetNedToBodyEulers_i()->psi, INT32_ANGLE_FRAC);
+    stabilization_indi_set_rpy_setpoint_i(&guidance_module.cmd);
+    printf("It is in module mode\n");
+
 }
 
-/** This function is used to calculate needed phi and theta
- * @param vel_x is desired velocity in earth coordinates
- * @param vel_y is desired velocity in earth coordinates
- */
+
 void guidance_loop_pid()
 {
     current_mode = autopilot_mode;
@@ -178,19 +163,10 @@ void guidance_loop_pid()
     guidance_h_module_speed_error_x = guidance_module.desired_vx - current_vel_x;
     guidance_h_module_speed_error_y = guidance_module.desired_vy - current_vel_y;
 
-    if (state_lower_level == TURN_CM || state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
-    {
-        guidance_h_module_speed_error_x = 0;
-        guidance_h_module_speed_error_y = 0;
-        guidance_module.err_vx_int = 0;
-        guidance_module.err_vy_int = 0;
-    }
 
     /* Calculate the integrated errors (TODO: bound??) */
     guidance_module.err_vx_int += guidance_h_module_speed_error_x / 512;
     guidance_module.err_vy_int += guidance_h_module_speed_error_y / 512;
-
-
 
     guidance_module.err_vx_deri = (guidance_h_module_speed_error_x - guidance_h_module_speed_error_x_previous)*512;
     guidance_module.err_vy_deri = (guidance_h_module_speed_error_y - guidance_h_module_speed_error_y_previous)*512;
@@ -198,36 +174,23 @@ void guidance_loop_pid()
     struct FloatVect2 cmd_f;
     /* Calculate the commands */
     cmd_f.y   = guidance_module.phi_pgain * guidance_h_module_speed_error_y
-                               + guidance_module.phi_igain * guidance_module.err_vy_int
-                               + guidance_module.phi_dgain * guidance_module.err_vy_deri;
+                + guidance_module.phi_igain * guidance_module.err_vy_int
+                + guidance_module.phi_dgain * guidance_module.err_vy_deri;
     cmd_f.x   = -(guidance_module.theta_pgain * guidance_h_module_speed_error_x
-                                 + guidance_module.theta_igain * guidance_module.err_vx_int
-                                 +guidance_module.theta_dgain * guidance_module.err_vx_deri);
+                  + guidance_module.theta_igain * guidance_module.err_vx_int
+                  +guidance_module.theta_dgain * guidance_module.err_vx_deri);
     float psi = stateGetNedToBodyEulers_f()->psi;
     float s_psi = sinf(psi);
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
-//    if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM && time_primitive < 3)
-//    {
-//        theta_desired_f = -6.0/180.0*3.14; //-3
-//    }
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
-
     /* Bound the roll and pitch commands */
     BoundAbs(guidance_module.cmd.phi, CMD_OF_SAT);
     BoundAbs(guidance_module.cmd.theta, CMD_OF_SAT);
     guidance_h_module_speed_error_x_previous = guidance_h_module_speed_error_x;
     guidance_h_module_speed_error_y_previous = guidance_h_module_speed_error_y;
+
     previous_mode = current_mode;
-}
-
-void guidance_loop_set_heading(float heading){
-    guidance_module.cmd.psi = BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
-}
-
-void guidance_loop_set_velocity(float vx_earth, float vy_earth){
-    guidance_module.desired_vx = vx_earth;
-    guidance_module.desired_vy = vy_earth;
 }
