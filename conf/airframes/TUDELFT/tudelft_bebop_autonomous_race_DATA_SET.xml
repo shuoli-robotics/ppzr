@@ -106,15 +106,15 @@
 
     <module name="video_capture">
        <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
-       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Data_set_16"/>
+       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Calibration"/>
     </module>
 
 
-   <!--module name="video_rtp_stream">
+   <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="2"/>
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="80"/>
-    </module-->
+    </module>
 
   </modules>
 
