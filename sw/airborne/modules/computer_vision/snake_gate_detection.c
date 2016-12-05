@@ -43,13 +43,13 @@
 //initial position after gate pass
 #define INITIAL_X 0
 #define INITIAL_Y 2
-#define INITIAL_Z -2.5
+#define INITIAL_Z -1.5
 
 //initial position and speed safety margins
 
 #define X_POS_MARGIN 0.20//m
 #define Y_POS_MARGIN 0.5//m
-#define Z_POS_MARGIN 0.15//m
+#define Z_POS_MARGIN 0.2//m
 #define X_SPEED_MARGIN 0.15//m/s
 #define Y_SPEED_MARGIN 0.2//m/s
 
@@ -173,7 +173,7 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
                                 &current_x_gate, &current_y_gate, &current_z_gate, &best_fitness, &current_quality,
-                                &y_center_picker, &cb_center, &QR_class, &sz, &back_side, &best_gate.n_sides,
+                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &states_race.gate_detected,
                                 &psi_gate); //
 }
 
@@ -312,7 +312,7 @@ void snake_gate_periodic(void)
     states_race.ready_pass_through = 0;
   }
 
-  if (safe_pass_counter > 5) {
+  if (safe_pass_counter > 2) {
     safe_pass_counter = 0;
     states_race.ready_pass_through = 1;
   }

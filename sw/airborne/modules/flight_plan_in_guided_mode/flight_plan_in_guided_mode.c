@@ -40,8 +40,8 @@
 
 
 
-#define p_x_position 0.12
-#define p_y_position 0.12
+#define p_x_position 0.3
+#define p_y_position 0.3
 
 #define Y_ADJUST_POSITION 2.5
 
@@ -292,9 +292,9 @@ void adjust_position(float derta_altitude){
     if (fabs(current_y_gate-Y_ADJUST_POSITION)<0.2)
         velocity_body_x = 0;
     else if (current_y_gate-Y_ADJUST_POSITION>0.2)
-        velocity_body_x = 0.1;
+        velocity_body_x = 0.5;
     else if (current_y_gate-Y_ADJUST_POSITION<-0.2)
-        velocity_body_x =  -0.1;
+        velocity_body_x =  -0.5;
 
     velocity_earth_x = cosf(psi0)*velocity_body_x - sinf(psi0)*velocity_body_y;
     velocity_earth_y = sinf(psi0)*velocity_body_x + cosf(psi0)*velocity_body_y;
@@ -458,7 +458,7 @@ void change_heading_absolute(float psi){
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        guidance_loop_set_heading(init_heading+psi);
+        guidance_loop_set_heading(psi);
         states_race.turning = TRUE;
         z0 = stateGetPositionNed_f()->z;
     }
@@ -467,5 +467,39 @@ void change_heading_absolute(float psi){
     if (time_primitive > 2)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
     {
         states_race.turning = FALSE;
+    }
+}
+
+
+void set_theta(float desired_theta)
+{
+	
+    if(primitive_in_use != SET_THETA)
+    { 
+		primitive_in_use = SET_THETA; 
+		counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+		guidance_loop_set_theta(desired_theta);
+        z0 = stateGetPositionNed_f()->z;
+    }
+}
+
+
+
+void set_phi(float desired_phi)
+{
+	
+    if(primitive_in_use != SET_PHI)
+    { 
+		primitive_in_use = SET_PHI; 
+		counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+		//todo: call set theta function
+		guidance_loop_set_phi(desired_phi);
+        z0 = stateGetPositionNed_f()->z;
     }
 }

@@ -212,6 +212,8 @@ void guidance_loop_pid()
 //    {
 //        theta_desired_f = -6.0/180.0*3.14; //-3
 //    }
+    if (primitive_in_use == SET_THETA || primitive_in_use == SET_PHI)
+			return;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
 
@@ -230,4 +232,15 @@ void guidance_loop_set_heading(float heading){
 void guidance_loop_set_velocity(float vx_earth, float vy_earth){
     guidance_module.desired_vx = vx_earth;
     guidance_module.desired_vy = vy_earth;
+}
+
+void guidance_loop_set_theta(float desired_theta)
+{
+    guidance_module.cmd.theta = BFP_OF_REAL(desired_theta, INT32_ANGLE_FRAC);
+}
+
+
+void guidance_loop_set_phi(float desired_phi)
+{
+    guidance_module.cmd.phi= BFP_OF_REAL(desired_phi, INT32_ANGLE_FRAC);
 }
