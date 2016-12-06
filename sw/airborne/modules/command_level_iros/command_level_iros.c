@@ -46,6 +46,7 @@ void first_part_logic(void);
 void second_part_logic(void);
 void third_part_logic(void);
 void fourth_part_logic(void);
+void fifth_part_logic(void);
 //float choose_heading_after_passing_through_gate(void);
 //float choose_distance_after_gate(void);
 
@@ -123,7 +124,7 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = HOVER_CM; //PREPARE_CM;
+        state_lower_level = PREPARE_CM; //PREPARE_CM;
         state_upper_level = FIRST_PART;
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
@@ -483,14 +484,14 @@ switch (state_lower_level)
             hover();
             if (time_primitive > HOVER_TIME) {
                     previous_lower_level = HOVER_CM;
-                    state_lower_level = CHANGE_HEADING_ABSOLUTE;
+                    state_lower_level = CHANGE_HEADING_ABSOLUTE_CM;
             }
             break;
-		case CHANGE_HEADING_ABSOLUTE:
+		case CHANGE_HEADING_ABSOLUTE_CM:
 			change_heading_absolute(0.0);
          	if (states_race.turning == FALSE)
                 {
-                    previous_lower_level = CHANGE_HEADING_ABSOLUTE;
+                    previous_lower_level = CHANGE_HEADING_ABSOLUTE_CM;
                     state_lower_level = SET_THETA_CM;
                 }
 		case SET_THETA_CM:
@@ -518,9 +519,11 @@ void fifth_part_logic()
 	
 	if (time_temp3 < 1)
 			return;
-	else if(time_temp3<3)
+	else if(time_temp3<200)
+	{ guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
 		guidance_h_set_guided_heading(0);
-	else if (time_temp3<7)
+	}
+	/*else if (time_temp3<7)
 	{
        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
        guidance_h_set_guided_body_vel(1,0);
@@ -533,6 +536,6 @@ void fifth_part_logic()
     {	
        guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
        guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
-	}
+	}*/
 
 }

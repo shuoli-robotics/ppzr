@@ -31,7 +31,9 @@
     <module name="imu" type="bebop"/>
     <!--module name="gps" type="datalink"/-->
     <module name="gps" type="optitrack"/><!--datalink-->
-    <module name="stabilization" type="int_quat"/>
+    <module name="stabilization" type="indi"/>
+    <module name="stabilization" type="rate_indi"/>
+    <!--module name="stabilization" type="int_quat"/-->
     <module name="ahrs" type="int_cmpl_quat">
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
@@ -143,6 +145,40 @@
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
   </section>
 
+
+  <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
+    <!-- control effectiveness -->
+    <define name="G1_P" value="0.0639"/>
+    <define name="G1_Q" value="0.0361"/>
+    <define name="G1_R" value="0.0022"/>
+    <define name="G2_R" value="0.1450"/>
+
+    <!-- reference acceleration for attitude control -->
+    <define name="REF_ERR_P" value="600.0"/>
+    <define name="REF_ERR_Q" value="600.0"/>
+    <define name="REF_ERR_R" value="600.0"/>
+    <define name="REF_RATE_P" value="28.0"/>
+    <define name="REF_RATE_Q" value="28.0"/>
+    <define name="REF_RATE_R" value="28.0"/>
+
+    <!--Maxium yaw rate, to avoid instability-->
+    <define name="MAX_R" value="120.0" unit="deg/s"/>
+
+    <!-- second order filter parameters -->
+    <define name="FILT_OMEGA" value="50.0"/>
+    <define name="FILT_ZETA" value="0.55"/>
+    <define name="FILT_OMEGA_R" value="50.0"/>
+    <define name="FILT_ZETA_R" value="0.55"/>
+
+    <!-- first order actuator dynamics -->
+    <define name="ACT_DYN_P" value="0.1"/>
+    <define name="ACT_DYN_Q" value="0.1"/>
+    <define name="ACT_DYN_R" value="0.1"/>
+
+    <!-- Adaptive Learning Rate -->
+    <define name="USE_ADAPTIVE" value="FALSE"/>
+    <define name="ADAPTIVE_MU" value="0.0001"/>
+  </section>
   <!-- local magnetic field -->
   <!-- http://wiki.paparazziuav.org/wiki/Subsystem/ahrs#Local_Magnetic_Field -->
  <section name="AHRS" prefix="AHRS_">

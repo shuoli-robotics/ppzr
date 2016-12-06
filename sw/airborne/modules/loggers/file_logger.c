@@ -114,3 +114,4 @@ void file_logger_periodic(void)
          );
   counter++;
 }
+
