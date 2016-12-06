@@ -45,9 +45,13 @@
 #define ADJUST_HEADING           13
 #define LEFT_RIGHT_BACK          14
 #define HOLD_ALTITUDE            15
+#define CHANGE_HEADING_ABSOLUTE  16
+#define SET_THETA                17
+#define SET_PHI                  18
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
+ extern float init_heading;
  extern bool adjust_position_mask;
  extern void flight_plan_in_guided_mode_init(void);
  extern void display_information(void);
@@ -66,7 +70,9 @@
  extern void adjust_heading(float delta_heading);
  extern void left_right_back(float velocity_in_body_x,float velocity_in_body_y);
  extern void hold_altitude(float desired_altitude);
-
-
+extern  void change_heading_absolute(float psi);
+extern void set_theta(float desired_theta);
+extern void set_phi(float desired_phi);
+		
 #endif
 

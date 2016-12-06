@@ -43,13 +43,13 @@
 //initial position after gate pass
 #define INITIAL_X 0
 #define INITIAL_Y 2
-#define INITIAL_Z -2.5
+#define INITIAL_Z -1.5
 
 //initial position and speed safety margins
 
 #define X_POS_MARGIN 0.20//m
 #define Y_POS_MARGIN 0.5//m
-#define Z_POS_MARGIN 0.15//m
+#define Z_POS_MARGIN 0.2//m
 #define X_SPEED_MARGIN 0.15//m/s
 #define Y_SPEED_MARGIN 0.2//m/s
 
@@ -64,7 +64,7 @@ uint8_t color_lum_max = 228;//205;
 uint8_t color_cb_min  = 66;//52;
 uint8_t color_cb_max  = 194;//140;
 
-uint8_t color_cr_min  = 131;//138;//146;//was 180
+uint8_t color_cr_min  = 139;//138;//146;//was 180
 
 uint8_t color_cr_max  = 230;//255;
 
@@ -173,7 +173,7 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
                                 &current_x_gate, &current_y_gate, &current_z_gate, &best_fitness, &current_quality,
-                                &y_center_picker, &cb_center, &QR_class, &sz, &back_side, &best_gate.n_sides,
+                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &states_race.gate_detected,
                                 &psi_gate); //
 }
 
@@ -311,7 +311,7 @@ void snake_gate_periodic(void)
     states_race.ready_pass_through = 0;
   }
 
-  if (safe_pass_counter > 5) {
+  if (safe_pass_counter > 2) {
     safe_pass_counter = 0;
     states_race.ready_pass_through = 1;
   }
@@ -727,7 +727,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    if(z_dist + stateGetPositionNed_f()->z > -0.4)
+
+    if(z_dist + stateGetPositionNed_f()->z > -0.7)
+
     {
         // invalid gate because too low:
         states_race.gate_detected = 0;

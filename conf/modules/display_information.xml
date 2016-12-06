@@ -1,0 +1,15 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="display_information">
+  <doc>
+    <description></description>
+  </doc>
+  <header>
+    <file name="display_information.h"/>
+  </header>
+  <periodic fun="display()" freq="1"/>
+  <makefile>
+    <file name="display_information.c"/>
+  </makefile>
+</module>
+

@@ -63,6 +63,9 @@ extern void guidance_loop_set_velocity(float vx, float vy);
 extern void guidance_h_module_run(bool in_flight);
 extern void guidance_h_module_read_rc(void);
 extern void guidance_h_module_enter(void);
+
+extern void guidance_loop_set_theta(float desired_theta);
+extern void guidance_loop_set_phi(float desired_phi);
 #endif
 
 

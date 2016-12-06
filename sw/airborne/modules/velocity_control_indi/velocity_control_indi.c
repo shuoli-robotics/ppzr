@@ -1,0 +1,196 @@
+/*
+ * Copyright (C) Shuo Li
+ *
+ * This file is part of paparazzi
+ *
+ * paparazzi is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * paparazzi is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with paparazzi; see the file COPYING.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+/**
+ * @file "modules/velocity_control_indi/velocity_control_indi.c"
+ * @author Shuo Li
+ * guidance loop
+ */
+
+#include "modules/velocity_control_indi/velocity_control_indi.h"
+#include "firmwares/rotorcraft/guidance/guidance_indi.h"
+#include "firmwares/rotorcraft/stabilization/stabilization_indi.h"
+#include "state.h"
+#include "firmwares/rotorcraft/autopilot.h"
+#include <stdio.h>
+
+#define CMD_OF_SAT  1500 // 40 deg = 2859.1851
+
+#define DESIRED_ANGLE 10.0
+
+#ifndef PHI_PGAIN
+#define PHI_PGAIN 0.2
+#endif
+PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
+
+#ifndef PHI_IGAIN
+#define PHI_IGAIN 0
+#endif
+PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
+
+#ifndef PHI_DGAIN
+#define PHI_DGAIN 0
+#endif
+PRINT_CONFIG_VAR(VISION_PHI_DGAIN)
+
+#ifndef THETA_PGAIN
+#define THETA_PGAIN 0.2
+#endif
+PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
+
+
+#ifndef THETA_IGAIN
+
+#define THETA_IGAIN 0
+#endif
+PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
+
+#ifndef THETA_DGAIN
+#define THETA_DGAIN 0
+#endif
+PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
+
+#ifndef DESIRED_VX
+#define DESIRED_VX 0
+#endif
+PRINT_CONFIG_VAR(VISION_DESIRED_VX)
+
+#ifndef DESIRED_VY
+#define DESIRED_VY 0
+#endif
+PRINT_CONFIG_VAR(VISION_DESIRED_VY)
+
+
+struct guidance_module_st guidance_module = {
+
+        .phi_pgain = PHI_PGAIN,
+        .phi_igain = PHI_IGAIN,
+        .phi_dgain = PHI_DGAIN,
+        .theta_pgain = THETA_PGAIN,
+        .theta_igain = THETA_IGAIN,
+        .theta_dgain = THETA_DGAIN,
+        .desired_vx = DESIRED_VX,
+        .desired_vy = DESIRED_VY,
+
+};
+
+
+
+float guidance_h_module_speed_error_x;
+float guidance_h_module_speed_error_y;
+float guidance_h_module_speed_error_x_previous = 0;
+float guidance_h_module_speed_error_y_previous =0;
+float phi_desired_f;
+float theta_desired_f;
+
+uint8_t previous_mode;
+uint8_t current_mode;
+
+void guidance_h_module_init(void)
+{
+    guidance_module.err_vx_int = 0;
+    guidance_module.err_vy_int = 0;
+    guidance_module.cmd.phi = 0;
+    guidance_module.cmd.theta = 0;
+    guidance_module.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+    previous_mode = autopilot_mode;
+    current_mode =  autopilot_mode;
+}
+void guidance_h_module_enter(void)
+{
+/* Reset the integrated errors */
+    guidance_module.err_vx_int = 0;
+    guidance_module.err_vy_int = 0;
+
+    /* Set rool/pitch to 0 degrees and psi to current heading */
+    guidance_module.cmd.phi = 0;
+    guidance_module.cmd.theta = 0;
+    guidance_module.cmd.psi = stateGetNedToBodyEulers_i()->psi;
+}
+void guidance_h_module_read_rc(void)
+{
+
+}
+
+
+void guidance_h_module_run(bool in_flight)
+{
+    if (autopilot_mode != AP_MODE_MODULE) {
+        return;
+    }
+    guidance_module.cmd.phi = BFP_OF_REAL(DESIRED_ANGLE, INT32_ANGLE_FRAC);
+    guidance_module.cmd.theta = BFP_OF_REAL(0, INT32_ANGLE_FRAC);
+    guidance_module.cmd.psi = BFP_OF_REAL(stateGetNedToBodyEulers_i()->psi, INT32_ANGLE_FRAC);
+    stabilization_indi_set_rpy_setpoint_i(&guidance_module.cmd);
+    printf("It is in module mode\n");
+
+}
+
+
+void guidance_loop_pid()
+{
+    current_mode = autopilot_mode;
+    //current_guidance_h_mode = guidance_h.mode;
+    if (current_mode != previous_mode)
+    {
+        guidance_module.err_vx_int = 0;
+        guidance_module.err_vy_int = 0;
+    }
+    //printf("My guidance loop PID is running!\n");
+    /* Check if we are in the correct AP_MODE before setting commands */
+    if (autopilot_mode != AP_MODE_MODULE) {
+        return;
+    }
+    float current_vel_x = stateGetSpeedNed_f()->x;
+    float current_vel_y = stateGetSpeedNed_f()->y;
+    /* Calculate the error */
+    guidance_h_module_speed_error_x = guidance_module.desired_vx - current_vel_x;
+    guidance_h_module_speed_error_y = guidance_module.desired_vy - current_vel_y;
+
+
+    /* Calculate the integrated errors (TODO: bound??) */
+    guidance_module.err_vx_int += guidance_h_module_speed_error_x / 512;
+    guidance_module.err_vy_int += guidance_h_module_speed_error_y / 512;
+
+    guidance_module.err_vx_deri = (guidance_h_module_speed_error_x - guidance_h_module_speed_error_x_previous)*512;
+    guidance_module.err_vy_deri = (guidance_h_module_speed_error_y - guidance_h_module_speed_error_y_previous)*512;
+
+    struct FloatVect2 cmd_f;
+    /* Calculate the commands */
+    cmd_f.y   = guidance_module.phi_pgain * guidance_h_module_speed_error_y
+                + guidance_module.phi_igain * guidance_module.err_vy_int
+                + guidance_module.phi_dgain * guidance_module.err_vy_deri;
+    cmd_f.x   = -(guidance_module.theta_pgain * guidance_h_module_speed_error_x
+                  + guidance_module.theta_igain * guidance_module.err_vx_int
+                  +guidance_module.theta_dgain * guidance_module.err_vx_deri);
+    float psi = stateGetNedToBodyEulers_f()->psi;
+    float s_psi = sinf(psi);
+    float c_psi = cosf(psi);
+    phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
+    theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
+    guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
+    guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
+    /* Bound the roll and pitch commands */
+    BoundAbs(guidance_module.cmd.phi, CMD_OF_SAT);
+    BoundAbs(guidance_module.cmd.theta, CMD_OF_SAT);
+    guidance_h_module_speed_error_x_previous = guidance_h_module_speed_error_x;
+    guidance_h_module_speed_error_y_previous = guidance_h_module_speed_error_y;
+
+    previous_mode = current_mode;
+}

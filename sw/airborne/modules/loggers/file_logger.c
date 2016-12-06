@@ -37,6 +37,7 @@
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_int.h"
 #include "subsystems/electrical.h"
 #include "modules/computer_vision/video_capture.h"
+//#include "boards/bebop/actuators.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -104,7 +105,7 @@ void file_logger_periodic(void)
   
   if((time_stamp - prev_ss_time)>0.2)//for 5hz
   {
-    video_capture_shoot();
+    //video_capture_shoot();
     prev_ss_time = time_stamp;
     take_shot = shots;
     shots +=1;
@@ -171,17 +172,5 @@ void file_logger_periodic(void)
          );
   counter++;
 }
-
-//needed
-//time
-//gyro pqr,
-//acc xyz,
-// sonar,
-// battery,
-// current,
-// prop rpm,
-// take_shot,//at 5 hz
-
-
 
 

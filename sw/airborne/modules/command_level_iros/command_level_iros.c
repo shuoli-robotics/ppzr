@@ -37,11 +37,16 @@
 uint8_t previous_mode;
 uint8_t current_mode;
 uint8_t previous_lower_level;
+float turn_heading;
+int gate_counter;
+bool flag_clock3;
+
 
 void first_part_logic(void);
 void second_part_logic(void);
 void third_part_logic(void);
 void fourth_part_logic(void);
+void fifth_part_logic(void);
 //float choose_heading_after_passing_through_gate(void);
 //float choose_distance_after_gate(void);
 
@@ -72,15 +77,11 @@ void command_init(){
     states_race.time_to_go_straight = 0;
     states_race.distance_before_gate = 1.5;
     replay_flag = 0;
-    angle_after_half_gate = ANGLE_AFTER_HALF_GATE;
-    velocity_in_first_part = VELOCITY_IN_FIRST_PART;
-    straight_time = STRAIGHT_TIME;
-    approach_time = APPROACH_TIME;
+
+    init_heading = stateGetNedToBodyEulers_f()->psi;
 
 
-
-
-    float distance_after_zigzag_temp[100] = {           0.8,0.5,0.5,0.2,0.5,    // 1-5
+    float distance_after_zigzag_temp[100] = {           1.5,0.5,0.5,0.2,0.5,    // 1-5
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
@@ -100,18 +101,22 @@ void command_init(){
     }
     // delta heading after passing through each gate (degree!)
 
-    float heading_after_gates_temp[100] = {            -78.5,-100,-45,-30,-45,      // 1-5
+
+    float heading_after_gates_temp[100] = {            90, -90,90,90,45,      // 1-5
                                                        0,0,0,0,0,           // 6-10
                                                        0,0};                // 11-15
 
-    float distance_after_gates_temp[100] = {            1.0,0.5,0.8,0.5,3.5,    // 1-5
+    float distance_after_gates_temp[100] = {            3,3,3,3,5.0,    // 1-5
+
                                                         0.5,0.5,0.5,0.5,0.5,    // 6-10
                                                         0.5,0.5,0.5,0.5,0.5};  // 11-15
 
     float height_after_gates_temp[100]   ={             0,0,-2.5,-2,0,            // absolute height
                                                         0,0,0,0,0};             // 1-5
 
-    float approach_after_gates_temp[100]   ={             0.7,0,1.5,0,0,            // time for approach
+
+    float approach_after_gates_temp[100]   ={             1.3,1.3,0,0,0,            // time for approach
+
                                                           0,0,0,0,0};             // 1-5
 
 
@@ -123,7 +128,6 @@ void command_init(){
         parameter_to_be_tuned.approach_after_gate[i] = approach_after_gates_temp[i];
     }
 
-   // parameter_to_be_tuned.heading_after_first_part = 90.0/180.0*PI;
 }
 
 
@@ -135,12 +139,16 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = WAIT_FOR_DETECTION_CM; //PREPARE_CM;
-        state_upper_level = SECOND_PART;
+        state_lower_level = PREPARE_CM; //PREPARE_CM;
+        state_upper_level = FIRST_PART;
         states_race.gate_counter_in_second_part = 0;
         states_race.gate_counter_in_third_part = 0;
         replay_flag = 0;
         approach_first_part = FALSE;
+        init_heading = stateGetNedToBodyEulers_f()->psi;
+        gate_counter = 0;
+		flag_clock3 = 0;
+		states_race.altitude_is_achieved = FALSE;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -167,6 +175,10 @@ void command_run() {
         fourth_part_logic();
     }
 
+    if(state_upper_level  == FIFTH_PART)
+    {
+			fifth_part_logic();
+    }
     previous_mode = current_mode;
 }
 
@@ -185,7 +197,7 @@ void first_part_logic()
             if (time_autopilot_mode > PREPARE_TIME)
             {
                 previous_lower_level = PREPARE_CM;
-                state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
+                state_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
             }
             break;
         case TAKE_OFF_OPEN_LOOP_CM:
@@ -203,6 +215,7 @@ void first_part_logic()
             {
                 previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
                 state_lower_level =  HOVER_CM;
+				state_upper_level = FOURTH_PART;
             }
             break;
         case HOVER_CM:
@@ -212,37 +225,7 @@ void first_part_logic()
                 if (previous_lower_level == TAKE_OFF_CLOSE_LOOP_CM)
                 {
                     previous_lower_level = HOVER_CM;
-                    state_lower_level = GO_STRAIGHT_CM;
-                   // state_upper_level = SECOND_PART;
-                }
-                if (previous_lower_level == GO_STRAIGHT_CM)
-                {
-                    if (approach_first_part == TRUE)
-                    {
-                        previous_lower_level = HOVER_CM;
-                        state_lower_level = ADJUST_HEIGHT_CM;
-                        //state_upper_level = SECOND_PART;
-                    }
-                    else
-                    {
-                        previous_lower_level = HOVER_CM;
-                        state_lower_level = TURN_CM;
-                        printf("??????????????????????????????\n");
-                    }
 
-                }
-                if (previous_lower_level == TURN_CM)
-                {
-                    previous_lower_level = HOVER_CM;
-                    //state_lower_level = WAIT_FOR_DETECTION_CM;
-                    //state_upper_level = SECOND_PART;
-                    approach_first_part = TRUE;
-                    state_lower_level = GO_STRAIGHT_CM;
-                }
-                
-                if (previous_lower_level == ADJUST_HEIGHT_CM)
-                {
-                    previous_lower_level = HOVER_CM;
                     state_lower_level = WAIT_FOR_DETECTION_CM;
                     state_upper_level = SECOND_PART;
                 }
@@ -256,58 +239,7 @@ void first_part_logic()
                 }
             }
             break;
-        case GO_STRAIGHT_CM:
-            go_straight(CONSTANT_VELOCITY_STRAIGHT);
-            if (approach_first_part == TRUE)
-            {
-                if(time_primitive > approach_time)
-                {
-                    previous_lower_level = GO_STRAIGHT_CM;
-                    state_lower_level = HOVER_CM;
-                }
-            }
-            else
-            {
-                if (time_primitive > straight_time)
-                {
-                    previous_lower_level = GO_STRAIGHT_CM;
-                    state_lower_level = HOVER_CM;
-                }
-            }
 
-            break;
-        case TURN_CM:
-            change_heading_hover(angle_after_half_gate/180.0*PI);
-            if (states_race.turning == FALSE)
-            {
-                // turning is finished, go to next gate
-                init_pos_filter = 1;
-                previous_lower_level = TURN_CM;
-                state_lower_level = HOVER_CM;
-            }
-            break;
-	    
-	case ADJUST_HEIGHT_CM:
-	  go_up_down(HEIGHT_FIRST_PART);
-                    if (states_race.altitude_is_achieved == TRUE)
-                    {
-                        previous_lower_level = ADJUST_HEIGHT_CM;
-                        state_lower_level = HOVER_CM;
-                    }
-                    break;
-        case REPLAY_CM:
-            if( replay_flag != TRUE)
-             {
-                 replay_flag = TRUE;
-                 replay_commands_start();
-             }
-             if (replay == FALSE)
-             {
-                 replay_flag = FALSE;
-                 previous_lower_level = REPLAY_CM;
-                 state_lower_level = HOVER_CM;
-             }
-             break;
         default:
             break;
     }
@@ -353,7 +285,7 @@ void second_part_logic()
 
 
         case ADJUST_POSITION_CM:
-            if (states_race.gate_detected == FALSE && time_gate_detected > 0.5)
+            if (states_race.gate_detected == FALSE && time_gate_detected > 3)
             {
                 // lost gate
                 previous_lower_level = ADJUST_POSITION_CM;
@@ -381,7 +313,7 @@ void second_part_logic()
             if (time_primitive > states_race.time_to_go_straight)
             {
                 previous_lower_level = GO_THROUGH_CM;
-                state_lower_level = HOVER_CM;
+                state_lower_level = TURN_CM;
             }
             break;
 
@@ -398,76 +330,46 @@ void second_part_logic()
                 else if (previous_lower_level == TURN_CM)
                 {
                     previous_lower_level = HOVER_CM;
-                    state_lower_level = ADJUST_HEIGHT_CM;
-                }
-                else if (previous_lower_level == ADJUST_HEIGHT_CM)
-                {
-                    previous_lower_level = HOVER_CM;
-                    state_lower_level = APPROACH_GATE_CM;
-                }
-                else if (previous_lower_level == APPROACH_GATE_CM)
-                {
-                    previous_lower_level = HOVER_CM;
-                    state_lower_level = WAIT_FOR_DETECTION_CM;
-                    init_pos_filter = 1;
-                    states_race.gate_counter_in_second_part ++;     // every gate ends here
+                    state_lower_level =	APPROACH_GATE_CM;
                 }
             }
             break;
 
 
         case TURN_CM:
-	         change_heading_hover(parameter_to_be_tuned.heading_after_gate[states_race.gate_counter_in_second_part]);
-            if (states_race.turning == FALSE)
+            if (previous_lower_level == GO_THROUGH_CM)
             {
-                previous_lower_level = TURN_CM;
-                state_lower_level = HOVER_CM;
-
-            }
-            break;
-
-        case ADJUST_HEIGHT_CM:
-            if (parameter_to_be_tuned.height_after_gate[states_race.gate_counter_in_second_part] == 0)
-            {
-                previous_lower_level = ADJUST_HEIGHT_CM;
-                state_lower_level = HOVER_CM;
-            }
-            else
-            {
-                go_up_down(parameter_to_be_tuned.height_after_gate[states_race.gate_counter_in_second_part]);
-                    if (states_race.altitude_is_achieved == TRUE)
-                    {
-                        previous_lower_level = ADJUST_HEIGHT_CM;
-                        state_lower_level = HOVER_CM;
-                    }
-            }
-            break;
-
-        case APPROACH_GATE_CM:
-            if(parameter_to_be_tuned.approach_after_gate[states_race.gate_counter_in_second_part] == 0)
-            {
-                previous_lower_level = APPROACH_GATE_CM;
-                state_lower_level = HOVER_CM;
-            }
-            else
-            {
-                go_straight(CONSTANT_VELOCITY_STRAIGHT);
-                if(time_primitive > parameter_to_be_tuned.approach_after_gate[states_race.gate_counter_in_second_part])
+                change_heading_absolute(parameter_to_be_tuned.heading_after_gate[gate_counter]);  // !!!!!!!!!!
+                if (states_race.turning == FALSE)
                 {
-                    previous_lower_level = APPROACH_GATE_CM;
-                    state_lower_level = HOVER_CM;
+                    previous_lower_level = TURN_CM;
+                    state_lower_level = APPROACH_GATE_CM;
                 }
             }
-            break;
 
-        case SEARCH_GATE_CM:
-            search_gate();
-            if (states_race.gate_detected == 1 && time_gate_detected > 0.5)
+            if (previous_lower_level == APPROACH_GATE_CM)
             {
-                previous_lower_level = SEARCH_GATE_CM;
-                state_lower_level = WAIT_FOR_DETECTION_CM;
+                change_heading_absolute(parameter_to_be_tuned.heading_after_gate[gate_counter]+3.14/2);   //!!!!!!!!!!!!!!!!!
+                if (states_race.turning == FALSE)
+                {
+                    previous_lower_level = TURN_CM;
+                    state_lower_level = WAIT_FOR_DETECTION_CM;
+                    gate_counter++;
+                    if (gate_counter == 2)
+                    {
+                        gate_counter = 0;
+                    }
+                }
             }
+
             break;
+		case APPROACH_GATE_CM:
+			go_straight(CONSTANT_VELOCITY_STRAIGHT);
+            if (time_primitive > parameter_to_be_tuned.approach_after_gate[gate_counter])
+            {
+                previous_lower_level = APPROACH_GATE_CM;
+                state_lower_level = TURN_CM;
+            }
         default:
             break;
     }
@@ -488,8 +390,8 @@ void third_part_logic()
 
         case WAIT_FOR_DETECTION_CM:
             hover();
-            if (time_primitive < HOVER_TIME)
-                break;
+			if (time_primitive < HOVER_TIME)
+				break;
             if (states_race.gate_detected == FALSE) {
                 hover();
             }
@@ -599,40 +501,67 @@ void third_part_logic()
 }
 
 
-void fourth_part_logic()
+void fourth_part_logic() {
+switch (state_lower_level)
 {
+		case HOVER_CM:
+            hover();
+            if (time_primitive > HOVER_TIME) {
+                    previous_lower_level = HOVER_CM;
+                    state_lower_level = CHANGE_HEADING_ABSOLUTE_CM;
+            }
+            break;
+		case CHANGE_HEADING_ABSOLUTE_CM:
+			change_heading_absolute(0.0);
+         	if (states_race.turning == FALSE)
+                {
+                    previous_lower_level = CHANGE_HEADING_ABSOLUTE_CM;
+                    state_lower_level = SET_THETA_CM;
+                }
+		case SET_THETA_CM:
+            set_theta(-10.0/180.0*3.14);//this function is not in 'flight plan in guided mode'
+            //set_phi(0.004);
+            if (time_primitive > 5) {
+			previous_lower_level = SET_THETA_CM;
+                    state_lower_level = HOVER_CM;		
+			}
+			break;
+		default:
+			break;
+}
+}
 
-     switch (state_lower_level)
-     {
 
-         case HOVER_CM:
-             hover();
-             if (time_primitive > 5) {
-                 previous_lower_level = HOVER_CM;
-                 state_lower_level = REPLAY_CM;
-             }
+void fifth_part_logic()
+{
+	if (flag_clock3 == 0)
+	{
+       counter_temp3 =0;
+	   time_temp3 = 0;
+       guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
+       guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+	   flag_clock3 = 1;
+	}	
+	
+	if (time_temp3 < 1)
+			return;
+	else if(time_temp3<3)
+	{ guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+		guidance_h_set_guided_heading(0);
+	}
+	else if (time_temp3<13)
+	{
+       guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+       guidance_h_set_guided_body_vel(1,0);
+	}
+	else if (time_temp3 < 23)
+	{
+       guidance_h_set_guided_body_vel(-1,0);
+	}
+    else 
+    {	
+       guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
+       guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+	}
 
-             break;
-
-         case REPLAY_CM:
-             if( replay_flag != TRUE)
-             {
-                 replay_flag = TRUE;
-                 replay_commands_start();
-             }
-             if (replay == FALSE)
-             {
-                 replay_flag = FALSE;
-                 previous_lower_level = REPLAY_CM;
-                 state_lower_level = WAIT_FOR_DETECTION_CM;
-                 state_upper_level = SECOND_PART;
-                 primitive_in_use = NO_PRIMITIVE;
-
-             }
-             break;
-         default:
-             //printf("It is in APPROACH_GATE\n");
-             break;
-     }
- //hover();
 }
