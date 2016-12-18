@@ -70,31 +70,28 @@
 #define PREPARE_TIME 1
 #endif
 
+#ifndef THETA_TIME 
+#define THETA_TIME 3 
+#endif
+
+
+#ifndef PHI_TIME 
+#define PHI_TIME 3  
+#endif
+
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
 enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
 TURN_CM,SEARCH_GATE_CM,TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM,PREPARE_CM,
-    REPLAY_CM,APPROACH_GATE_CM,SET_THETA_CM,THETA_PHI_CM,CHANGE_HEADING_ABSOLUTE_CM};
+    REPLAY_CM,APPROACH_GATE_CM,SET_THETA_CM,THETA_PHI_CM,CHANGE_HEADING_ABSOLUTE_CM,FLIGHT_TEST_THETA1_CM,FLIGHT_TEST_THETA2_CM,FLIGHT_TEST_PHI1_CM,FLIGHT_TEST_PHI2_CM};
 
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART};
 
-struct parameters_to_be_tuned{
-    float heading_after_gate[NUMBER_OF_GATES];
-    float distance_after_gate[NUMBER_OF_GATES];
-    float height_after_gate[NUMBER_OF_GATES];
-    float approach_after_gate[NUMBER_OF_GATES];
-    bool flag_zigzag[NUMBER_OF_ZIGZAG];
-    float distance_after_zigzag[NUMBER_OF_ZIGZAG];
-    float heading_after_zigzag[NUMBER_OF_ZIGZAG];
-    int search_gate_velocity_in_zigzag[NUMBER_OF_ZIGZAG];
-    float search_time_in_zigzag[NUMBER_OF_ZIGZAG];
-};
 
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
 
-extern struct parameters_to_be_tuned parameter_to_be_tuned;
 extern uint8_t previous_lower_level;
 
 #endif

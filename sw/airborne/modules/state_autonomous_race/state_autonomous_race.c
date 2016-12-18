@@ -29,8 +29,6 @@
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 
-//void state_autonomous_race_init();
-//void display_lower_state();
 
 
 
@@ -53,21 +51,17 @@ void state_autonomous_race_init() {
 
 void display_states()
 {
-    //printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
     if (autopilot_mode != AP_MODE_MODULE)
         return;
-   // printf("gate_counter is %d \n",states_race.gate_counter);
 
     display_upper_state();
     display_lower_state();
     printf("\n");
     printf("\n");
     printf("\n");
-   // display_guidance_mode();
     printf("\n");
     printf("\n");
     printf("\n");
-   // printf("Time in primitve is %f\n",time_primitive);
 
 
 }
@@ -116,6 +110,16 @@ void display_lower_state()
             break;
         case APPROACH_GATE_CM:
             printf("It is in APPROACH_GATE\n");
+            break;
+        case FLIGHT_TEST_PHI1_CM:
+            printf("It is in FLIGHT_TEST_PHI1\n");
+        case FLIGHT_TEST_PHI2_CM:
+            printf("It is in FLIGHT_TEST_PHI2\n");
+        case FLIGHT_TEST_THETA1_CM:
+            printf("It is in FLIGHT_TEST_THETA\n");
+            break;
+		case FLIGHT_TEST_THETA2_CM:
+            printf("It is in FLIGHT_TEST_THETA2\n");
             break;
         default:
             printf("It is in APPROACH_GATE\n");

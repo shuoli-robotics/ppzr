@@ -63,6 +63,8 @@ float velocity_body_y;
 float velocity_earth_x;
 float velocity_earth_y;
 float init_heading;
+float previous_desired_theta = 9999;
+float previous_desired_phi = 9999;
 
 bool arc_is_finished = 0;
 
@@ -94,13 +96,8 @@ void hover()
         primitive_in_use = HOVER;
         counter_primitive = 0;
         time_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
         guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
-        guidance_loop_set_velocity(0,0);
-        z0 = stateGetPositionNed_f()->z;
-        guidance_v_set_guided_z(z0);
-        psi1 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_heading(psi1);
     }
 }
 
@@ -425,23 +422,15 @@ void hold_altitude(float desired_altitude)
 {
     if (primitive_in_use != HOLD_ALTITUDE)
     {
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         primitive_in_use = HOLD_ALTITUDE;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         counter_primitive = 0;
         time_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        guidance_loop_set_velocity(0,0);
         states_race.altitude_is_achieved = 0;
-        //z0 = stateGetPositionNed_f()->z;
         guidance_v_set_guided_z(desired_altitude);
-        psi1 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_heading(psi1);
         return;
     }
-//
     if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 1)
     {
         states_race.altitude_is_achieved = 1;
@@ -449,7 +438,8 @@ void hold_altitude(float desired_altitude)
 }
 
 
-void change_heading_absolute(float psi){
+void change_heading_absolute(float psi)
+{
     if(primitive_in_use != CHANGE_HEADING_ABSOLUTE)
     {
         primitive_in_use = CHANGE_HEADING_ABSOLUTE;
@@ -461,8 +451,6 @@ void change_heading_absolute(float psi){
         states_race.turning = TRUE;
         z0 = stateGetPositionNed_f()->z;
     }
-    //guidance_v_set_guided_z(z0);
-
     if (time_primitive > 2)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
     {
         states_race.turning = FALSE;
@@ -472,7 +460,12 @@ void change_heading_absolute(float psi){
 
 void set_theta(float desired_theta)
 {
-	
+		if (previous_desired_theta != desired_theta)
+		{
+				primitive_in_use = NO_PRIMITIVE;
+				previous_desired_theta = desired_theta;
+
+		}
     if(primitive_in_use != SET_THETA)
     { 
 		primitive_in_use = SET_THETA; 
@@ -489,7 +482,12 @@ void set_theta(float desired_theta)
 
 void set_phi(float desired_phi)
 {
-	
+		if (previous_desired_phi!= desired_phi)
+		{
+				primitive_in_use = NO_PRIMITIVE;
+				previous_desired_phi= desired_phi;
+
+		}
     if(primitive_in_use != SET_PHI)
     { 
 		primitive_in_use = SET_PHI; 
@@ -497,7 +495,6 @@ void set_phi(float desired_phi)
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-		//todo: call set theta function
 		guidance_loop_set_phi(desired_phi);
         z0 = stateGetPositionNed_f()->z;
     }
