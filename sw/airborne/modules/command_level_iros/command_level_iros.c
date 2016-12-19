@@ -31,6 +31,7 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/snake_gate_detection.h"
 #include "modules/replay_commands/replay_commands.h"
+#include "modules/kalman_filter/kalman_filter.h"
 
 #define PI 3.1415926
 
@@ -49,6 +50,8 @@ enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
 enum states_upper_level state_upper_level = SECOND_PART;
 
 
+double original_matrix[3][3]={{5,3,3},{1,0,5},{5,1,5}};
+double inversed_matrix[3][3];
 
 void command_init(){
     previous_mode = autopilot_mode;
@@ -65,7 +68,7 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = PREPARE_CM; //PREPARE_CM;
+        state_lower_level = LAND_CM; //PREPARE_CM;
         state_upper_level = FIRST_PART;
         init_heading = stateGetNedToBodyEulers_f()->psi;
     }
@@ -119,6 +122,7 @@ void first_part_logic()
                 state_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
             }
             break;
+			
         case TAKE_OFF_OPEN_LOOP_CM:
             take_off(TAKE_OFF_ALTITUDE);
             if(states_race.altitude_is_achieved == TRUE)
@@ -133,16 +137,34 @@ void first_part_logic()
             if(states_race.altitude_is_achieved == TRUE)
             {
                 previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
-                state_lower_level =  HOVER_CM;
+                state_lower_level = TURN_CM;
             }
             break;
+
+		case TURN_CM:
+			change_heading_absolute(0.0);
+			if (states_race.turning == FALSE)
+            {
+                previous_lower_level = TURN_CM;
+                state_lower_level =  HOVER_CM;
+            }
+			break;
+
         case HOVER_CM:
             hover();
             if (time_primitive > HOVER_TIME)
             {
-                    previous_lower_level = HOVER_CM;
-                    state_lower_level = FLIGHT_TEST_THETA1_CM; 
-                }
+				if (previous_mode == TURN_CM)
+				{
+					previous_lower_level = HOVER_CM;
+					state_lower_level = FLIGHT_TEST_THETA1_CM; 
+				}
+				else if(previous_mode == FLIGHT_TEST_THETA2_CM) 		
+				{
+					previous_lower_level = HOVER_CM;
+					state_lower_level = FLIGHT_TEST_PHI1_CM;
+				}	
+            }
             break;
 
 		case  FLIGHT_TEST_THETA1_CM: 
@@ -151,14 +173,15 @@ void first_part_logic()
             {
                     previous_lower_level =  FLIGHT_TEST_THETA1_CM; 
                     state_lower_level = FLIGHT_TEST_THETA2_CM; 
-                }
+     		}
             break;
+
 		case FLIGHT_TEST_THETA2_CM: 
 			set_theta(3.0/180*PI);		
             if (time_primitive > THETA_TIME)
             {
                     previous_lower_level =  FLIGHT_TEST_THETA2_CM; 
-                    state_lower_level = FLIGHT_TEST_PHI1_CM; 
+                    state_lower_level = HOVER_CM; 
                 }
             break;
 			
@@ -170,6 +193,7 @@ void first_part_logic()
                     state_lower_level = FLIGHT_TEST_PHI2_CM; 
 			}
 			break;
+			
 		case FLIGHT_TEST_PHI2_CM:	
 			set_phi(-3.0/180*PI);		
             if (time_primitive > PHI_TIME)
@@ -178,14 +202,18 @@ void first_part_logic()
                     state_lower_level = LAND_CM; 
 			}
 			break;
+
 		case LAND_CM:
 			land();
-			if ( states_race.land_is_finished = 1)
+			if ( states_race.land_is_finished == 1)
 			{			
+					int n = 3;
+					inv_matrix(original_matrix,inversed_matrix,n);
 					previous_lower_level = LAND_CM; 
                     state_lower_level = LAND_CM; 
 					state_upper_level = SECOND_PART;
 					states_race.land_is_finished = 0;
+
 			}
     }
 }

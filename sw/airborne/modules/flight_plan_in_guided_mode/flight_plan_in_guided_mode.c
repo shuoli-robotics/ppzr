@@ -36,6 +36,7 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/snake_gate_detection.h"
 #include "subsystems/ins.h"
+#include "modules/kalman_filter/kalman_filter.h"
 
 
 
@@ -397,7 +398,6 @@ void left_right_back(float velocity_in_body_x,float velocity_in_body_y)
         z0 = stateGetPositionNed_f()->z;
 	 counter_primitive = 0;
         time_primitive = 0;
-        //psi1 = stateGetNedToBodyEulers_f()->psi;
     }
     //printf("!!!!!!!!!!!!!!!!!!!!!!!!\n");
     guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);

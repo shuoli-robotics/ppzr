@@ -28,6 +28,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
+#include "modules/kalman_filter/kalman_filter.h"
 
 
 
@@ -37,7 +38,7 @@ struct state_autonomous_race states_race;
 void display_upper_state(void);
 void display_lower_state(void);
 void display_guidance_mode(void);
-
+void display_matrix(double a[][3],int n);
 
 void state_autonomous_race_init() {
     states_race.gate_counter = 0;
@@ -56,6 +57,8 @@ void display_states()
 
     display_upper_state();
     display_lower_state();
+	display_matrix(original_matrix,3);
+	display_matrix(inversed_matrix,3);
     printf("\n");
     printf("\n");
     printf("\n");
@@ -113,8 +116,10 @@ void display_lower_state()
             break;
         case FLIGHT_TEST_PHI1_CM:
             printf("It is in FLIGHT_TEST_PHI1\n");
+            break;
         case FLIGHT_TEST_PHI2_CM:
             printf("It is in FLIGHT_TEST_PHI2\n");
+            break;
         case FLIGHT_TEST_THETA1_CM:
             printf("It is in FLIGHT_TEST_THETA\n");
             break;
@@ -122,7 +127,7 @@ void display_lower_state()
             printf("It is in FLIGHT_TEST_THETA2\n");
             break;
         default:
-            printf("It is in APPROACH_GATE\n");
+            printf("It is in nothing\n");
             break;
 
     }
@@ -145,7 +150,7 @@ void display_upper_state()
             printf("It is in FOURTH_PART\n");
             break;
         default:
-            printf("It is in APPROACH_GATE\n");
+            printf("It is in NOTHING\n");
             break;
     }
 };
@@ -177,4 +182,22 @@ void display_guidance_mode()
         default:
             break;
     }
+}
+
+
+void display_matrix(double a[][3],int n)
+{
+		int j,i;
+		for(i=0;i<n;i++)
+		{
+				for(j=0;j<n;j++)
+				{
+						printf("%4f ",a[i][j]);
+						if((j+1)%n==0)
+						{
+								printf("\n");
+						}
+				}
+		}
+		printf("\n");
 }
