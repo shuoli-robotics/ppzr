@@ -68,7 +68,7 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = LAND_CM; //PREPARE_CM;
+        state_lower_level = HOVER_CM; //PREPARE_CM;
         state_upper_level = FIRST_PART;
         init_heading = stateGetNedToBodyEulers_f()->psi;
     }
@@ -154,17 +154,18 @@ void first_part_logic()
             hover();
             if (time_primitive > HOVER_TIME)
             {
-				if (previous_mode == TURN_CM)
-				{
-					previous_lower_level = HOVER_CM;
-					state_lower_level = FLIGHT_TEST_THETA1_CM; 
-				}
-				else if(previous_mode == FLIGHT_TEST_THETA2_CM) 		
-				{
-					previous_lower_level = HOVER_CM;
-					state_lower_level = FLIGHT_TEST_PHI1_CM;
-				}	
-            }
+					state_lower_level = LAND_CM;
+   /*             if (previous_mode == TURN_CM)*/
+				/*{*/
+					/*previous_lower_level = HOVER_CM;*/
+					/*state_lower_level = FLIGHT_TEST_THETA1_CM; */
+				/*}*/
+				/*else if(previous_mode == FLIGHT_TEST_THETA2_CM) 		*/
+				/*{*/
+					/*previous_lower_level = HOVER_CM;*/
+					/*state_lower_level = FLIGHT_TEST_PHI1_CM;*/
+				/*}	*/
+			}
             break;
 
 		case  FLIGHT_TEST_THETA1_CM: 
@@ -208,10 +209,10 @@ void first_part_logic()
 			if ( states_race.land_is_finished == 1)
 			{			
 					int n = 3;
-					inv_matrix(original_matrix,inversed_matrix,n);
-					previous_lower_level = LAND_CM; 
-                    state_lower_level = LAND_CM; 
-					state_upper_level = SECOND_PART;
+					/*cofactor(origin[>al_matrix,n,inversed_matrix);				<]*/
+					/*previous_lower_level = LAND_CM; */
+                    /*state_lower_level = LAND_CM; */
+					/*state_upper_level = SECOND_PART;*/
 					states_race.land_is_finished = 0;
 
 			}

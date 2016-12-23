@@ -28,7 +28,9 @@
 
 // extern void extended_kalman_filter();
 
+#define STEP 1/125;
+
 extern void inv_matrix(double a[][3], double b[][3],int n);
-extern double inverse[3][3];
+extern void cofactor(double num[3][3],int f,double c[][3]);
 #endif
 

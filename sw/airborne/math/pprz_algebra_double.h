@@ -113,6 +113,20 @@ static inline void double_vect3_normalize(struct DoubleVect3 *v)
   }
 }
 
+//v = v*n
+static inline void double_vect3_mult(struct DoubleVect3 *v,double n)
+{
+		v->x = v->x*n;
+		v->y = v->y*n;
+		v->z = v->z*n;
+}
+
+static inline void double_vect3_add(struct DoubleVect3 *va,struct DoubleVect3 *vb,struct DoubleVect3 *vc)
+{
+	va->x = vb->x+vc->x;
+	va->y = vb->y+vc->y;
+	va->z = vb->z+vc->z;
+}
 
 /** initialises a quaternion to identity */
 static inline void double_quat_identity(struct DoubleQuat *q)

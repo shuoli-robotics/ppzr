@@ -47,7 +47,7 @@
 
 
 #ifndef HOVER_TIME
-#define HOVER_TIME 1.5
+#define HOVER_TIME 50 
 #endif
 
 #ifndef NUMBER_OF_ZIGZAG
