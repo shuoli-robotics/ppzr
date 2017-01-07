@@ -48,6 +48,23 @@
 #define CHANGE_HEADING_ABSOLUTE  16
 #define SET_THETA                17
 #define SET_PHI                  18
+#define SET_ATTITUDE             19
+#define CALCULATE_ATTITUDE_BIAS  20 
+
+
+#ifndef PREPARE_TIME
+#define PREPARE_TIME 3
+#endif
+
+#ifndef SAMPLE_NUM 
+#define SAMPLE_NUM  20
+#endif
+
+struct acceleration{
+		double ax;
+		double ay;
+		double az;
+};
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
@@ -73,6 +90,9 @@
 extern  void change_heading_absolute(float psi);
 extern void set_theta(float desired_theta);
 extern void set_phi(float desired_phi);
-		
+extern void set_attidude(float desired_theta,float desired_phi);
+extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
+
+extern int sample_pointer;
 #endif
 

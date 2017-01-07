@@ -276,7 +276,6 @@ void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *i
   pix_sz = gate.sz;
   current_quality = gate.gate_q;
 
-
   if (gate_size == 0) {
     gate_size = 1;
   }
@@ -292,7 +291,7 @@ void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *i
 void snake_gate_periodic(void)
 {
   //SAFETY  gate_detected
-  if (y_dist > 0.6 && y_dist < 5) { // && gate_gen == 1)
+  if (y_dist > 0.6 && y_dist < 4) { // && gate_gen == 1)
     states_race.gate_detected = 1;
     counter_gate_detected = 0;
     time_gate_detected = 0;
@@ -728,7 +727,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
+
     if(z_dist + stateGetPositionNed_f()->z > -0.7)
+
     {
         // invalid gate because too low:
         states_race.gate_detected = 0;
@@ -1149,7 +1150,8 @@ void snake_up_and_down(struct image_t *im, int x, int y, int *y_low, int *y_high
   while ((*y_low) > 0 && !done) {
     if (check_color(im, x, (*y_low) - 1)) {
       (*y_low)--;
-    } else if (x+1 < im->h  && check_color(im, x + 1, (*y_low) - 1)) {
+
+    } else if (x+1 < im->h && check_color(im, x + 1, (*y_low) - 1)) {
       x++;
       (*y_low)--;
     } else if (x-1 >= 0 && check_color(im, x - 1, (*y_low) - 1)) {

@@ -63,14 +63,14 @@
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
     </module-->
 
-    <module name="cv_snake_gate_detection">
+    <!--module name="cv_snake_gate_detection">
       <define name="SGD_CAMERA" value="front_camera"/>
-    </module>
+    </module-->
 
-    <module name="cv_opticflow">
+    <!--module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
-    </module>
+    </module-->
 
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
@@ -78,10 +78,10 @@
 	<define name="VIEWVIDEO_QUALITY_FACTOR" value="70"/>
     </module>
 
-    <module name="stereocam">
+    <!--module name="stereocam">
 	<configure name="STEREO_UART" value="UART2"/>
 	<configure name="STEREO_BAUD" value="B9600"/>
-    </module> 
+    </module--> 
 <module name="vertical_loop_control_module"/>
     <!--module name="stereo_gate_position"/-->
 

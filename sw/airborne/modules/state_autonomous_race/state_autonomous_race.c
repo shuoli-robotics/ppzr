@@ -38,7 +38,8 @@ struct state_autonomous_race states_race;
 void display_upper_state(void);
 void display_lower_state(void);
 void display_guidance_mode(void);
-void display_matrix(double a[][3],int n);
+void debug_information(void);
+/*void display_matrix(double a[][3],int n);*/
 
 void state_autonomous_race_init() {
     states_race.gate_counter = 0;
@@ -57,16 +58,13 @@ void display_states()
 
     display_upper_state();
     display_lower_state();
-	display_matrix(original_matrix,3);
-	display_matrix(inversed_matrix,3);
     printf("\n");
     printf("\n");
     printf("\n");
     printf("\n");
     printf("\n");
     printf("\n");
-
-
+	debug_information();
 }
 
 void display_lower_state()
@@ -108,9 +106,9 @@ void display_lower_state()
         case PREPARE_CM:
             printf("It is in PREPARE\n");
             break;
-        case REPLAY_CM:
-            printf("It is in REPLAY\n");
-            break;
+        /*case REPLAY_CM:*/
+            /*printf("It is in REPLAY\n");*/
+            /*break;*/
         case APPROACH_GATE_CM:
             printf("It is in APPROACH_GATE\n");
             break;
@@ -185,19 +183,22 @@ void display_guidance_mode()
 }
 
 
-void display_matrix(double a[][3],int n)
+void debug_information()
 {
-		int j,i;
-		for(i=0;i<n;i++)
-		{
-				for(j=0;j<n;j++)
-				{
-						printf("%4f ",a[i][j]);
-						if((j+1)%n==0)
-						{
-								printf("\n");
-						}
-				}
-		}
-		printf("\n");
+		printf("THETA_BIAS ====== %f\n",theta_bias/3.14*180);
+		printf("PHI_BIAS ====== %f\n",phi_bias/3.14*180);
+		printf("ax_BIAS ====== %f\n",accel_bias.ax*0.0009766);
+		printf("ay_BIAS ====== %f\n",accel_bias.ay*0.0009766);
+		printf("az_BIAS ====== %f\n",accel_bias.az*0.0009766);
+		printf("SAMPLE_POINTER ====== %d\n",sample_pointer);
+    printf("\n");
+	printf("\n");
+    printf("\n");
+		printf("THETA_HOVER ====== %f\n",theta_hover/3.14*180);
+		printf("PHI_HOVER ====== %f\n",phi_hover/3.14*180);
+		printf("ax_HOVER ====== %f\n",accel_hover.ax*0.0009766);
+		printf("ay_HOVER ====== %f\n",accel_hover.ay*0.0009766);
+		printf("az_HOVER ====== %f\n",accel_hover.az*0.0009766);
+		printf("SAMPLE_POINTER ====== %d\n",sample_pointer);
 }
+

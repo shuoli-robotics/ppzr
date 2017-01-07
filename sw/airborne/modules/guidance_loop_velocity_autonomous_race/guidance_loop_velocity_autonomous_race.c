@@ -137,19 +137,17 @@ void guidance_h_module_read_rc(void)
 
 void guidance_h_module_run(bool in_flight)    // this function is called in higher level in guidance_h.c
 {
-	if(replay == 1)
-	{
-		stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);
-		printf("replay setpoints set -------------------------------------------------\n");
-	}
-	else{
-    /* Update the setpoint */
+	/*if(replay == 1)*/
+	/*{*/
+		/*stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);*/
+		/*printf("replay setpoints set -------------------------------------------------\n");*/
+	/*}*/
+	/*else{*/
     stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
     //printf("My guidance module is running\n");
-    stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
-	}
-    stab_att_sp_euler.phi = phi_desired_f;
-    stab_att_sp_euler.theta = theta_desired_f;
+	/*}*/
+    /*stab_att_sp_euler.phi = phi_desired_f;*/
+    /*stab_att_sp_euler.theta = theta_desired_f;*/
     /* Run the default attitude stabilization */
     stabilization_attitude_run(in_flight);
 }
@@ -208,7 +206,7 @@ void guidance_loop_pid()
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
-    if (primitive_in_use == SET_THETA || primitive_in_use == SET_PHI)
+    if (primitive_in_use == SET_ATTITUDE)
 			return;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);

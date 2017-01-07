@@ -5,20 +5,6 @@
     <description>This module is the highest level</description>
   </doc>
 
-  <!--settings>
-    <dl_settings>
-      <dl_settings NAME="command">
-        <dl_setting var="parameter_to_be_tuned.distance_first_gate" min="0" step="0.1" max="5" shortname="dis1" />
-        <dl_setting var="parameter_to_be_tuned.distance_second_gate" min="0" step="0.1" max="5" shortname="dis2" />
-        <dl_setting var="parameter_to_be_tuned.distance_third_gate" min="0" step="0.1" max="5" shortname="dis3" />
-        <dl_setting var="parameter_to_be_tuned.distance_fourth_gate" min="0" step="0.1" max="5" shortname="dis4" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_first_gate" min="-3.14" step="0.01" max="3.14" shortname="heading1" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_second_gate" min="-3.14" step="0.01" max="3.14" shortname="heading2" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_third_gate" min="-3.14" step="0.01" max="3.14" shortname="heading3" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_fourth_gate" min="-3.14" step="0.01" max="3.14" shortname="heading4" />
-      </dl_settings>
-    </dl_settings>
-  </settings-->
 
   <header>
     <file name="command_level_iros.h"/>

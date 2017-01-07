@@ -36,7 +36,7 @@
 #endif
 
 #ifndef ANGLE_AFTER_HALF_GATE
-#define ANGLE_AFTER_HALF_GATE 100.0/180.0*PI     //degree
+#define ANGLE_AFTER_HALF_GATE 105.0     //degree
 #endif
 
 #ifndef VELOCITY_IN_FIRST_PART
@@ -47,7 +47,7 @@
 
 
 #ifndef HOVER_TIME
-#define HOVER_TIME 50 
+#define HOVER_TIME 6
 #endif
 
 #ifndef NUMBER_OF_ZIGZAG
@@ -55,7 +55,7 @@
 #endif
 
 #ifndef STRAIGHT_TIME
-#define STRAIGHT_TIME 11.2
+#define STRAIGHT_TIME 10.6                     //10.6 for battery 10
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE
@@ -63,15 +63,12 @@
 #endif
 
 #ifndef APPROACH_TIME
-#define APPROACH_TIME 3
+#define APPROACH_TIME 3.5
 #endif
 
-#ifndef PREPARE_TIME
-#define PREPARE_TIME 1
-#endif
 
 #ifndef THETA_TIME 
-#define THETA_TIME 3 
+#define THETA_TIME 10 
 #endif
 
 
@@ -79,12 +76,17 @@
 #define PHI_TIME 3  
 #endif
 
+#ifndef HEIGHT_FIRST_PART
+#define HEIGHT_FIRST_PART -2.5 
+#endif
+
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
 enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
 TURN_CM,SEARCH_GATE_CM,TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM,PREPARE_CM,
-    REPLAY_CM,APPROACH_GATE_CM,SET_THETA_CM,THETA_PHI_CM,CHANGE_HEADING_ABSOLUTE_CM,FLIGHT_TEST_THETA1_CM,FLIGHT_TEST_THETA2_CM,FLIGHT_TEST_PHI1_CM,FLIGHT_TEST_PHI2_CM};
+    REPLAY_CM,APPROACH_GATE_CM,SET_THETA_CM,THETA_PHI_CM,CHANGE_HEADING_ABSOLUTE_CM,FLIGHT_TEST_THETA1_CM,FLIGHT_TEST_THETA2_CM,FLIGHT_TEST_PHI1_CM,FLIGHT_TEST_PHI2_CM,HOVER_ATTITUDE_CM,
+     ATTITUDE_CONTROL_CM};
 
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART};
 
@@ -92,8 +94,13 @@ enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
 
+
+extern double theta_bias;
+extern double phi_bias;
 extern uint8_t previous_lower_level;
-extern double original_matrix[3][3];
-extern double inversed_matrix[3][3];
+extern double theta_hover;
+extern double phi_hover;
+extern struct acceleration accel_bias;
+extern struct acceleration accel_hover;
 #endif
 
