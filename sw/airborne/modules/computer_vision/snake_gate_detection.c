@@ -29,7 +29,8 @@
 #include "modules/computer_vision/lib/vision/image.h"
 #include <stdlib.h>
 #include "subsystems/datalink/telemetry.h"
-#include "modules/computer_vision/lib/vision/gate_detection.h"
+//#include "modules/computer_vision/lib/vision/gate_detection.h"
+#include "modules/computer_vision/lib/vision/gate_detection_free.h"
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
@@ -134,9 +135,9 @@ float predicted_x_gate = 0;
 float predicted_y_gate = 0;
 float predicted_z_gate = 0;
 
-float current_x_gate = 0;
-float current_y_gate = 0;
-float current_z_gate = 0;
+//float current_x_gate = 0;
+//float current_y_gate = 0;
+//float current_z_gate = 0;
 float delta_z_gate   = 0;
 
 float previous_x_gate = 0;
@@ -149,7 +150,7 @@ struct gate_img previous_best_gate;
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
 //int gate_detected = 0;
-init_pos_filter = 0;
+//init_pos_filter = 0;
 int safe_pass_counter = 0;
 int gate_gen = 0;
 
@@ -548,7 +549,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int gates_sz = gates[gate_nr].sz;
 
           // detect the gate:
-          gate_detection(img, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
+          gate_detection_free(img, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
           //if (fitness < best_fitness) {
@@ -594,7 +595,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           max_y = (max_y < img->w) ? max_y : img->w;
           //draw_gate(img, gates[gate_nr]);
           // detect the gate:
-          gate_detection(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
+          gate_detection_free(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
                          &(gates[gate_nr].sz),
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
@@ -661,7 +662,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     max_y = (max_y < img->w) ? max_y : img->w;
 
     // detect the gate:
-    gate_detection(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
+    gate_detection_free(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
                    &(previous_best_gate.sz),
                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                    &s_left, &s_right);

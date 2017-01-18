@@ -72,11 +72,43 @@ float clock_factor = 0.6;
  * - x_center, y_center, and radius are also used for initializing the optimization. The optimized results are put back in these parameters.
  * - fitness: how good is the hypothesis of x_center, etc. 
  * - min_x, min_y, ... The region of interest in which to sample the points.
- * @author Guido
+ * @author Guido and Michaël
  */
 
-void gate_detection(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right)
+//AXIS system
+//(0,0)   (160
+//       Y
+// -|----->
+//  |
+//  |
+//  |
+//  |
+//  \/
+// X
+//320
+void gate_detection_free(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right)
 {
+  // int *x_points, int *y_points,
+  //draw crosshair for testing coordinate system
+  //draw a crosshair:
+      /*uint8_t color[3];
+      color[0] = 228; // Y
+      color[1] = 128; // U
+      color[2] = 128; // V
+      struct point_f top;
+      struct point_f bottom;
+      struct point_f left;
+      struct point_f right;
+      int x_point = 15;
+      int y_point = 100;
+      top.x = x_point; top.y = y_point - 5;
+      bottom.x = x_point; bottom.y = y_point + 5;
+      left.x = x_point - 5; left.y = y_point;
+      right.x = x_point + 5; right.y = y_point;
+      draw_line_segment(color_image, top, bottom, color);
+      draw_line_segment(color_image, left, right, color);
+  */
+  
   // 1) convert the disparity map to a vector of points:
 	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
 
@@ -184,6 +216,8 @@ void gate_detection(struct image_t* color_image, float* x_center, float* y_cente
 	}
 
 }
+
+
 
 void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness, float* s_left, float* s_right)
 {
