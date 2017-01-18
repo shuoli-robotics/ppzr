@@ -5,7 +5,7 @@
  *      Author: Guido de Croon
  */
 
-#include "gate_detection.h"
+#include "gate_detection_free.h"
 #include <math.h>
 // one would expect this to be part of math.h, but...
 #define PI 3.14159265359
@@ -86,28 +86,14 @@ float clock_factor = 0.6;
 //  \/
 // X
 //320
-void gate_detection_free(struct image_t* color_image, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right)
+void gate_detection_free(struct image_t* color_image,int *x_points, int *y_points, float* x_center, float* y_center, float* radius, float* fitness, float* x0, float* y0, float* size0, uint16_t min_x, uint16_t min_y, uint16_t max_x, uint16_t max_y, int clock_arms, float* angle_1, float* angle_2, float* psi, float* size_left, float* size_right)
 {
   // int *x_points, int *y_points,
   //draw crosshair for testing coordinate system
   //draw a crosshair:
-      /*uint8_t color[3];
-      color[0] = 228; // Y
-      color[1] = 128; // U
-      color[2] = 128; // V
-      struct point_f top;
-      struct point_f bottom;
-      struct point_f left;
-      struct point_f right;
-      int x_point = 15;
-      int y_point = 100;
-      top.x = x_point; top.y = y_point - 5;
-      bottom.x = x_point; bottom.y = y_point + 5;
-      left.x = x_point - 5; left.y = y_point;
-      right.x = x_point + 5; right.y = y_point;
-      draw_line_segment(color_image, top, bottom, color);
-      draw_line_segment(color_image, left, right, color);
-  */
+
+  float points_x_f[4];
+  float points_y_f[4];
   
   // 1) convert the disparity map to a vector of points:
 	convert_image_to_points(color_image, min_x, min_y, max_x, max_y);
@@ -137,7 +123,7 @@ void gate_detection_free(struct image_t* color_image, float* x_center, float* y_
 		(*size0) = 40.0f;// TODO: how good is 40 for the Bebop images?
 
 		// run the fit procedure:
-		fit_window_to_points(x0, y0, size0, x_center, y_center, radius, fitness, size_left, size_right);
+		fit_window_to_points(points_x_f,points_y_f,x0, y0, size0, x_center, y_center, radius, fitness, size_left, size_right);
 
     if(SHAPE == POLYGON)
     {
@@ -214,22 +200,72 @@ void gate_detection_free(struct image_t* color_image, float* x_center, float* y_
 	{
 		(*fitness) = BAD_FIT;
 	}
+	
+	
+	*(x_points) = points_x_f[0];//50;
+	*(y_points) = points_y_f[0];//90;
+	
+	*(x_points+1) = points_x_f[1];//90;
+	*(y_points+1) = points_y_f[1];//90;
+	
+	*(x_points+2) = points_x_f[2];//90;
+	*(y_points+2) = points_y_f[2];//50;
+	
+	*(x_points+3) = points_x_f[3];//50;
+	*(y_points+3) = points_y_f[3];//50;
+	
+	
 
 }
 
 
 
-void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness, float* s_left, float* s_right)
+void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0, float* size0, float* x_center, float* y_center, float* radius, float* fitness, float* s_left, float* s_right)
 {
   // a) initialize Population, seeding it with the initial guess and the previous best individuals:
   // The idea behind this is that evolution can extend over multiple images, while a wrong tracking will not
   // influence the tracking excessively long.
+  
+  
+  //initial guess
+  
+  int x = (*x_center);
+  int y = (*y_center);
+  int r = (*radius);
+  
+  //square_top_left
+  *(points_x) = x-r;//50; 
+  *(points_y) = y+r;//90;
+
+  //square_top_right
+  *(points_x+1) = x+r;//90;
+  *(points_y+1) = y+r;//90;
+
+  *(points_x+2) = x+r;//90;
+  *(points_y+2) = y-r;//50;
+	
+  *(points_x+3) = x-r;//50;
+  *(points_y+3) = y-r;//50;
+  
+  float x_1_0 = x-r;
+  float y_1_0 = y+r;
+  
+  float x_2_0 = x+r;
+  float y_2_0 = y+r;
+  
+  float x_3_0 = x+r;
+  float y_3_0 = y-r;
+  
+  float x_4_0 = x-r;
+  float y_4_0 = y-r;
+  
+  
   uint16_t i, g, ge, j;
 	for (i = 0; i < N_INDIVIDUALS/2; i++)
 	{
     Population[i][0] = (*x0) + 5 * get_random_number() - 2.5f;
     Population[i][1] = (*y0) + 5 * get_random_number() - 2.5f;
-		Population[i][2] = (*size0) + 5 * get_random_number() - 2.5f;
+    Population[i][2] = (*size0) + 5 * get_random_number() - 2.5f;
     if(SHAPE == POLYGON)
     {
       // also the half-sizes of the right and left part of the gate are optimized:
@@ -241,7 +277,7 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
 	{
     Population[i][0] = (*x_center) + 5 * get_random_number() - 2.5f;
     Population[i][1] = (*y_center) + 5 * get_random_number() - 2.5f;
-		Population[i][2] = (*radius) + 5 * get_random_number() - 2.5f;
+    Population[i][2] = (*radius) + 5 * get_random_number() - 2.5f;
     if(SHAPE == POLYGON)
     {
       // also the half-sizes of the right and left part of the gate are optimized:
@@ -330,6 +366,21 @@ void fit_window_to_points(float* x0, float* y0, float* size0, float* x_center, f
     (*s_left) = best_genome[3];
     (*s_right) = best_genome[4];
   }
+  
+  /*
+  *(points_x) = 50;
+  *(points_y) = 90;
+
+  *(points_x+1) = 90;
+  *(points_y+1) = 90;
+
+  *(points_x+2) = 90;
+  *(points_y+2) = 50;
+	
+  *(points_x+3) = 50;
+  *(points_y+3) = 50;
+  */
+  
   return;
 }
 

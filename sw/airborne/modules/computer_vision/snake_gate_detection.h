@@ -46,6 +46,7 @@ extern int check_color(struct image_t *im, int x, int y);
 extern void snake_up_and_down(struct image_t *im, int x, int y, int* y_low, int* y_high);
 extern void snake_left_and_right(struct image_t *im, int x, int y, int* x_low, int* x_high);
 extern void draw_gate(struct image_t *im, struct gate_img gate);
+extern void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t* color);
 extern void draw_gate_color(struct image_t *im, struct gate_img gate, uint8_t* color);
 extern void check_gate(struct image_t *im, struct gate_img gate, float* quality, int* sides);
 extern int check_back_side_QR_code(struct image_t* im, struct gate_img best_gate);

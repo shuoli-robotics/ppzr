@@ -169,12 +169,17 @@ int back_side = 0;
 
 //Debug messages
 
+//free polygon points
+int points_x[4];
+int points_y[4];
+
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
                                 &current_x_gate, &current_y_gate, &current_z_gate, &best_fitness, &current_quality,
-                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &states_race.gate_detected,
+                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &points_y[1],
                                 &psi_gate); //
 }
 
@@ -414,7 +419,7 @@ void snake_gate_periodic(void)
 struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
-  int filter = 1;
+  int filter = 0;
   int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;
@@ -549,7 +554,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int gates_sz = gates[gate_nr].sz;
 
           // detect the gate:
-          gate_detection_free(img, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
+          gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
           //if (fitness < best_fitness) {
@@ -595,7 +600,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           max_y = (max_y < img->w) ? max_y : img->w;
           //draw_gate(img, gates[gate_nr]);
           // detect the gate:
-          gate_detection_free(img, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
+          gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
                          &(gates[gate_nr].sz),
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
@@ -662,7 +667,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     max_y = (max_y < img->w) ? max_y : img->w;
 
     // detect the gate:
-    gate_detection_free(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
+    gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
                    &(previous_best_gate.sz),
                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                    &s_left, &s_right);
@@ -738,7 +743,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     else {
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
-        draw_gate_color(img, best_gate, blue_color);
+        //draw_gate_color(img, best_gate, blue_color);
+	draw_gate_polygon(img,points_x,points_y,blue_color);
     }
   } else {
 
@@ -909,6 +915,39 @@ void draw_gate_color(struct image_t *im, struct gate_img gate, uint8_t* color)
   }
 }
 
+void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t* color)
+{
+  
+  
+  // draw four lines on the image:
+  struct point_t from, to;
+  
+    //polygon
+    from.x = x_points[0];
+    from.y = y_points[0];
+    to.x = x_points[1];
+    to.y = y_points[1];
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = x_points[1];
+    from.y = y_points[1];
+    to.x = x_points[2];
+    to.y = y_points[2];
+    image_draw_line_color(im, &from, &to, color);
+    from.x = x_points[2];
+    from.y = y_points[2];
+    to.x = x_points[3];
+    to.y = y_points[3];
+    image_draw_line_color(im, &from, &to, color);
+    // draw_line_segment(im, from, to, color);
+    from.x = x_points[3];
+    from.y = y_points[3];
+    to.x = x_points[0];
+    to.y = y_points[0];
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+  
+}
 
 
 extern void check_gate(struct image_t *im, struct gate_img gate, float *quality, int *n_sides)
