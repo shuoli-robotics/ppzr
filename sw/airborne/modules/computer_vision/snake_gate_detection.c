@@ -182,7 +182,7 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
                                 &current_x_gate, &current_y_gate, &current_z_gate, &best_fitness, &current_quality,
-                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &gates_sz,
+                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
                                 &x_center);//psi_gate); //
 }
 
@@ -573,7 +573,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.sz = (int) radius;
             temp_check_gate.sz_left = (int) s_left;
             temp_check_gate.sz_right = (int) s_right;
-	    //memcpy(temp_check_gate.x_corners,points_x,sizeof(points_x));
+	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
+	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
 	    
             // also get the color fitness
             check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
@@ -590,6 +591,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             best_gate.sz_right = temp_check_gate.sz_right;
 	    best_gate.gate_q = temp_check_gate.gate_q;
 	    best_gate.n_sides = temp_check_gate.n_sides;
+	    memcpy(&(best_gate.x_corners[0]),&(temp_check_gate.x_corners[0]),sizeof(int)*4);
+	    memcpy(&(best_gate.y_corners[0]),&(temp_check_gate.y_corners[0]),sizeof(int)*4);
 	    }
           //}
 
@@ -618,7 +621,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                          &(gates[gate_nr].sz),
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
-	  draw_gate_polygon(img,points_x,points_y,blue_color);
+	  //draw_gate_polygon(img,points_x,points_y,blue_color);
           //if (fitness < best_fitness) {
             //best_fitness = fitness;
             // store the information in the gate:
@@ -627,6 +630,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.sz = (int) radius;
             temp_check_gate.sz_left = (int) s_left;
             temp_check_gate.sz_right = (int) s_right;
+	    
+	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
+	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
+	    
+	    
             // also get the color fitness
             check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
 	    
@@ -641,6 +649,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             best_gate.sz_right = temp_check_gate.sz_right;
 	    best_gate.gate_q = temp_check_gate.gate_q;
 	    best_gate.n_sides = temp_check_gate.n_sides;
+	    memcpy(&(best_gate.x_corners[0]),&(temp_check_gate.x_corners[0]),sizeof(int)*4);
+	    memcpy(&(best_gate.y_corners[0]),&(temp_check_gate.y_corners[0]),sizeof(int)*4);
 	    }
          // }
         }
@@ -686,7 +696,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                    &(previous_best_gate.sz),
                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                    &s_left, &s_right);
-draw_gate_polygon(img,points_x,points_y,blue_color);
+//draw_gate_polygon(img,points_x,points_y,blue_color);
     // store the information in the gate:
     previous_best_gate.x = (int) x_center;
     previous_best_gate.y = (int) y_center;
@@ -759,7 +769,8 @@ draw_gate_polygon(img,points_x,points_y,blue_color);
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
         //draw_gate_color(img, best_gate, blue_color);
-	draw_gate_polygon(img,points_x,points_y,blue_color);
+	//draw_gate_polygon(img,points_x,points_y,blue_color);
+	draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
     }
   } else {
 
