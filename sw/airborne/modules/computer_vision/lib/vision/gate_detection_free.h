@@ -33,6 +33,7 @@ float fit_clock_arms(float x_center, float y_center, float radius, float* angle_
 float mean_distance_to_circle(float* genome);
 float mean_distance_to_square(float* genome);
 float mean_distance_to_polygon(float* genome);
+float mean_distance_to_polygon_free(float* genome);
 float mean_distance_to_arms(float* genome, float x, float y);
 float distance_to_line(struct point_f Q1, struct point_f Q2, struct point_f P);
 float distance_to_segment(struct point_f Q1, struct point_f Q2, struct point_f P);

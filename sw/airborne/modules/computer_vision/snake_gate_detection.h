@@ -33,6 +33,8 @@
 struct gate_img {
   int x;             ///< The image x coordinate of the gate center
   int y;             ///< The image y coordinate of the gate center
+  float x_corners[4];///< Array of corner x coordinates
+  float y_corners[4];///< Array of corner y coordinates
   int sz;            ///< Half the image size of the gate 
   float gate_q;      ///< gate quality
   int n_sides;       ///< How many sides are orange (to prevent detecting a small gate in the corner of a big one partially out of view).

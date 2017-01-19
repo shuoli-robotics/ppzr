@@ -173,14 +173,17 @@ int back_side = 0;
 int points_x[4];
 int points_y[4];
 
+int gates_sz = 0;
+
+float x_center, y_center, radius;//,fitness, angle_1, angle_2, s_left, s_right;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
                                 &current_x_gate, &current_y_gate, &current_z_gate, &best_fitness, &current_quality,
-                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &points_y[1],
-                                &psi_gate); //
+                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &gates_sz,
+                                &x_center);//psi_gate); //
 }
 
 
@@ -520,7 +523,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   }
 
   // variables used for fitting:
-  float x_center, y_center, radius, fitness, angle_1, angle_2, s_left, s_right;
+  //float x_center, y_center, radius,
+  float fitness, angle_1, angle_2, s_left, s_right;
   int clock_arms = 1;
   // prepare the Region of Interest (ROI), which is larger than the gate:
   float size_factor = 1.5;//2;//1.25;
@@ -532,7 +536,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //if (gen_alg) {
 
-      int max_candidate_gates = 10;//10;
+      int max_candidate_gates = 1;//10;
 
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
@@ -551,12 +555,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
           int gates_x = gates[gate_nr].x;
           int gates_y = gates[gate_nr].y;
-          int gates_sz = gates[gate_nr].sz;
-
+          gates_sz = gates[gate_nr].sz;
+	  
+	  x_center = gates_x;
+	  y_center = gates_y;
+	  radius   = gates_sz;
           // detect the gate:
           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
+	  draw_gate_polygon(img,points_x,points_y,blue_color);
           //if (fitness < best_fitness) {
             //best_fitness = fitness;
             // store the information in the gate:
@@ -565,8 +573,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.sz = (int) radius;
             temp_check_gate.sz_left = (int) s_left;
             temp_check_gate.sz_right = (int) s_right;
+	    //memcpy(temp_check_gate.x_corners,points_x,sizeof(points_x));
+	    
             // also get the color fitness
-            check_gate(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
+            check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
 	    
 	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
 	    {
@@ -599,11 +609,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           int16_t max_y = gates[gate_nr].y + ROI_size;
           max_y = (max_y < img->w) ? max_y : img->w;
           //draw_gate(img, gates[gate_nr]);
+	  gates_sz = gates[gate_nr].sz;
+	  x_center = gates[gate_nr].x;
+	  y_center = gates[gate_nr].y;
+	  radius   = gates_sz;
           // detect the gate:
           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
                          &(gates[gate_nr].sz),
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
+	  draw_gate_polygon(img,points_x,points_y,blue_color);
           //if (fitness < best_fitness) {
             //best_fitness = fitness;
             // store the information in the gate:
@@ -613,7 +628,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.sz_left = (int) s_left;
             temp_check_gate.sz_right = (int) s_right;
             // also get the color fitness
-            check_gate(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
+            check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
 	    
 	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
 	    {
@@ -671,7 +686,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                    &(previous_best_gate.sz),
                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                    &s_left, &s_right);
-
+draw_gate_polygon(img,points_x,points_y,blue_color);
     // store the information in the gate:
     previous_best_gate.x = (int) x_center;
     previous_best_gate.y = (int) y_center;
@@ -680,7 +695,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     previous_best_gate.sz_right = (int) s_right;
 
     // also get the color fitness
-    check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
+    check_gate_free(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
 
     // if the quality of the "old" gate is better, keep the old gate:
     if(previous_best_gate.gate_q > best_gate.gate_q &&  previous_best_gate.n_sides > 2)//n_sides
@@ -949,6 +964,75 @@ void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t
   
 }
 
+void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, int *n_sides)
+{
+  int n_points, n_colored_points;
+  n_points = 0;
+  n_colored_points = 0;
+  int np, nc;
+    int bottom;
+  // how much of the side should be visible to count as a detected side?
+  float min_ratio_side = 0.30;
+  (*n_sides) = 0;
+
+  // check the four lines of which the gate consists:
+  struct point_t from, to;
+  
+    from.x = gate.x_corners[0];
+    from.y = gate.y_corners[0];
+    to.x = gate.x_corners[1];
+    to.y = gate.y_corners[1];
+    check_line(im, from, to, &np, &nc);
+    if ((float) nc / (float) np >= min_ratio_side) {
+      (*n_sides)++;
+    }
+    n_points += np;
+    n_colored_points += nc;
+
+    from.x = gate.x_corners[1];
+    from.y = gate.y_corners[1];
+    to.x = gate.x_corners[2];
+    to.y = gate.y_corners[2];
+    check_line(im, from, to, &np, &nc);
+    if ((float) nc / (float) np >= min_ratio_side) {
+      (*n_sides)++;
+    }
+    n_points += np;
+    n_colored_points += nc;
+
+    from.x = gate.x_corners[2];
+    from.y = gate.y_corners[2];
+    to.x = gate.x_corners[3];
+    to.y = gate.y_corners[3];
+    check_line(im, from, to, &np, &nc);
+    if ((float) nc / (float) np >= min_ratio_side) {
+      (*n_sides)++;
+    }
+    n_points += np;
+    n_colored_points += nc;
+
+    from.x = gate.x_corners[3];
+    from.y = gate.y_corners[3];
+    to.x = gate.x_corners[0];
+    to.y = gate.y_corners[0];
+    check_line(im, from, to, &np, &nc);
+    if ((float) nc / (float) np >= min_ratio_side) {
+      (*n_sides)++;
+    }
+    /*else{
+        (*n_sides) = 0;
+    }*/
+    n_points += np;
+    n_colored_points += nc;
+  
+
+  // the quality is the ratio of colored points / number of points:
+  if (n_points == 0) {
+    (*quality) = 0;
+  } else {
+    (*quality) = ((float) n_colored_points) / ((float) n_points);
+  }
+}
 
 extern void check_gate(struct image_t *im, struct gate_img gate, float *quality, int *n_sides)
 {

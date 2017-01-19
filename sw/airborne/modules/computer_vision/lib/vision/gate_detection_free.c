@@ -46,16 +46,19 @@ float outlier_threshold = 20.0f;
 
 // Settings for the evolution:
 // 10 individuals 30 generations is a normal setting
-#define N_INDIVIDUALS 10
+#define N_INDIVIDUALS 15// 10
 // The number of genes depends on the shape:
-#if SHAPE == CIRCLE || SHAPE == SQUARE
-  #define N_GENES 3
-#else
-  #define N_GENES 5
-#endif
+//#if SHAPE == CIRCLE || SHAPE == SQUARE
+//  #define N_GENES 3
+//#else
+//  #define N_GENES 5
+//#endif
+
+#define N_GENES 8
+
 #define N_GENES_CLOCK 2
 //printf N_GENES
-uint16_t n_generations = 20;//10; // could be reduced for instance when there are many points
+uint16_t n_generations = 30;//10; // could be reduced for instance when there are many points
 float Population[N_INDIVIDUALS][N_GENES];
 
 // whether to draw on the image:
@@ -214,8 +217,20 @@ void gate_detection_free(struct image_t* color_image,int *x_points, int *y_point
 	*(x_points+3) = points_x_f[3];//50;
 	*(y_points+3) = points_y_f[3];//50;
 	
+	/*
+	*(x_points) = 50;
+	*(y_points) = 90;
 	
-
+	*(x_points+1) = 90;
+	*(y_points+1) = 90;
+	
+	*(x_points+2) = 90;
+	*(y_points+2) = 50;
+	
+	*(x_points+3) = 50;
+	*(y_points+3) = 50;
+	
+*/
 }
 
 
@@ -232,7 +247,7 @@ void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0
   int x = (*x_center);
   int y = (*y_center);
   int r = (*radius);
-  
+  /*
   //square_top_left
   *(points_x) = x-r;//50; 
   *(points_y) = y+r;//90;
@@ -246,7 +261,23 @@ void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0
 	
   *(points_x+3) = x-r;//50;
   *(points_y+3) = y-r;//50;
+  */
   
+  /*
+   //square_top_left
+  *(points_x) = 50; 
+  *(points_y) = 90;
+
+  //square_top_right
+  *(points_x+1) = 90;
+  *(points_y+1) = 90;
+
+  *(points_x+2) = 90;
+  *(points_y+2) = 50;
+	
+  *(points_x+3) = 50;
+  *(points_y+3) = 50;
+  */
   float x_1_0 = x-r;
   float y_1_0 = y+r;
   
@@ -261,7 +292,7 @@ void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0
   
   
   uint16_t i, g, ge, j;
-	for (i = 0; i < N_INDIVIDUALS/2; i++)
+	/*for (i = 0; i < N_INDIVIDUALS/2; i++)
 	{
     Population[i][0] = (*x0) + 5 * get_random_number() - 2.5f;
     Population[i][1] = (*y0) + 5 * get_random_number() - 2.5f;
@@ -284,7 +315,20 @@ void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0
       Population[i][3] = (*radius) + 5 * get_random_number() - 2.5f;
       Population[i][4] = (*radius) + 5 * get_random_number() - 2.5f;
     }
-	}
+	}*/
+	
+	
+	for (i = 0; i < N_INDIVIDUALS; i++)
+	{
+    Population[i][0] = x_1_0 + 5 * get_random_number() - 2.5f;
+    Population[i][1] = y_1_0 + 5 * get_random_number() - 2.5f;
+    Population[i][2] = x_2_0 + 5 * get_random_number() - 2.5f;
+    Population[i][3] = y_2_0 + 5 * get_random_number() - 2.5f;
+    Population[i][4] = x_3_0 + 5 * get_random_number() - 2.5f;
+    Population[i][5] = y_3_0 + 5 * get_random_number() - 2.5f;
+    Population[i][6] = x_4_0 + 5 * get_random_number() - 2.5f;
+    Population[i][7] = y_4_0 + 5 * get_random_number() - 2.5f;
+        }
 
   float total_sum_weights = get_sum(weights, n_points);
 
@@ -292,43 +336,32 @@ void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0
 	(*fitness) = 1000000;
 	float fits[N_INDIVIDUALS];
 	float best_genome[N_GENES];
-  best_genome[0] = (*x0);
-  best_genome[1] = (*y0);
-  best_genome[2] = (*size0);
-  if(SHAPE == POLYGON)
-  {
-    best_genome[3] = (*size0);
-    best_genome[4] = (*size0);
-  }
+  best_genome[0] = x_1_0;
+  best_genome[1] = y_1_0;
+  best_genome[2] = x_2_0;  
+  best_genome[3] = y_2_0;
+  best_genome[4] = x_3_0;
+  best_genome[5] = y_3_0;
+  best_genome[6] = x_4_0;
+  best_genome[7] = y_4_0;
+
 	for (g = 0; g < n_generations; g++)
 	{
 		for (i = 0; i < N_INDIVIDUALS; i++)
 		{
-			if (SHAPE == CIRCLE)
-			{
-          // optimize mean distance to circle (and possibly stick) 
-				  fits[i] = mean_distance_to_circle(Population[i]);
-			}
-      else if(SHAPE == SQUARE)
-      {
-          // optimize mean distance to square (and possibly stick) 
-				  fits[i] = mean_distance_to_square(Population[i]);
-      }
-      else
-      {
-          // optimize mean distance to a polygon (and possibly stick) 
-				  fits[i] = mean_distance_to_polygon(Population[i]);
-      }
+		// optimize mean distance to a polygon (and possibly stick) 
+				  fits[i] = mean_distance_to_polygon_free(Population[i]);
 		}
 
 		// get the best individual and store it in min_genome:
 		int index;
 		float min_fit = get_minimum(fits, N_INDIVIDUALS, &index);
-    float min_genome[N_GENES];
-    for(ge = 0; ge < N_GENES; ge++)
-    {
-		  min_genome[ge] = Population[index][ge];
-    }
+		
+		float min_genome[N_GENES];
+		for(ge = 0; ge < N_GENES; ge++)
+		{
+			      min_genome[ge] = Population[index][ge];
+		}
 
 		// if better than any previous individual, remember it:
 		if (min_fit < (*fitness))
@@ -367,19 +400,19 @@ void fit_window_to_points(float *points_x, float *points_y, float* x0, float* y0
     (*s_right) = best_genome[4];
   }
   
-  /*
-  *(points_x) = 50;
-  *(points_y) = 90;
+  
+  *(points_x) = best_genome[0];//50;
+  *(points_y) = best_genome[1];//90;
 
-  *(points_x+1) = 90;
-  *(points_y+1) = 90;
+  *(points_x+1) = best_genome[2];//90;
+  *(points_y+1) = best_genome[3];//90;
 
-  *(points_x+2) = 90;
-  *(points_y+2) = 50;
+  *(points_x+2) = best_genome[4];//90;
+  *(points_y+2) = best_genome[5];//50;
 	
-  *(points_x+3) = 50;
-  *(points_y+3) = 50;
-  */
+  *(points_x+3) = best_genome[6];//50;
+  *(points_y+3) = best_genome[7];//50;
+  
   
   return;
 }
@@ -566,6 +599,66 @@ float mean_distance_to_square(float* genome)
 			// take the smallest error:
 			if (error_stick < error) error = error_stick;
 		}
+
+		// apply outlier threshold before applying weights:
+		if (error > outlier_threshold) error = outlier_threshold;
+
+		if (WEIGHTED)
+		{
+			mean_distance += error * weights[p];
+		}
+		else
+		{
+			mean_distance += error;
+		}
+	}
+	mean_distance /= n_points;
+	return mean_distance;
+}
+
+
+float mean_distance_to_polygon_free(float* genome)
+{
+	/*float x = genome[0];
+	float y = genome[1];
+	float s_width = genome[2];
+  float s_left = genome[3];
+  float s_right = genome[4];*/
+
+	float mean_distance = 0.0f;
+	struct point_f point;
+	float error, error_stick;
+  uint16_t p;
+  int index;
+  int n_sides = 4;
+
+  // determine corner points:
+  struct point_f square_top_left;
+  struct point_f square_top_right;
+  struct point_f square_bottom_right;
+  struct point_f square_bottom_left;
+  square_top_left.x = genome[0];
+  square_top_left.y = genome[1]; // positive y direction is up
+  square_top_right.x = genome[2];
+  square_top_right.y = genome[3]; 
+  square_bottom_left.x = genome[6];
+  square_bottom_left.y = genome[7]; 
+  square_bottom_right.x = genome[4];
+  square_bottom_right.y = genome[5];
+  float side_distances[n_sides];
+
+	for (p = 0; p < n_points; p++)
+	{
+    // get the current point:
+    point = points[p];
+    // determine the distance to the four sides of the square and select the smallest one:
+    side_distances[0] = distance_to_segment(square_bottom_left, square_top_left, point);
+    side_distances[1] = distance_to_segment(square_bottom_right, square_top_right, point);
+    side_distances[2] = distance_to_segment(square_top_left, square_top_right, point);
+    side_distances[3] = distance_to_segment(square_bottom_left, square_bottom_right, point);
+    error = get_minimum(side_distances, n_sides, &index);
+    
+    //printf(side_distances);
 
 		// apply outlier threshold before applying weights:
 		if (error > outlier_threshold) error = outlier_threshold;
