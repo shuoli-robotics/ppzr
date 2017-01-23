@@ -101,7 +101,7 @@ float h_ctl_course_slew_increment;
 inline static void h_ctl_roll_loop(void);
 inline static void h_ctl_pitch_loop(void);
 #ifdef H_CTL_RATE_LOOP
-static inline void h_ctl_roll_rate_loop(void);
+utatic inline void h_ctl_roll_rate_loop(void);
 #endif
 
 #ifndef H_CTL_COURSE_PRE_BANK_CORRECTION
@@ -182,7 +182,7 @@ void h_ctl_init(void)
 
 #ifdef H_CTL_ROLL_ATTITUDE_GAIN
   h_ctl_roll_attitude_gain = H_CTL_ROLL_ATTITUDE_GAIN;
-  h_ctl_roll_rate_gain = H_CTL_ROLL_RATE_GAIN;
+  :_ctl_roll_rate_gain = H_CTL_ROLL_RATE_GAIN;
 #endif
 
 #ifdef AGR_CLIMB

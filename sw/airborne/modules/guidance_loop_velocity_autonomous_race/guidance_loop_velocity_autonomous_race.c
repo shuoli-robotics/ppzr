@@ -24,18 +24,13 @@
  */
 
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
-//#include "modules/replay_commands/replay_commands.h"
 #include "state.h"
 #include "firmwares/rotorcraft/autopilot.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 #include "modules/command_level_iros/command_level_iros.h"
-//#include "modules/replay_commands/replay_commands.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
-
-//#include "firmwares/rotorcraft/stabilization/stabilization_attitude_euler_float.h"
-
-
+#include "firmwares/rotorcraft/stabilization/stabilization_indi.h"
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -82,7 +77,7 @@ PRINT_CONFIG_VAR(VISION_DESIRED_VX)
 #define DESIRED_VY 0
 #endif
 PRINT_CONFIG_VAR(VISION_DESIRED_VY)
-
+struct FloatEulers guidance_rp_command;
 struct guidance_module_st guidance_module = {
 
 .phi_pgain = PHI_PGAIN,
@@ -137,18 +132,7 @@ void guidance_h_module_read_rc(void)
 
 void guidance_h_module_run(bool in_flight)    // this function is called in higher level in guidance_h.c
 {
-	/*if(replay == 1)*/
-	/*{*/
-		/*stabilization_attitude_set_rpy_setpoint_i(&guidance_replay);*/
-		/*printf("replay setpoints set -------------------------------------------------\n");*/
-	/*}*/
-	/*else{*/
-    stabilization_attitude_set_rpy_setpoint_i(&guidance_module.cmd);
-    //printf("My guidance module is running\n");
-	/*}*/
-    /*stab_att_sp_euler.phi = phi_desired_f;*/
-    /*stab_att_sp_euler.theta = theta_desired_f;*/
-    /* Run the default attitude stabilization */
+    int32_quat_of_eulers(&stab_att_sp_quat,&guidance_module.cmd);
     stabilization_attitude_run(in_flight);
 }
 
@@ -220,7 +204,8 @@ void guidance_loop_pid()
 }
 
 void guidance_loop_set_heading(float heading){
-    guidance_module.cmd.psi = BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
+	/*guidance_rp_command.psi = heading;*/
+	guidance_module.cmd.theta = BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
 }
 
 void guidance_loop_set_velocity(float vx_earth, float vy_earth){
@@ -230,11 +215,13 @@ void guidance_loop_set_velocity(float vx_earth, float vy_earth){
 
 void guidance_loop_set_theta(float desired_theta)
 {
-    guidance_module.cmd.theta = BFP_OF_REAL(desired_theta, INT32_ANGLE_FRAC);
+	guidance_module.cmd.theta = BFP_OF_REAL(desired_theta, INT32_ANGLE_FRAC);
+    /*guidance_rp_command.theta = desired_theta;*/
 }
 
 
 void guidance_loop_set_phi(float desired_phi)
 {
-    guidance_module.cmd.phi= BFP_OF_REAL(desired_phi, INT32_ANGLE_FRAC);
+	guidance_module.cmd.phi= BFP_OF_REAL(desired_phi, INT32_ANGLE_FRAC);
+    /*guidance_rp_command.phi = desired_phi;*/
 }
