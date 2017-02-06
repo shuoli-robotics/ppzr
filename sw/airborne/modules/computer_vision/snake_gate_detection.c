@@ -564,7 +564,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
                          &s_left, &s_right);
-	  draw_gate_polygon(img,points_x,points_y,blue_color);
+//draw_gate_polygon(img,points_x,points_y,blue_color);
           //if (fitness < best_fitness) {
             //best_fitness = fitness;
             // store the information in the gate:
@@ -660,20 +660,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         }*/
 
       }
-      //draw_gate(img, best_gate);
-    //}
-
-    // TODO: check if top left is orange (back side)
-    // read the QR code:
-    // get the class of the QR, given a region of interest (TODO: find out the right parameters for the region next to the gate that has the QR code)
-    //QR_class = get_QR_class_ROI(img, (uint32_t) (x_center + radius), (uint32_t) (y_center-radius), (uint32_t) (x_center + 1.25 * radius), (uint32_t) (y_center-0.75*radius), &QR_uncertainty);
-
+   
   } else {
     //random position guesses here and then genetic algorithm
     //use random sizes and positions bounded by minimum size
 
   }
-  // QR_class = get_QR_class(img, &QR_uncertainty);
 
   /*
   * What is better? The current or previous gate?
@@ -742,7 +734,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   * BEST GATE -> TRANSFORM TO COORDINATES
   ***************************************/
 
-  if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 2) {//n_sides
+  if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) {//n_sides was > 2
 
     current_quality = best_quality;
     size_left = best_gate.sz_left;
@@ -752,80 +744,77 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     gate_quality = best_gate.gate_q;
     
 
-    back_side = check_back_side_QR_code(img, best_gate);
-
     //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
     calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
 
-    if(z_dist + stateGetPositionNed_f()->z > -0.7)
-
-    {
-        // invalid gate because too low:
-        states_race.gate_detected = 0;
-    }
-    else {
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
         //draw_gate_color(img, best_gate, blue_color);
 	//draw_gate_polygon(img,points_x,points_y,blue_color);
 	draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
-    }
+	
+    
   } else {
 
-      /*
-    if(previous_best_gate.sz != 0)
-    {
-      printf("previous gate\n");
-      // refit the previous best gate in the current image and compare the quality:
-      int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor);
-      int16_t min_x = previous_best_gate.x - ROI_size;
-      min_x = (min_x < 0) ? 0 : min_x;
-      int16_t max_x = previous_best_gate.x + ROI_size;
-      max_x = (max_x < img->w) ? max_x : img->w;
-      int16_t min_y = previous_best_gate.y - ROI_size;
-      min_y = (min_y < 0) ? 0 : min_y;
-      int16_t max_y = previous_best_gate.y + ROI_size;
-      max_y = (max_y < img->h) ? max_y : img->h;
-
-      // detect the gate:
-      gate_detection(img, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
-		    &(previous_best_gate.sz),
-		    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-		    &s_left, &s_right);
-
-      // store the information in the gate:
-      previous_best_gate.x = (int) x_center;
-      previous_best_gate.y = (int) y_center;
-      previous_best_gate.sz = (int) radius;
-      previous_best_gate.sz_left = (int) s_left;
-      previous_best_gate.sz_right = (int) s_right;
-
-      // also get the color fitness
-      check_gate(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
-    }
-    
-    if (previous_best_gate.gate_q > (min_gate_quality*2) && previous_best_gate.n_sides > 2)
-    { 
-      printf("previous gate quality\n");
-      current_quality = previous_best_gate.gate_q;
-      gate_gen = 1;
-      states_race.gate_detected = 1;
-      
-
-      draw_gate(img, previous_best_gate);
-        calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    }
-    else
-    {
-       */
+     
       states_race.gate_detected = 0;
       current_quality = 0;
       gate_gen = 1;
-    //}
+    
   }
+  	//principal point
+	draw_cross(img,158,12,blue_color);
+	
+	//better principal point?
+	draw_cross(img,158,32,green_color);
+	
+	//Undistort fisheye points
+	
+	
+	
   return img; // snake_gate_detection did not make a new image
+}
+
+float undistort_fisheye_point()
+{
+  /*
+   * x_p = principal(2);
+y_p = 160-principal(1);
+f = 168;
+k = 1.085;
+%k = 1.051;
+%k = 1.118;
+
+%distortion with fisheye model
+%from now on stay in coord frame of last figure
+plot(0,0,'*')
+for i = 1:4
+    
+    %convert to poolar coordinates
+    x_mid = image_points_x(i)-x_p;
+    y_mid = image_points_y(i)-y_p;
+    
+    r = sqrt((x_mid^2)+(y_mid^2));
+    theta = atan2(y_mid,x_mid);
+    
+    %corR = f * tan( asin( sin( atan( r / f ) ) * k ) );
+   R = f*tan(asin(sin( atan(r/f))*k));
+   corX = R * cos(theta)+x_p;
+   corY = R * sin(theta)+y_p;
+   
+   %ipy = cf*tan(asin(sin(atan(opy/cf))/s));
+   %ipy/cf = tan(asin(sin(atan(opy/cf))/s));
+   cf = corY;
+   s = 1.05;%?
+   opy = tan(asin(sin(atan(corY/cf))*s))*cf;
+    
+   
+    plot(corX,corY,'+')
+    plot(x_mid,y_mid,'o')
+end
+*/
 }
 
 
@@ -984,17 +973,20 @@ void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t
     to.x = x_points[1];
     to.y = y_points[1];
     image_draw_line_color(im, &from, &to, color);
+    draw_cross(im,x_points[0],y_points[0],green_color);
     //draw_line_segment(im, from, to, color);
     from.x = x_points[1];
     from.y = y_points[1];
     to.x = x_points[2];
     to.y = y_points[2];
     image_draw_line_color(im, &from, &to, color);
+    draw_cross(im,x_points[1],y_points[1],green_color);
     from.x = x_points[2];
     from.y = y_points[2];
     to.x = x_points[3];
     to.y = y_points[3];
     image_draw_line_color(im, &from, &to, color);
+    draw_cross(im,x_points[2],y_points[2],green_color);
     // draw_line_segment(im, from, to, color);
     from.x = x_points[3];
     from.y = y_points[3];
