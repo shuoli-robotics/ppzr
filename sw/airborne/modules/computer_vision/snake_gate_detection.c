@@ -941,6 +941,36 @@ void draw_gate_color(struct image_t *im, struct gate_img gate, uint8_t* color)
   }
 }
 
+//AXIS system
+//(0,0)   160
+//       Y
+// -|----->
+//  |
+//  |
+//  |
+//  |
+//  \/
+// X
+//320
+
+void draw_cross(struct image_t *im,int x, int y, uint8_t* color)
+{
+  struct point_t from, to;
+  
+    //polygon
+    from.x = x-10;
+    from.y = y;
+    to.x = x+10;
+    to.y = y;
+    image_draw_line_color(im, &from, &to, color);
+    //draw_line_segment(im, from, to, color);
+    from.x = x;
+    from.y = y-10;
+    to.x = x;
+    to.y = y+10;
+    image_draw_line_color(im, &from, &to, color);
+}
+
 void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t* color)
 {
   
