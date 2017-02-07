@@ -185,6 +185,8 @@ float x_center, y_center, radius;//,fitness, angle_1, angle_2, s_left, s_right;
 struct FloatVect3 vec_point_1, vec_point_2, vec_point_3, vec_point_4, vec_temp1, vec_temp2, vec_temp3, vec_temp4,
 vec_ver_1, vec_ver_2, vec_ver_3, vec_ver_4;
 
+struct FloatVect3 gate_vectors[4];
+
 //debugging
 float debug_1 = 1.1;
 float debug_2 = 2.2;
@@ -772,7 +774,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//Undistort fisheye points
 	int f_fisheye = 168;
 	float k_fisheye = 1.085;
-	for(int i = 0;i<3;i++)
+	for(int i = 0;i<4;i++)
 	{
 	  float undist_x, undist_y;
 	  //debug_1 = (float)best_gate.x_corners[i];// best_gate.y_corners[i]
@@ -782,13 +784,55 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  float princ_y = 32.0;
 	  undistort_fisheye_point(best_gate.x_corners[i] ,best_gate.y_corners[i],&undist_x,&undist_y,f_fisheye,k_fisheye,princ_x,princ_y);
 	  draw_cross(img,((int)undist_x)+157,((int)undist_y)+32,green_color);
-	  debug_1 = undist_x;
-	  debug_2 = undist_y;
+	  //debug_1 = undist_x;
+	  //debug_2 = undist_y;
 	  
-	  
+	  vec_from_point(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
+	  debug_1 = gate_vectors[i].x;
+	  debug_2 = gate_vectors[i].y;
+	  debug_3 = gate_vectors[i].z;
 	  
 	}
 	
+	    //error tests
+	// reference vectors
+	
+	vec_ver_1.x = 200;
+	vec_ver_1.y = -100;
+	vec_ver_1.z = 72;
+	
+	vec_ver_2.x = 200;
+	vec_ver_2.y = 0;
+	vec_ver_2.z = 72;
+	
+	vec_ver_3.x = 200;
+	vec_ver_3.y = 0;
+	vec_ver_3.z = -28;
+	
+	vec_ver_4.x = 200;
+	vec_ver_4.y = -100;
+	vec_ver_4.z = -28;
+	
+	double dot = VECT3_DOT_PRODUCT(vec_ver_1, gate_vectors[0]);
+	float norm_a = sqrtf(VECT3_NORM2(vec_ver_1));
+	float norm_b = sqrtf(VECT3_NORM2(gate_vectors[0]));
+	
+	float angle_error_dot = acosf((float)dot/(norm_a*norm_b));
+	debug_1 = angle_error_dot*57;
+	
+	 dot = VECT3_DOT_PRODUCT(vec_ver_2, gate_vectors[1]);
+	 norm_a = sqrtf(VECT3_NORM2(vec_ver_2));
+	 norm_b = sqrtf(VECT3_NORM2(gate_vectors[1]));
+	
+	 angle_error_dot = acosf((float)dot/(norm_a*norm_b));
+	 debug_2 = angle_error_dot*57;
+	 
+	 dot = VECT3_DOT_PRODUCT(vec_ver_3, gate_vectors[2]);
+	 norm_a = sqrtf(VECT3_NORM2(vec_ver_3));
+	 norm_b = sqrtf(VECT3_NORM2(gate_vectors[2]));
+	
+	 angle_error_dot = acosf((float)dot/(norm_a*norm_b));
+	 debug_3 = angle_error_dot*57;
 	
 	
 	
@@ -815,40 +859,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center)
 {
   /*
-   * x_p = principal(2);
-y_p = 160-principal(1);
 f = 168;
 k = 1.085;
 %k = 1.051;
 %k = 1.118;
 
-%distortion with fisheye model
-%from now on stay in coord frame of last figure
-plot(0,0,'*')
-for i = 1:4
-    
-    %convert to poolar coordinates
-    x_mid = image_points_x(i)-x_p;
-    y_mid = image_points_y(i)-y_p;
-    
-    r = sqrt((x_mid^2)+(y_mid^2));
-    theta = atan2(y_mid,x_mid);
-    
-    %corR = f * tan( asin( sin( atan( r / f ) ) * k ) );
-   R = f*tan(asin(sin( atan(r/f))*k));
-   corX = R * cos(theta)+x_p;
-   corY = R * sin(theta)+y_p;
-   
-   %ipy = cf*tan(asin(sin(atan(opy/cf))/s));
-   %ipy/cf = tan(asin(sin(atan(opy/cf))/s));
-   cf = corY;
-   s = 1.05;%?
-   opy = tan(asin(sin(atan(corY/cf))*s))*cf;
-    
-   
-    plot(corX,corY,'+')
-    plot(x_mid,y_mid,'o')
-end
 */
   
   float x_mid = (float)(point_x) - 157.0f;//-(float)(x_princip);
@@ -867,6 +882,8 @@ end
   //debug_1 = k;
   //debug_2 = (float)f;
   k = 1.085;
+  k = 1.051;
+  //k = 1.118;
   
   //radial distortion correction
   float R = (float)f*tan(asin(sin( atan(r/(float)f))*k));
@@ -882,16 +899,8 @@ end
 }
 
 //calculate unit vector from undistorted image point.
-void vec_from_point(int point_x, int point_y, int f, struct FloatVect3 *vec)
+void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec)
 {
-  /*
-   *  x = f;%168;%514;%sqrt(1-(u(n)^2)-(v(n)^2));
-    y = u(n);
-    z = v(n);
-    vec = [x y z];
-    vec = vec/norm(vec);
-    image_vectors(:,n) = vec';
-    */
   
   vec->x = (float)f;
   vec->y = (float)point_x;
