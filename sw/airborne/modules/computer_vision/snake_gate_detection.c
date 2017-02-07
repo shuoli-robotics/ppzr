@@ -39,6 +39,9 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/lib/vision/qr_code_recognition.h"
 
+#include "math/pprz_algebra.h"
+#include "math/pprz_algebra_float.h"
+
 #define PI 3.1415926
 
 //initial position after gate pass
@@ -177,13 +180,24 @@ int gates_sz = 0;
 
 float x_center, y_center, radius;//,fitness, angle_1, angle_2, s_left, s_right;
 
+
+//vectors for p3p etc
+struct FloatVect3 vec_point_1, vec_point_2, vec_point_3, vec_point_4, vec_temp1, vec_temp2, vec_temp3, vec_temp4,
+vec_ver_1, vec_ver_2, vec_ver_3, vec_ver_4;
+
+//debugging
+float debug_1 = 1.1;
+float debug_2 = 2.2;
+float debug_3 = 3.3;
+
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
-                                &current_x_gate, &current_y_gate, &current_z_gate, &best_fitness, &current_quality,
+                                &current_x_gate, &current_y_gate, &current_z_gate, &debug_1, &debug_2,
                                 &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
-                                &x_center);//psi_gate); //
+                                &debug_3);//psi_gate); //
 }
 
 
@@ -755,6 +769,29 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//draw_gate_polygon(img,points_x,points_y,blue_color);
 	draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
 	
+	//Undistort fisheye points
+	int f_fisheye = 168;
+	float k_fisheye = 1.085;
+	for(int i = 0;i<3;i++)
+	{
+	  float undist_x, undist_y;
+	  //debug_1 = (float)best_gate.x_corners[i];// best_gate.y_corners[i]
+	  //debug_2 = (float)best_gate.y_corners[i];//
+	  //undist_y = 5;//(float)best_gate.y_corners[i];
+	  float princ_x = 157.0;
+	  float princ_y = 32.0;
+	  undistort_fisheye_point(best_gate.x_corners[i] ,best_gate.y_corners[i],&undist_x,&undist_y,f_fisheye,k_fisheye,princ_x,princ_y);
+	  draw_cross(img,((int)undist_x)+157,((int)undist_y)+32,green_color);
+	  debug_1 = undist_x;
+	  debug_2 = undist_y;
+	  
+	  
+	  
+	}
+	
+	
+	
+	
     
   } else {
 
@@ -765,19 +802,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
   }
   	//principal point
-	draw_cross(img,158,12,blue_color);
+	//draw_cross(img,158,12,blue_color);
 	
 	//better principal point?
 	draw_cross(img,158,32,green_color);
-	
-	//Undistort fisheye points
 	
 	
 	
   return img; // snake_gate_detection did not make a new image
 }
 
-float undistort_fisheye_point()
+void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center)
 {
   /*
    * x_p = principal(2);
@@ -815,6 +850,56 @@ for i = 1:4
     plot(x_mid,y_mid,'o')
 end
 */
+  
+  float x_mid = (float)(point_x) - 157.0f;//-(float)(x_princip);
+  float y_mid = (float)(point_y) - 32.0f;//-(float)(y_princip);
+  
+  //debug_1 = x_mid;
+  //debug_2 = y_mid;
+  
+  //to polar coordinates
+  float r = sqrtf((pow(x_mid,2))+(pow(y_mid,2)));
+  float theta = atan2f(y_mid,x_mid);//atanf?
+  
+  //debug_1 = r;
+  //debug_2 = theta;
+  
+  //debug_1 = k;
+  //debug_2 = (float)f;
+  k = 1.085;
+  
+  //radial distortion correction
+  float R = (float)f*tan(asin(sin( atan(r/(float)f))*k));
+  
+                                                  // +y
+                                                  // ^
+                                                  // |
+                                                  // |
+  *undistorted_x =  R * cos(theta);//+x_princip; in (0,0)--->+x
+  *undistorted_y =  R * sin(theta);//+y_princip;
+  
+  
+}
+
+//calculate unit vector from undistorted image point.
+void vec_from_point(int point_x, int point_y, int f, struct FloatVect3 *vec)
+{
+  /*
+   *  x = f;%168;%514;%sqrt(1-(u(n)^2)-(v(n)^2));
+    y = u(n);
+    z = v(n);
+    vec = [x y z];
+    vec = vec/norm(vec);
+    image_vectors(:,n) = vec';
+    */
+  
+  vec->x = (float)f;
+  vec->y = (float)point_x;
+  vec->z = (float)point_y;
+  
+  double norm = sqrt(VECT3_NORM2(*vec));
+  VECT3_SDIV(*vec, *vec, norm);
+  
 }
 
 
@@ -973,20 +1058,20 @@ void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t
     to.x = x_points[1];
     to.y = y_points[1];
     image_draw_line_color(im, &from, &to, color);
-    draw_cross(im,x_points[0],y_points[0],green_color);
+   //draw_cross(im,x_points[0],y_points[0],green_color);
     //draw_line_segment(im, from, to, color);
     from.x = x_points[1];
     from.y = y_points[1];
     to.x = x_points[2];
     to.y = y_points[2];
     image_draw_line_color(im, &from, &to, color);
-    draw_cross(im,x_points[1],y_points[1],green_color);
+   //draw_cross(im,x_points[1],y_points[1],green_color);
     from.x = x_points[2];
     from.y = y_points[2];
     to.x = x_points[3];
     to.y = y_points[3];
     image_draw_line_color(im, &from, &to, color);
-    draw_cross(im,x_points[2],y_points[2],green_color);
+   //draw_cross(im,x_points[2],y_points[2],green_color);
     // draw_line_segment(im, from, to, color);
     from.x = x_points[3];
     from.y = y_points[3];
