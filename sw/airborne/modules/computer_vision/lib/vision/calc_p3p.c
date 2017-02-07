@@ -183,7 +183,7 @@ P3 = gate_pos + [0  0.5  0.5];%right down
 	VECT3_SDIV(featureVector_2, temp1, norm);
 
 
-  P3p_computePoses();
+  //P3p_computePoses();
 
 
   return 0;
@@ -217,20 +217,43 @@ void print_vec(struct FloatVect3 vec)
 }*/
 
 
-int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> worldPoints, TooN::Matrix<3,16> & solutions )
+int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureVectors, struct FloatVect3 *p3p_pos)// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> worldPoints, TooN::Matrix<3,16> & solutions )
 {
 	// Extraction of world points
 
 	/*TooN::Vector<3> P1 = worldPoints.T()[0];
 	TooN::Vector<3> P2 = worldPoints.T()[1];
 	TooN::Vector<3> P3 = worldPoints.T()[2];*/
-	VECT3_COPY(P1, worldPoint_0);
-	VECT3_COPY(P2, worldPoint_1);
-	VECT3_COPY(P3, worldPoint_2);
-    printf("P1/P3");
-	print_vec(P1);
-	print_vec(P2);
-	print_vec(P3);
+	
+// 	VECT3_COPY(P1, worldPoint_0);
+// 	VECT3_COPY(P2, worldPoint_1);
+// 	VECT3_COPY(P3, worldPoint_2);
+
+	VECT3_COPY(P1, *worldPoints);
+	VECT3_COPY(P2, *(worldPoints+1));
+	VECT3_COPY(P3, *(worldPoints+2));
+	
+	
+	
+	
+	//debugging
+ 	p3p_pos->x = 4;
+	p3p_pos->y = 5;
+	p3p_pos->z = 6;
+	
+	(p3p_pos+1)->x = 4;
+	(p3p_pos+1)->y = 5;
+	(p3p_pos+1)->z = 6;
+	
+	(p3p_pos+2)->x = 4;
+	(p3p_pos+2)->y = 5;
+	(p3p_pos+2)->z = 6;
+	
+	
+//     printf("P1/P3");
+// 	print_vec(P1);
+// 	print_vec(P2);
+// 	print_vec(P3);
 
 
 	// Verification that world points are not colinear
@@ -283,8 +306,8 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 	MAT33_ROW_VECT3_SMUL(T, 0, e1, 1);
 	MAT33_ROW_VECT3_SMUL(T, 1, e2, 1);
 	MAT33_ROW_VECT3_SMUL(T, 2, e3, 1);
-    printf("T\n");
-	print_mat(T);
+//     printf("T\n");
+// 	print_mat(T);
 
 	VECT3_COPY(temp3, f3);//store f3 in temp3 otherwise matrix vector multiplication will get messy?
 
@@ -337,10 +360,10 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 		VECT3_COPY(P1, worldPoint_1);
         VECT3_COPY(P2, worldPoint_0);
         VECT3_COPY(P3, worldPoint_2);
-        printf("P1/P3");
-        print_vec(P1);
-        print_vec(P2);
-        print_vec(P3);
+//         printf("P1/P3");
+//         print_vec(P1);
+//         print_vec(P2);
+//         print_vec(P3);
 
 	}
 
@@ -352,10 +375,10 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 	n3 = n3 / TooN::norm(n3);
 	TooN::Vector<3> n2 = n3 ^ n1;*/
 
-	printf("P1-P3\n");
-	print_vec(P1);
-	print_vec(P2);
-	print_vec(P3);
+	//printf("P1-P3\n");
+// 	print_vec(P1);
+// 	print_vec(P2);
+// 	print_vec(P3);
 
 	VECT3_DIFF(n1, P2, P1);
 	norm_n1 = sqrt(VECT3_NORM2(n1));
@@ -375,8 +398,8 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 	MAT33_ROW_VECT3_SMUL(N, 0, n1, 1);
 	MAT33_ROW_VECT3_SMUL(N, 1, n2, 1);
 	MAT33_ROW_VECT3_SMUL(N, 2, n3, 1);
-     printf("N\n");
-	print_mat(N);
+    // printf("N\n");
+	//print_mat(N);
 
 
 	// Extraction of known parameters
@@ -400,11 +423,11 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 	double p_1 = P3.x;
 	double p_2 = P3.y;
 
-	printf("d_12: %f\n",d_12);
-	printf("f_1: %f\n",f_1);
-	printf("f_2: %f\n",f_2);
-	printf("p_1: %f\n",p_1);
-	printf("p_2: %f\n",p_2);
+// 	printf("d_12: %f\n",d_12);
+// 	printf("f_1: %f\n",f_1);
+// 	printf("f_2: %f\n",f_2);
+// 	printf("p_1: %f\n",p_1);
+// 	printf("p_2: %f\n",p_2);
 
 
 	/*double cos_beta = f1 * f2;
@@ -436,10 +459,10 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 	double p_2_pw4 = p_2_pw3 * p_2;
 	double d_12_pw2 = pow(d_12,2);
 	double b_pw2 = pow(b,2);
-	printf("f_1_pw2: %f\n",f_1_pw2);
-	printf("f_2_pw2: %f\n",f_2_pw2);
-	printf("p_1_pw2: %f\n",p_1_pw2);
-	printf("p_1_pw3: %f\n",p_1_pw3);
+// 	printf("f_1_pw2: %f\n",f_1_pw2);
+// 	printf("f_2_pw2: %f\n",f_2_pw2);
+// 	printf("p_1_pw2: %f\n",p_1_pw2);
+// 	printf("p_1_pw3: %f\n",p_1_pw3);
 
 	// Computation of factors of 4th degree polynomial
 
@@ -481,13 +504,9 @@ int P3p_computePoses()// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> wor
 				 +p_2_pw2*f_1_pw2*p_1_pw2
 				 +f_2_pw2*p_2_pw2*d_12_pw2*b_pw2;
 
-				 printf("factors: %f, %f, %f, %f\n",factors[0],factors[1],factors[2],factors[3]);
+				 //printf("factors: %f, %f, %f, %f\n",factors[0],factors[1],factors[2],factors[3]);
 
-				 factors[0] = -9.2897;
-				 factors[1] = 6.3969;
-				 factors[2] = 0.0319;
-				 factors[3] = -0.6867;
-				 factors[4] = 0.1064;
+				 
 
 	// Computation of roots
 

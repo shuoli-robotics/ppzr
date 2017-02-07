@@ -186,6 +186,8 @@ struct FloatVect3 vec_point_1, vec_point_2, vec_point_3, vec_point_4, vec_temp1,
 vec_ver_1, vec_ver_2, vec_ver_3, vec_ver_4;
 
 struct FloatVect3 gate_vectors[4];
+struct FloatVect3 gate_points[4];
+struct FloatVect3 p3p_pos_solution[4];
 
 //debugging
 float debug_1 = 1.1;
@@ -788,51 +790,63 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  //debug_2 = undist_y;
 	  
 	  vec_from_point(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
-	  debug_1 = gate_vectors[i].x;
-	  debug_2 = gate_vectors[i].y;
-	  debug_3 = gate_vectors[i].z;
+// 	  debug_1 = gate_vectors[i].x;
+// 	  debug_2 = gate_vectors[i].y;
+// 	  debug_3 = gate_vectors[i].z;
 	  
 	}
+	
+	 //p3p algorithm
+	
+	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
+	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
+	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
+	  
+	  P3p_computePoses(gate_points,gate_vectors,p3p_pos_solution);
+	  
+	  debug_1 = p3p_pos_solution[i].x;
+	  debug_2 = p3p_pos_solution[i].y;
+	  debug_3 = p3p_pos_solution[i].z;
 	
 	    //error tests
 	// reference vectors
 	
-	vec_ver_1.x = 200;
-	vec_ver_1.y = -100;
-	vec_ver_1.z = 72;
-	
-	vec_ver_2.x = 200;
-	vec_ver_2.y = 0;
-	vec_ver_2.z = 72;
-	
-	vec_ver_3.x = 200;
-	vec_ver_3.y = 0;
-	vec_ver_3.z = -28;
-	
-	vec_ver_4.x = 200;
-	vec_ver_4.y = -100;
-	vec_ver_4.z = -28;
-	
-	double dot = VECT3_DOT_PRODUCT(vec_ver_1, gate_vectors[0]);
-	float norm_a = sqrtf(VECT3_NORM2(vec_ver_1));
-	float norm_b = sqrtf(VECT3_NORM2(gate_vectors[0]));
-	
-	float angle_error_dot = acosf((float)dot/(norm_a*norm_b));
-	debug_1 = angle_error_dot*57;
-	
-	 dot = VECT3_DOT_PRODUCT(vec_ver_2, gate_vectors[1]);
-	 norm_a = sqrtf(VECT3_NORM2(vec_ver_2));
-	 norm_b = sqrtf(VECT3_NORM2(gate_vectors[1]));
-	
-	 angle_error_dot = acosf((float)dot/(norm_a*norm_b));
-	 debug_2 = angle_error_dot*57;
-	 
-	 dot = VECT3_DOT_PRODUCT(vec_ver_3, gate_vectors[2]);
-	 norm_a = sqrtf(VECT3_NORM2(vec_ver_3));
-	 norm_b = sqrtf(VECT3_NORM2(gate_vectors[2]));
-	
-	 angle_error_dot = acosf((float)dot/(norm_a*norm_b));
-	 debug_3 = angle_error_dot*57;
+// 	vec_ver_1.x = 200;
+// 	vec_ver_1.y = -100;
+// 	vec_ver_1.z = 72;
+// 	
+// 	vec_ver_2.x = 200;
+// 	vec_ver_2.y = 0;
+// 	vec_ver_2.z = 72;
+// 	
+// 	vec_ver_3.x = 200;
+// 	vec_ver_3.y = 0;
+// 	vec_ver_3.z = -28;
+// 	
+// 	vec_ver_4.x = 200;
+// 	vec_ver_4.y = -100;
+// 	vec_ver_4.z = -28;
+// 	
+// 	double dot = VECT3_DOT_PRODUCT(vec_ver_1, gate_vectors[0]);
+// 	float norm_a = sqrtf(VECT3_NORM2(vec_ver_1));
+// 	float norm_b = sqrtf(VECT3_NORM2(gate_vectors[0]));
+// 	
+// 	float angle_error_dot = acosf((float)dot/(norm_a*norm_b));
+// 	debug_1 = angle_error_dot*57;
+// 	
+// 	 dot = VECT3_DOT_PRODUCT(vec_ver_2, gate_vectors[1]);
+// 	 norm_a = sqrtf(VECT3_NORM2(vec_ver_2));
+// 	 norm_b = sqrtf(VECT3_NORM2(gate_vectors[1]));
+// 	
+// 	 angle_error_dot = acosf((float)dot/(norm_a*norm_b));
+// 	 debug_2 = angle_error_dot*57;
+// 	 
+// 	 dot = VECT3_DOT_PRODUCT(vec_ver_3, gate_vectors[2]);
+// 	 norm_a = sqrtf(VECT3_NORM2(vec_ver_3));
+// 	 norm_b = sqrtf(VECT3_NORM2(gate_vectors[2]));
+// 	
+// 	 angle_error_dot = acosf((float)dot/(norm_a*norm_b));
+// 	 debug_3 = angle_error_dot*57;
 	
 	
 	
@@ -881,7 +895,7 @@ k = 1.085;
   
   //debug_1 = k;
   //debug_2 = (float)f;
-  k = 1.085;
+  //k = 1.085;
   k = 1.051;
   //k = 1.118;
   

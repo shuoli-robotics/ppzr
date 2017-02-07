@@ -1,4 +1,10 @@
 
+
+#include "math/pprz_algebra.h"
+#include "math/pprz_algebra_float.h"
+
+int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureVectors, struct FloatVect3 *p3p_pos);
+
 //custom linear algebra functions maybe later to paparazzi math
 #define MAT33_TRANS(_mat1,_mat2) {     \
     MAT33_ELMT((_mat1),0,0) = MAT33_ELMT((_mat2),0,0);  \
