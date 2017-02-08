@@ -217,7 +217,9 @@ void print_vec(struct FloatVect3 vec)
 }*/
 
 
-int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureVectors, struct FloatVect3 *p3p_pos)// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> worldPoints, TooN::Matrix<3,16> & solutions )
+int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_point_1,struct FloatVect3 *gate_point_2,
+		     struct FloatVect3 *feature_point_0,struct FloatVect3 *feature_point_1,struct FloatVect3 *feature_point_2,
+		     struct FloatVect3 *p3p_pos_0,struct FloatVect3 *p3p_pos_1,struct FloatVect3 *p3p_pos_2)// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> worldPoints, TooN::Matrix<3,16> & solutions )
 {
 	// Extraction of world points
 
@@ -225,29 +227,30 @@ int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureV
 	TooN::Vector<3> P2 = worldPoints.T()[1];
 	TooN::Vector<3> P3 = worldPoints.T()[2];*/
 	
-// 	VECT3_COPY(P1, worldPoint_0);
-// 	VECT3_COPY(P2, worldPoint_1);
-// 	VECT3_COPY(P3, worldPoint_2);
+	VECT3_COPY(P1, *gate_point_0);
+	VECT3_COPY(P2, *gate_point_1);
+	VECT3_COPY(P3, *gate_point_2);
 
-	VECT3_COPY(P1, *worldPoints);
-	VECT3_COPY(P2, *(worldPoints+1));
-	VECT3_COPY(P3, *(worldPoints+2));
+// 	VECT3_COPY(P1, *worldPoints);
+// 	VECT3_COPY(P2, *(worldPoints+1));
+// 	VECT3_COPY(P3, *(worldPoints+2));
 	
 	
 	
 	
 	//debugging
- 	p3p_pos->x = 4;
-	p3p_pos->y = 5;
-	p3p_pos->z = 6;
+ 	p3p_pos_0->x = P1.x;
+	p3p_pos_0->y = P1.y;
+	p3p_pos_0->z = P1.z;
 	
-	(p3p_pos+1)->x = 4;
-	(p3p_pos+1)->y = 5;
-	(p3p_pos+1)->z = 6;
 	
-	(p3p_pos+2)->x = 4;
-	(p3p_pos+2)->y = 5;
-	(p3p_pos+2)->z = 6;
+// 	(p3p_pos+1)->x = 4;
+// 	(p3p_pos+1)->y = 5;
+// 	(p3p_pos+1)->z = 6;
+// 	
+// 	(p3p_pos+2)->x = 4;
+// 	(p3p_pos+2)->y = 5;
+// 	(p3p_pos+2)->z = 6;
 	
 	
 //     printf("P1/P3");
@@ -278,9 +281,17 @@ int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureV
 	TooN::Vector<3> f2 = featureVectors.T()[1];
 	TooN::Vector<3> f3 = featureVectors.T()[2];*/
 
-	VECT3_COPY(f1, featureVector_0);
-	VECT3_COPY(f2, featureVector_1);
-	VECT3_COPY(f3, featureVector_2);
+// 	VECT3_COPY(f1, featureVector_0);
+// 	VECT3_COPY(f2, featureVector_1);
+// 	VECT3_COPY(f3, featureVector_2);
+
+	VECT3_COPY(f1, *feature_point_0);
+	VECT3_COPY(f2, *feature_point_1);
+	VECT3_COPY(f3, *feature_point_2);
+	
+	p3p_pos_1->x = f1.x;
+	p3p_pos_1->y = f1.y;
+	p3p_pos_1->z = f1.z;
 
 
 	// Creation of intermediate camera frame
@@ -322,9 +333,13 @@ int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureV
 		f2 = featureVectors.T()[0];
 		f3 = featureVectors.T()[2];*/
 
-		VECT3_COPY(f1, featureVector_1);
-		VECT3_COPY(f2, featureVector_0);
-		VECT3_COPY(f3, featureVector_2);
+// 		VECT3_COPY(f1, featureVector_1);
+// 		VECT3_COPY(f2, featureVector_0);
+// 		VECT3_COPY(f3, featureVector_2);
+
+		VECT3_COPY(f1, *feature_point_1);
+		VECT3_COPY(f2, *feature_point_0);
+		VECT3_COPY(f3, *feature_point_2);
 
 		/*e1 = f1;
 		e3 = f1 ^ f2;
@@ -357,9 +372,14 @@ int P3p_computePoses(struct FloatVect3 *worldPoints, struct FloatVect3 *featureV
 		P3 = worldPoints.T()[2];*/
 
 		//TODO make matrix column acessor
-		VECT3_COPY(P1, worldPoint_1);
-        VECT3_COPY(P2, worldPoint_0);
-        VECT3_COPY(P3, worldPoint_2);
+// 		VECT3_COPY(P1, worldPoint_1);
+//         VECT3_COPY(P2, worldPoint_0);
+//         VECT3_COPY(P3, worldPoint_2);
+	    VECT3_COPY(P1, *gate_point_1);
+	    VECT3_COPY(P2, *gate_point_0);
+	    VECT3_COPY(P3, *gate_point_2);
+
+
 //         printf("P1/P3");
 //         print_vec(P1);
 //         print_vec(P2);

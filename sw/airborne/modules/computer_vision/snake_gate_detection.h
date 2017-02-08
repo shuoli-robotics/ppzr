@@ -57,6 +57,7 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img best_gate
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
 
 void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec);
+void vec_from_point_ned(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center);
 
 extern void snake_gate_periodic(void);

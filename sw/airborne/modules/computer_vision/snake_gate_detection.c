@@ -187,13 +187,17 @@ vec_ver_1, vec_ver_2, vec_ver_3, vec_ver_4;
 
 struct FloatVect3 gate_vectors[4];
 struct FloatVect3 gate_points[4];
-struct FloatVect3 p3p_pos_solution[4];
+struct FloatVect3 p3p_pos_solution;
 
 //debugging
 float debug_1 = 1.1;
 float debug_2 = 2.2;
 float debug_3 = 3.3;
 
+
+//optic flow dummy
+float opt_body_v_x = 0;
+float opt_body_v_y = 0;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
@@ -789,7 +793,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  //debug_1 = undist_x;
 	  //debug_2 = undist_y;
 	  
-	  vec_from_point(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
+	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
 // 	  debug_1 = gate_vectors[i].x;
 // 	  debug_2 = gate_vectors[i].y;
 // 	  debug_3 = gate_vectors[i].z;
@@ -798,15 +802,23 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	 //p3p algorithm
 	
-	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
-	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
-	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
+	  struct FloatVect3 gate_point_0,gate_point_1,gate_point_2,
+	  p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,p3p_pos_sol_3;
+	  VECT3_ASSIGN(gate_point_0, 4.2000,0.3000, -1.9000);
+	  VECT3_ASSIGN(gate_point_1, 4.2000,1.3000, -1.9000);
+	  VECT3_ASSIGN(gate_point_2, 4.2000,1.3000, -0.9000);
 	  
-	  P3p_computePoses(gate_points,gate_vectors,p3p_pos_solution);
+	  P3p_computePoses(&gate_point_0,&gate_point_1,&gate_point_2,
+			   &gate_vectors[0],&gate_vectors[1],&gate_vectors[2],
+			   &p3p_pos_sol_0,&p3p_pos_sol_1,&p3p_pos_sol_2,&p3p_pos_sol_3);
 	  
-	  debug_1 = p3p_pos_solution[i].x;
-	  debug_2 = p3p_pos_solution[i].y;
-	  debug_3 = p3p_pos_solution[i].z;
+// 	  debug_1 = p3p_pos_sol_0.x;
+// 	  debug_2 = p3p_pos_sol_0.y;
+// 	  debug_3 = p3p_pos_sol_0.z;
+	  
+	  debug_1 = p3p_pos_sol_1.x;
+	  debug_2 = p3p_pos_sol_1.y;
+	  debug_3 = p3p_pos_sol_1.z;
 	
 	    //error tests
 	// reference vectors
@@ -919,6 +931,18 @@ void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec)
   vec->x = (float)f;
   vec->y = (float)point_x;
   vec->z = (float)point_y;
+  
+  double norm = sqrt(VECT3_NORM2(*vec));
+  VECT3_SDIV(*vec, *vec, norm);
+  
+}
+
+void vec_from_point_ned(float point_x, float point_y, int f, struct FloatVect3 *vec)
+{
+  
+  vec->x = (float)f;
+  vec->y = (float)point_x;
+  vec->z = -(float)point_y;
   
   double norm = sqrt(VECT3_NORM2(*vec));
   VECT3_SDIV(*vec, *vec, norm);
