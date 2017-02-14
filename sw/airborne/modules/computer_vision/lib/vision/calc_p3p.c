@@ -70,7 +70,11 @@ P3p::~P3p() {
 struct FloatVect3 worldPoint_0, worldPoint_1, worldPoint_2, featureVector_0, featureVector_1, featureVector_2,
 P1, P2, P3, f1, f2, f3, e1, e2, e3, n1, n2, n3, C, temp1, temp2, temp3, temp4, cam_pos;
 
+struct FloatVect3 Pos_solutions[4];
+
 struct FloatMat33 T, N, R, Mat_temp1, Mat_temp2, Mat_temp3;
+
+struct FloatMat33 R_solutions[4];
 
 double norm_e3, norm_n1, norm_n3;
 
@@ -188,6 +192,30 @@ P3 = gate_pos + [0  0.5  0.5];%right down
 
   return 0;
 }
+void test_solution()
+{
+  VECT3_ASSIGN(worldPoint_0, 4.2000,0.3000, -1.9000);
+  VECT3_ASSIGN(worldPoint_1, 4.2000,1.3000, -1.9000);
+  VECT3_ASSIGN(worldPoint_2, 4.2000,1.3000, -0.9000);
+  
+  
+    VECT3_ASSIGN(cam_pos,3.0,0.7,-1.2);
+
+    VECT3_DIFF(temp1,worldPoint_0,cam_pos);
+    double norm = sqrt(VECT3_NORM2(temp1));
+	VECT3_SDIV(featureVector_0, temp1, norm);
+
+	VECT3_DIFF(temp1,worldPoint_1,cam_pos);
+    norm = sqrt(VECT3_NORM2(temp1));
+	VECT3_SDIV(featureVector_1, temp1, norm);
+
+	VECT3_DIFF(temp1,worldPoint_2,cam_pos);
+    norm = sqrt(VECT3_NORM2(temp1));
+	VECT3_SDIV(featureVector_2, temp1, norm);
+
+
+  //P3p_computePoses();
+}
 
 void print_mat(struct FloatMat33 mat)
 {
@@ -219,7 +247,8 @@ void print_vec(struct FloatVect3 vec)
 
 int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_point_1,struct FloatVect3 *gate_point_2,
 		     struct FloatVect3 *feature_point_0,struct FloatVect3 *feature_point_1,struct FloatVect3 *feature_point_2,
-		     struct FloatVect3 *p3p_pos_0,struct FloatVect3 *p3p_pos_1,struct FloatVect3 *p3p_pos_2)// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> worldPoints, TooN::Matrix<3,16> & solutions )
+		     struct FloatVect3 *p3p_pos_0,struct FloatVect3 *p3p_pos_1,struct FloatVect3 *p3p_pos_2,struct FloatVect3 *p3p_pos_3,
+		     struct FloatMat33 *R_mat_0,struct FloatMat33 *R_mat_1,struct FloatMat33 *R_mat_2,struct FloatMat33 *R_mat_3)// TooN::Matrix<3,3> featureVectors, TooN::Matrix<3,3> worldPoints, TooN::Matrix<3,16> & solutions )
 {
 	// Extraction of world points
 
@@ -242,6 +271,8 @@ int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_poi
  	p3p_pos_0->x = P1.x;
 	p3p_pos_0->y = P1.y;
 	p3p_pos_0->z = P1.z;
+	
+	test_solution();
 	
 	
 // 	(p3p_pos+1)->x = 4;
@@ -558,10 +589,13 @@ int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_poi
 		C.x = d_12*cos_alpha*(sin_alpha*b+cos_alpha);
 		C.y = cos_theta*d_12*sin_alpha*(sin_alpha*b+cos_alpha);
 		C.z = sin_theta*d_12*sin_alpha*(sin_alpha*b+cos_alpha);
+		
 
 		//C = P1 + N.T()*C;
 		MAT33_VECT3_TRANSP_MUL(temp1,N,C);
 		VECT3_SUM(C,P1,temp1);
+		
+		VECT3_COPY(Pos_solutions[i],C);
 
 		/*TooN::Matrix<3,3> R;
 		R[0] = TooN::makeVector(	-cos_alpha,		-sin_alpha*cos_theta,	-sin_alpha*sin_theta );
@@ -585,8 +619,17 @@ int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_poi
 
 		//R = N.T()*R.T()*T;
 
-		//MAT33_TRANS(Mat_temp1,R);
-
+		MAT33_TRANS(Mat_temp1,R);
+		float_rmat_comp(&Mat_temp2,&T,&Mat_temp1);
+		MAT33_TRANS(Mat_temp1,N);
+		float_rmat_comp(&R,&Mat_temp1,&Mat_temp2);
+		
+		MAT33_COPY(R_solutions[i],R);
+		
+// 		printf("R_mat:\n");
+// 		print_mat(R);
+		
+		
 
 		/*solutions.T()[i*4] = C;
 		solutions.T()[i*4+1] = R.T()[0];
@@ -594,11 +637,27 @@ int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_poi
 		solutions.T()[i*4+3] = R.T()[2];*/
 		//copy position result only
 
-		printf("Position solution nr:%d /// x:%f y:%f z%f\n",i,C.x,C.y,C.z);
+	//printf("Position solution nr:%d /// x:%f y:%f z%f\n",i,C.x,C.y,C.z);
 
-		//memcpy(result+i*4,C,3*sizeof(float));//will this work???
+		
 
 	}
+	
+	
+// 	struct FloatVect3 *p3p_pos_0,struct FloatVect3 *p3p_pos_1,struct FloatVect3 *p3p_pos_2,
+// 		     struct FloatMat33 *R_mat_0,struct FloatMat33 *R_mat_1
+		     
+	
+	VECT3_COPY(*p3p_pos_0,Pos_solutions[0]);
+	VECT3_COPY(*p3p_pos_1,Pos_solutions[1]);
+	VECT3_COPY(*p3p_pos_2,Pos_solutions[2]);
+	VECT3_COPY(*p3p_pos_3,Pos_solutions[3]);
+	
+	MAT33_COPY(*R_mat_0,R_solutions[0]);
+	MAT33_COPY(*R_mat_1,R_solutions[1]);
+	MAT33_COPY(*R_mat_2,R_solutions[2]);
+	MAT33_COPY(*R_mat_3,R_solutions[3]);
+	
 
 	return 0;
 }

@@ -59,6 +59,8 @@ void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n
 void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void vec_from_point_ned(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center);
+void back_proj_points(struct FloatVect3 *gate_point, struct FloatVect3 *cam_pos, struct FloatMat33 *R_mat, float *x_res, float *y_res);
+
 
 extern void snake_gate_periodic(void);
 

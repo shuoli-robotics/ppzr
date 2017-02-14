@@ -38,6 +38,7 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/lib/vision/qr_code_recognition.h"
+#include "modules/computer_vision/lib/vision/calc_p3p.h"
 
 #include "math/pprz_algebra.h"
 #include "math/pprz_algebra_float.h"
@@ -775,7 +776,59 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         states_race.gate_detected = 1;
         //draw_gate_color(img, best_gate, blue_color);
 	//draw_gate_polygon(img,points_x,points_y,blue_color);
-	draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
+//draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
+	
+	//vector and matrix declarations
+	  struct FloatVect3 gate_point_0,gate_point_1,gate_point_2,
+	  p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,p3p_pos_sol_3;
+	  struct FloatMat33 R_mat_0,R_mat_1,R_mat_2,R_mat_3;
+	  struct FloatEulers R_eulers;
+	
+	//DEBUG----------------------------------------------------------------
+	
+	  VECT3_ASSIGN(p3p_pos_sol_0, 2.295645,0.877159, -1.031926);
+	  
+// 	  MAT33_ELMT(R_mat_0, 0, 0) = 0.999867;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 0, 1) =  -0.015745;
+// 	  MAT33_ELMT(R_mat_0, 0, 2) = -0.004201;
+// 
+// 	  MAT33_ELMT(R_mat_0, 1, 0) = 0.015464;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 1, 1) = 0.998070;
+// 	  MAT33_ELMT(R_mat_0, 1, 2) = -0.060151;
+// 
+// 	  MAT33_ELMT(R_mat_0, 2, 0) = 0.005140;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 2, 1) = 0.060078;
+// 	  MAT33_ELMT(R_mat_0, 2, 2) = 0.998180;
+// 	
+	  MAT33_ELMT(R_mat_0, 0, 0) = 1;//(row,column)
+	  MAT33_ELMT(R_mat_0, 0, 1) = 0;
+	  MAT33_ELMT(R_mat_0, 0, 2) = 0;
+
+	  MAT33_ELMT(R_mat_0, 1, 0) = 0;//(row,column)
+	  MAT33_ELMT(R_mat_0, 1, 1) = 1;
+	  MAT33_ELMT(R_mat_0, 1, 2) = 0;
+
+	  MAT33_ELMT(R_mat_0, 2, 0) = 0;//(row,column)
+	  MAT33_ELMT(R_mat_0, 2, 1) = 0;
+	  MAT33_ELMT(R_mat_0, 2, 2) = 1;
+	  
+	int x_bp_corners[4];
+	int y_bp_corners[4];
+	float x_f_corners[4];
+	float y_f_corners[4];
+	
+	for(int i = 0;i<4;i++)
+	  {
+	    float x_bp;
+	    float y_bp;
+	    back_proj_points(&gate_points[i],&p3p_pos_sol_0,&R_mat_0,&x_bp,&y_bp);
+	    x_f_corners[i] = x_bp;
+	    y_f_corners[i] = y_bp;
+// 	    debug_1 = x_bp;
+// 	    debug_2 = y_bp;
+	  }
+	
+	//DEBUG---------------------------------------------------------------
 	
 	//Undistort fisheye points
 	int f_fisheye = 168;
@@ -789,11 +842,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  float princ_x = 157.0;
 	  float princ_y = 32.0;
 	  undistort_fisheye_point(best_gate.x_corners[i] ,best_gate.y_corners[i],&undist_x,&undist_y,f_fisheye,k_fisheye,princ_x,princ_y);
-	  draw_cross(img,((int)undist_x)+157,((int)undist_y)+32,green_color);
-	  //debug_1 = undist_x;
-	  //debug_2 = undist_y;
 	  
-	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
+// 	  draw_cross(img,((int)undist_x)+157,((int)undist_y)+32,green_color);
+// 	  //debug_1 = undist_x;
+// 	  //debug_2 = undist_y;
+// 	  
+// 	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
+	  
+	  draw_cross(img,(int)x_f_corners[i],(int)y_f_corners[i],green_color);
+	  vec_from_point(x_f_corners[i],y_f_corners[i], f_fisheye,&gate_vectors[i]);
+	  
+	  
 // 	  debug_1 = gate_vectors[i].x;
 // 	  debug_2 = gate_vectors[i].y;
 // 	  debug_3 = gate_vectors[i].z;
@@ -802,23 +861,134 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	 //p3p algorithm
 	
-	  struct FloatVect3 gate_point_0,gate_point_1,gate_point_2,
-	  p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,p3p_pos_sol_3;
-	  VECT3_ASSIGN(gate_point_0, 4.2000,0.3000, -1.9000);
-	  VECT3_ASSIGN(gate_point_1, 4.2000,1.3000, -1.9000);
-	  VECT3_ASSIGN(gate_point_2, 4.2000,1.3000, -0.9000);
+	
+	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
+	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
+	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
+	  VECT3_ASSIGN(gate_points[3], 4.2000,0.3000, -0.9000);
 	  
-	  P3p_computePoses(&gate_point_0,&gate_point_1,&gate_point_2,
+	  P3p_computePoses(&gate_points[0],&gate_points[1],&gate_points[2],
 			   &gate_vectors[0],&gate_vectors[1],&gate_vectors[2],
-			   &p3p_pos_sol_0,&p3p_pos_sol_1,&p3p_pos_sol_2,&p3p_pos_sol_3);
+			   &p3p_pos_sol_0,&p3p_pos_sol_1,&p3p_pos_sol_2,&p3p_pos_sol_3,
+			   &R_mat_0,&R_mat_1,&R_mat_2,&R_mat_3);
+	  
+	  float_eulers_of_rmat(&R_eulers,&R_mat_0);
+	  
+	  //for all 4 solutions
+	  //{
+	  //proj_point(p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,R_mat) //project 4 points based on position and rotation
+	  //}
+	  //best_solution_p3p()//sort error list and chose respective solution pos and R_mat
+	  //R_mat_to_angle()//from paparazzi
+	  
+// 	  VECT3_ASSIGN(p3p_pos_sol_0, 1.5000,0.8000, -1.4000);
+//	  VECT3_ASSIGN(p3p_pos_sol_0, 2.295645,0.877159, -1.031926);
+	  
+// 	  MAT33_ELMT(R_mat_0, 0, 0) = 1;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 0, 1) = 0;
+// 	  MAT33_ELMT(R_mat_0, 0, 2) = 0;
+// 
+// 	  MAT33_ELMT(R_mat_0, 1, 0) = 0;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 1, 1) = 1;
+// 	  MAT33_ELMT(R_mat_0, 1, 2) = 0;
+// 
+// 	  MAT33_ELMT(R_mat_0, 2, 0) = 0;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 2, 1) = 0;
+// 	  MAT33_ELMT(R_mat_0, 2, 2) = 1;
+	  
+// 	  MAT33_ELMT(R_mat_0, 0, 0) = 0.999867;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 0, 1) =  -0.015745;
+// 	  MAT33_ELMT(R_mat_0, 0, 2) = -0.004201;
+// 
+// 	  MAT33_ELMT(R_mat_0, 1, 0) = 0.015464;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 1, 1) = 0.998070;
+// 	  MAT33_ELMT(R_mat_0, 1, 2) = -0.060151;
+// 
+// 	  MAT33_ELMT(R_mat_0, 2, 0) = 0.005140;//(row,column)
+// 	  MAT33_ELMT(R_mat_0, 2, 1) = 0.060078;
+// 	  MAT33_ELMT(R_mat_0, 2, 2) = 0.998180;
+	  
+	  
+	  /*0.999867, -0.015745, -0.004201
+0.015464, 0.998070, -0.060151
+0.005140, 0.060078, 0.998180
+Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
+	  
+	  	printf("R_mat_0:\n");
+ 		print_mat(R_mat_0);
+		printf("Position solution nr:%d /// x:%f y:%f z%f\n",0,p3p_pos_sol_0.x,p3p_pos_sol_0.y,p3p_pos_sol_0.z);
+		float_eulers_of_rmat(&R_eulers,&R_mat_0);
+		printf("Eulers_0 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+		
+		printf("R_mat_1:\n");
+ 		print_mat(R_mat_1);
+		printf("Position solution nr:%d /// x:%f y:%f z%f\n",1,p3p_pos_sol_1.x,p3p_pos_sol_1.y,p3p_pos_sol_1.z);
+		float_eulers_of_rmat(&R_eulers,&R_mat_1);
+		printf("Eulers_1 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+		
+		printf("R_mat_2:\n");
+ 		print_mat(R_mat_2);
+		printf("Position solution nr:%d /// x:%f y:%f z%f\n",2,p3p_pos_sol_2.x,p3p_pos_sol_2.y,p3p_pos_sol_2.z);
+		float_eulers_of_rmat(&R_eulers,&R_mat_2);
+		printf("Eulers_2 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+		
+		
+		printf("R_mat_3:\n");
+ 		print_mat(R_mat_3);
+		printf("Position solution nr:%d /// x:%f y:%f z%f\n",3,p3p_pos_sol_3.x,p3p_pos_sol_3.y,p3p_pos_sol_3.z);
+		float_eulers_of_rmat(&R_eulers,&R_mat_3);
+		printf("Eulers_3 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+		
+	  for(int i = 0;i<4;i++)
+	  {
+	    float x_bp;
+	    float y_bp;
+	    back_proj_points(&gate_points[i],&p3p_pos_sol_0,&R_mat_0,&x_bp,&y_bp);
+	    x_bp_corners[i] = (int)x_bp;
+	    y_bp_corners[i] = (int)y_bp;
+// 	    debug_1 = x_bp;
+// 	    debug_2 = y_bp;
+	  }
+	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  
+	  for(int i = 0;i<4;i++)
+	  {
+	    float x_bp;
+	    float y_bp;
+	    back_proj_points(&gate_points[i],&p3p_pos_sol_1,&R_mat_1,&x_bp,&y_bp);
+	    x_bp_corners[i] = (int)x_bp;
+	    y_bp_corners[i] = (int)y_bp;
+	  }
+	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  
+	  for(int i = 0;i<4;i++)
+	  {
+	    float x_bp;
+	    float y_bp;
+	    back_proj_points(&gate_points[i],&p3p_pos_sol_2,&R_mat_2,&x_bp,&y_bp);
+	    x_bp_corners[i] = (int)x_bp;
+	    y_bp_corners[i] = (int)y_bp;
+	  }
+	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  
+	  for(int i = 0;i<4;i++)
+	  {
+	    float x_bp;
+	    float y_bp;
+	    back_proj_points(&gate_points[i],&p3p_pos_sol_3,&R_mat_3,&x_bp,&y_bp);
+	    x_bp_corners[i] = (int)x_bp;
+	    y_bp_corners[i] = (int)y_bp;
+	  }
+	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  
 	  
 // 	  debug_1 = p3p_pos_sol_0.x;
 // 	  debug_2 = p3p_pos_sol_0.y;
 // 	  debug_3 = p3p_pos_sol_0.z;
 	  
-	  debug_1 = p3p_pos_sol_1.x;
-	  debug_2 = p3p_pos_sol_1.y;
-	  debug_3 = p3p_pos_sol_1.z;
+// 	  debug_1 = p3p_pos_sol_1.x;
+// 	  debug_2 = p3p_pos_sol_1.y;
+// 	  debug_3 = p3p_pos_sol_1.z;
 	
 	    //error tests
 	// reference vectors
@@ -908,8 +1078,8 @@ k = 1.085;
   //debug_1 = k;
   //debug_2 = (float)f;
   //k = 1.085;
-  k = 1.051;
-  //k = 1.118;
+k = 1.051;
+ // k = 1.118;
   
   //radial distortion correction
   float R = (float)f*tan(asin(sin( atan(r/(float)f))*k));
@@ -947,6 +1117,57 @@ void vec_from_point_ned(float point_x, float point_y, int f, struct FloatVect3 *
   double norm = sqrt(VECT3_NORM2(*vec));
   VECT3_SDIV(*vec, *vec, norm);
   
+}
+
+
+void back_proj_points(struct FloatVect3 *gate_point, struct FloatVect3 *cam_pos, struct FloatMat33 *R_mat, float *x_res, float *y_res)
+{
+  
+//   point_3d = R*(gate_point-cam_pos');
+// 
+//     hom_coord = [point_3d(2)/point_3d(1);
+//                  point_3d(3)/point_3d(1);
+//                  1];
+// 
+//     res = intr*hom_coord;
+  
+  struct FloatVect3 temp1, point_3d, hom_coord, res;
+  struct FloatMat33 intr, R_t;
+  
+  VECT3_DIFF(temp1,*gate_point,*cam_pos);
+  MAT33_TRANS(R_t,*R_mat);
+  MAT33_VECT3_MUL(point_3d,R_t,temp1);
+  hom_coord.x = point_3d.y/point_3d.x;
+  hom_coord.y = -point_3d.z/point_3d.x;
+  hom_coord.z = 1;
+  
+//   debug_1 = hom_coord.x;
+//   debug_2 = hom_coord.y;
+  
+  MAT33_ELMT(intr, 0, 0) = 168;//(row,column)
+  MAT33_ELMT(intr, 0, 1) = 0;
+  MAT33_ELMT(intr, 0, 2) = 157;
+
+  MAT33_ELMT(intr, 1, 0) = 0;//(row,column)
+  MAT33_ELMT(intr, 1, 1) = 168;
+  MAT33_ELMT(intr, 1, 2) = 32;
+
+  MAT33_ELMT(intr, 2, 0) = 0;//(row,column)
+  MAT33_ELMT(intr, 2, 1) = 0;
+  MAT33_ELMT(intr, 2, 2) = 0;
+  
+  MAT33_VECT3_MUL(res,intr,hom_coord);
+  
+  debug_1 = res.x;
+  debug_2 = res.y;
+  
+  *x_res = res.x;
+  *y_res = res.y;
+  
+  
+  //Rmat
+  
+  //image_error()//compare with undist_x and undist_y
 }
 
 
