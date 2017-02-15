@@ -785,6 +785,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  struct FloatEulers R_eulers;
 	  
 	  struct FloatVect3 p3p_pos_sol[4];
+	  struct FloatVect3 gate_shift_points[4];
+	  struct FloatVect3 gate_shift_vec[4];
 	  struct FloatMat33 R_mat[4];
 	  
 	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
@@ -824,6 +826,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	int y_bp_corners[4];
 	float x_f_corners[4];
 	float y_f_corners[4];
+	float x_gate_corners[4];
+	float y_gate_corners[4];
 	
 	for(int i = 0;i<4;i++)
 	  {
@@ -841,8 +845,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//Undistort fisheye points
 	int f_fisheye = 168;
 	float k_fisheye = 1.085;
-	float x_gate_corners[4];
-	float y_gate_corners[4];
+	float reprojection_error[4];
 	for(int i = 0;i<4;i++)
 	{
 	  float undist_x, undist_y;
@@ -853,19 +856,19 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  float princ_y = 32.0;
 	  undistort_fisheye_point(best_gate.x_corners[i] ,best_gate.y_corners[i],&undist_x,&undist_y,f_fisheye,k_fisheye,princ_x,princ_y);
 	  
-// 	  draw_cross(img,((int)undist_x)+157,((int)undist_y)+32,green_color);
-// 	  //debug_1 = undist_x;
-// 	  //debug_2 = undist_y;
-// 	  
-// 	  x_gate_corners[i] = undist_x;
-// 	  y_gate_corners[i] = undist_y;
-// 	  
-// 	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
+	  x_gate_corners[i] = undist_x+157.0;
+	  y_gate_corners[i] = undist_y+32.0;
 	  
-	  draw_cross(img,(int)x_f_corners[i],(int)y_f_corners[i],green_color);
-	  vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&gate_vectors[i]);
+	  draw_cross(img,((int)x_gate_corners[i]),((int)y_gate_corners[i]),green_color);
+	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
 	  
-	  //vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&vec_temp1);
+	   //debug_1 = undist_x;
+ 	  //debug_2 = undist_y;
+	  
+// 	  draw_cross(img,(int)x_f_corners[i],(int)y_f_corners[i],green_color);
+// 	  vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&gate_vectors[i]);
+	  
+	 // //vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&vec_temp1);
 // 	  
 // 	  printf("vec_from_point:\n");
 // 	  print_vec(vec_temp1);
@@ -883,6 +886,29 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 // 	  debug_3 = gate_vectors[i].z;
 	  
 	}
+	
+	int in_array[4] = {1, 2, 3, 4};
+	int shift_array[4];
+	int index = 0;
+	//circ shift for checking which triplet of points gives best solution after back projection
+	for(int s = 0;s<4;s++)
+	{
+	  for(int i = 0; i < 4;i++)
+	  {
+	    index = (i+s) % 4;
+	    shift_array[index] = in_array[i];
+	    gate_shift_points[index] = gate_points[i];
+	    gate_shift_vec[index] = gate_vectors[i];
+	  }
+	  printf("shift_n:%d\n",s);
+	  printf("shift_array{%d, %d, %d, %d} \n",shift_array[0],shift_array[1],shift_array[2],shift_array[3]);
+	  printf("gate_shift_points[%d] x:%f y:%f z%f\n",0,gate_shift_points[0].x,gate_shift_points[0].y,gate_shift_points[0].z);
+	  printf("gate_shift_points[%d] x:%f y:%f z%f\n",1,gate_shift_points[1].x,gate_shift_points[1].y,gate_shift_points[1].z);
+	  printf("gate_shift_points[%d] x:%f y:%f z%f\n",2,gate_shift_points[2].x,gate_shift_points[2].y,gate_shift_points[2].z);
+	  printf("gate_shift_points[%d] x:%f y:%f z%f\n",3,gate_shift_points[3].x,gate_shift_points[3].y,gate_shift_points[3].z);
+	
+	}
+	
 	
 	 //p3p algorithm
 	
@@ -975,6 +1001,8 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",3,p3p_pos_sol[3].x,p3p_pos_sol[3].y,p3p_pos_sol[3].z);
 		print_mat(R_mat[3]);
 		
+	
+	  reprojection_error[0] = 0;
 	  for(int i = 0;i<4;i++)
 	  {
 	    float x_bp;
@@ -982,11 +1010,14 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	    back_proj_points(&gate_points[i],&p3p_pos_sol[0],&R_mat[0],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
+	    reprojection_error[0] += euclidean_distance(x_gate_corners[i], x_bp_corners[i],y_gate_corners[i],y_bp_corners[i]);
 // 	    debug_1 = x_bp;
 // 	    debug_2 = y_bp;
 	  }
-	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  printf("reprojection_error[0]:%f\n",reprojection_error[0]);
+	  //draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
 	  
+	  reprojection_error[1] = 0;
 	  for(int i = 0;i<4;i++)
 	  {
 	    float x_bp;
@@ -994,9 +1025,12 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	    back_proj_points(&gate_points[i],&p3p_pos_sol[1],&R_mat[1],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
+	    reprojection_error[1] += euclidean_distance(x_gate_corners[i], x_bp_corners[i],y_gate_corners[i],y_bp_corners[i]);
 	  }
-	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  printf("reprojection_error[1]:%f\n",reprojection_error[1]);
+	  //raw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
 	  
+	  reprojection_error[2] = 0;
 	  for(int i = 0;i<4;i++)
 	  {
 	    float x_bp;
@@ -1004,9 +1038,12 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	    back_proj_points(&gate_points[i],&p3p_pos_sol[2],&R_mat[2],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
+	    reprojection_error[2] += euclidean_distance(x_gate_corners[i], x_bp_corners[i],y_gate_corners[i],y_bp_corners[i]);
 	  }
-	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  printf("reprojection_error[2]:%f\n",reprojection_error[2]);
+	  //draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
 	  
+	  reprojection_error[3] = 0;
 	  for(int i = 0;i<4;i++)
 	  {
 	    float x_bp;
@@ -1014,17 +1051,27 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	    back_proj_points(&gate_points[i],&p3p_pos_sol[3],&R_mat[3],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
+	    reprojection_error[3] += euclidean_distance(x_gate_corners[i], x_bp_corners[i],y_gate_corners[i],y_bp_corners[i]);
+	  }
+	  printf("reprojection_error[3]:%f\n",reprojection_error[3]);
+	  //draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  
+	 
+	  int min_loc = find_minimum(reprojection_error);
+	  
+	  printf("Minimum error at solution:%d\n",min_loc);
+	  printf("POSITION:\n X:%f\n Y:%f\n Z:%f\n",p3p_pos_sol[min_loc].x,p3p_pos_sol[min_loc].y,p3p_pos_sol[min_loc].z);
+	  //print best gate
+	  for(int i = 0;i<4;i++)
+	  {
+	    float x_bp;
+	    float y_bp;
+	    back_proj_points(&gate_points[i],&p3p_pos_sol[min_loc],&R_mat[min_loc],&x_bp,&y_bp);
+	    x_bp_corners[i] = (int)x_bp;
+	    y_bp_corners[i] = (int)y_bp;
 	  }
 	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
-	  
-	  
-// 	  debug_1 = p3p_pos_sol_0.x;
-// 	  debug_2 = p3p_pos_sol_0.y;
-// 	  debug_3 = p3p_pos_sol_0.z;
-	  
-// 	  debug_1 = p3p_pos_sol_1.x;
-// 	  debug_2 = p3p_pos_sol_1.y;
-// 	  debug_3 = p3p_pos_sol_1.z;
+	 
 	
 	    //error tests
 	// reference vectors
@@ -1088,6 +1135,23 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
   return img; // snake_gate_detection did not make a new image
 }
 
+int find_minimum(float *error)
+{
+    float minimum = error[0];
+    int location = 0;
+    
+	for (int c = 1 ; c < 4 ; c++ ) 
+	{
+	    if ( error[c] < minimum ) 
+	    {
+	      minimum = error[c];
+	      location = c;
+	    }
+	}
+    return location;
+}
+
+
 float euclidean_distance(float x_i, float x_bp, float y_i, float y_bp)
 {
   float dist = sqrt(pow((x_i - x_bp),2)+pow((y_i - y_bp),2));
@@ -1120,8 +1184,9 @@ k = 1.085;
   //debug_1 = k;
   //debug_2 = (float)f;
   //k = 1.085;
-k = 1.051;
- // k = 1.118;
+//k = 1.051;
+   k = 1.118;
+ // k = 1.218;
   
   //radial distortion correction
   float R = (float)f*tan(asin(sin( atan(r/(float)f))*k));

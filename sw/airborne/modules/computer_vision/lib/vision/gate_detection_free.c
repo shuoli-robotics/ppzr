@@ -46,7 +46,8 @@ float outlier_threshold = 20.0f;
 
 // Settings for the evolution:
 // 10 individuals 30 generations is a normal setting
-#define N_INDIVIDUALS 15// 10
+#define N_INDIVIDUALS 10// 15
+//#define N_INDIVIDUALS 15
 // The number of genes depends on the shape:
 //#if SHAPE == CIRCLE || SHAPE == SQUARE
 //  #define N_GENES 3
@@ -58,7 +59,8 @@ float outlier_threshold = 20.0f;
 
 #define N_GENES_CLOCK 2
 //printf N_GENES
-uint16_t n_generations = 30;//15; // could be reduced for instance when there are many points
+uint16_t n_generations = 15;//30; // could be reduced for instance when there are many points
+//uint16_t n_generations = 30;
 float Population[N_INDIVIDUALS][N_GENES];
 
 // whether to draw on the image:

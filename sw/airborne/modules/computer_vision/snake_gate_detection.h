@@ -60,7 +60,8 @@ void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec)
 void vec_from_point_ned(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center);
 void back_proj_points(struct FloatVect3 *gate_point, struct FloatVect3 *cam_pos, struct FloatMat33 *R_mat, float *x_res, float *y_res);
-
+float euclidean_distance(float x_i, float x_bp, float y_i, float y_bp);
+int find_minimum(float *error);
 
 extern void snake_gate_periodic(void);
 
