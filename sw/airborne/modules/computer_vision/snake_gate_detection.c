@@ -780,37 +780,45 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	//vector and matrix declarations
 	  struct FloatVect3 gate_point_0,gate_point_1,gate_point_2,
-	  p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,p3p_pos_sol_3;
-	  struct FloatMat33 R_mat_0,R_mat_1,R_mat_2,R_mat_3;
+	  p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,p3p_pos_sol_3,p3p_pos_test;
+	  struct FloatMat33 R_mat_0,R_mat_1,R_mat_2,R_mat_3, R_test;
 	  struct FloatEulers R_eulers;
+	  
+	  struct FloatVect3 p3p_pos_sol[4];
+	  struct FloatMat33 R_mat[4];
+	  
+	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
+	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
+	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
+	  VECT3_ASSIGN(gate_points[3], 4.2000,0.3000, -0.9000);
 	
 	//DEBUG----------------------------------------------------------------
 	
-	  VECT3_ASSIGN(p3p_pos_sol_0, 2.295645,0.877159, -1.031926);
+	  VECT3_ASSIGN(p3p_pos_test, 2.295645,0.877159, -1.031926);
 	  
-// 	  MAT33_ELMT(R_mat_0, 0, 0) = 0.999867;//(row,column)
-// 	  MAT33_ELMT(R_mat_0, 0, 1) =  -0.015745;
-// 	  MAT33_ELMT(R_mat_0, 0, 2) = -0.004201;
-// 
-// 	  MAT33_ELMT(R_mat_0, 1, 0) = 0.015464;//(row,column)
-// 	  MAT33_ELMT(R_mat_0, 1, 1) = 0.998070;
-// 	  MAT33_ELMT(R_mat_0, 1, 2) = -0.060151;
-// 
-// 	  MAT33_ELMT(R_mat_0, 2, 0) = 0.005140;//(row,column)
-// 	  MAT33_ELMT(R_mat_0, 2, 1) = 0.060078;
-// 	  MAT33_ELMT(R_mat_0, 2, 2) = 0.998180;
+	  MAT33_ELMT(R_test, 0, 0) = 0.999867;//(row,column)
+	  MAT33_ELMT(R_test, 0, 1) =  -0.015745;
+	  MAT33_ELMT(R_test, 0, 2) = -0.004201;
+
+	  MAT33_ELMT(R_test, 1, 0) = 0.015464;//(row,column)
+	  MAT33_ELMT(R_test, 1, 1) = 0.998070;
+	  MAT33_ELMT(R_test, 1, 2) = -0.060151;
+
+	  MAT33_ELMT(R_test, 2, 0) = 0.005140;//(row,column)
+	  MAT33_ELMT(R_test, 2, 1) = 0.060078;
+	  MAT33_ELMT(R_test, 2, 2) = 0.998180;
 // 	
-	  MAT33_ELMT(R_mat_0, 0, 0) = 1;//(row,column)
-	  MAT33_ELMT(R_mat_0, 0, 1) = 0;
-	  MAT33_ELMT(R_mat_0, 0, 2) = 0;
-
-	  MAT33_ELMT(R_mat_0, 1, 0) = 0;//(row,column)
-	  MAT33_ELMT(R_mat_0, 1, 1) = 1;
-	  MAT33_ELMT(R_mat_0, 1, 2) = 0;
-
-	  MAT33_ELMT(R_mat_0, 2, 0) = 0;//(row,column)
-	  MAT33_ELMT(R_mat_0, 2, 1) = 0;
-	  MAT33_ELMT(R_mat_0, 2, 2) = 1;
+// 	  MAT33_ELMT(R_test, 0, 0) = 1;//(row,column)
+// 	  MAT33_ELMT(R_test, 0, 1) = 0;
+// 	  MAT33_ELMT(R_test, 0, 2) = 0;
+// 
+// 	  MAT33_ELMT(R_test, 1, 0) = 0;//(row,column)
+// 	  MAT33_ELMT(R_test, 1, 1) = 1;
+// 	  MAT33_ELMT(R_test, 1, 2) = 0;
+// 
+// 	  MAT33_ELMT(R_test, 2, 0) = 0;//(row,column)
+// 	  MAT33_ELMT(R_test, 2, 1) = 0;
+// 	  MAT33_ELMT(R_test, 2, 2) = 1;
 	  
 	int x_bp_corners[4];
 	int y_bp_corners[4];
@@ -821,7 +829,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  {
 	    float x_bp;
 	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_sol_0,&R_mat_0,&x_bp,&y_bp);
+	    back_proj_points(&gate_points[i],&p3p_pos_test,&R_test,&x_bp,&y_bp);
 	    x_f_corners[i] = x_bp;
 	    y_f_corners[i] = y_bp;
 // 	    debug_1 = x_bp;
@@ -833,6 +841,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//Undistort fisheye points
 	int f_fisheye = 168;
 	float k_fisheye = 1.085;
+	float x_gate_corners[4];
+	float y_gate_corners[4];
 	for(int i = 0;i<4;i++)
 	{
 	  float undist_x, undist_y;
@@ -847,10 +857,25 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 // 	  //debug_1 = undist_x;
 // 	  //debug_2 = undist_y;
 // 	  
+// 	  x_gate_corners[i] = undist_x;
+// 	  y_gate_corners[i] = undist_y;
+// 	  
 // 	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
 	  
 	  draw_cross(img,(int)x_f_corners[i],(int)y_f_corners[i],green_color);
-	  vec_from_point(x_f_corners[i],y_f_corners[i], f_fisheye,&gate_vectors[i]);
+	  vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&gate_vectors[i]);
+	  
+	  //vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&vec_temp1);
+// 	  
+// 	  printf("vec_from_point:\n");
+// 	  print_vec(vec_temp1);
+// 	  
+// 	  VECT3_DIFF(vec_temp1,gate_points[i],p3p_pos_sol_0);
+// 	  double norm = sqrt(VECT3_NORM2(vec_temp1));
+// 	  VECT3_SDIV(gate_vectors[i], vec_temp1, norm);
+// 	  
+// 	  printf("gate_vectors[%d]:\n",i);
+// 	  print_vec(gate_vectors[i]);
 	  
 	  
 // 	  debug_1 = gate_vectors[i].x;
@@ -861,17 +886,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	 //p3p algorithm
 	
-	
-	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
-	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
-	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
-	  VECT3_ASSIGN(gate_points[3], 4.2000,0.3000, -0.9000);
+	  
+// 	  P3p_computePoses(&gate_points[0],&gate_points[1],&gate_points[2],
+// 			   &gate_vectors[0],&gate_vectors[1],&gate_vectors[2],
+// 			   &p3p_pos_sol_0,&p3p_pos_sol_1,&p3p_pos_sol_2,&p3p_pos_sol_3,
+// 			   &R_mat_0,&R_mat_1,&R_mat_2,&R_mat_3);
 	  
 	  P3p_computePoses(&gate_points[0],&gate_points[1],&gate_points[2],
 			   &gate_vectors[0],&gate_vectors[1],&gate_vectors[2],
-			   &p3p_pos_sol_0,&p3p_pos_sol_1,&p3p_pos_sol_2,&p3p_pos_sol_3,
-			   &R_mat_0,&R_mat_1,&R_mat_2,&R_mat_3);
-	  
+			   &p3p_pos_sol[0],&p3p_pos_sol[1],&p3p_pos_sol[2],&p3p_pos_sol[3],
+			   &R_mat[0],&R_mat[1],&R_mat[2],&R_mat[3]);
+	
 	  float_eulers_of_rmat(&R_eulers,&R_mat_0);
 	  
 	  //for all 4 solutions
@@ -914,36 +939,47 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 0.005140, 0.060078, 0.998180
 Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  
-	  	printf("R_mat_0:\n");
- 		print_mat(R_mat_0);
-		printf("Position solution nr:%d /// x:%f y:%f z%f\n",0,p3p_pos_sol_0.x,p3p_pos_sol_0.y,p3p_pos_sol_0.z);
-		float_eulers_of_rmat(&R_eulers,&R_mat_0);
-		printf("Eulers_0 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
-		
-		printf("R_mat_1:\n");
- 		print_mat(R_mat_1);
-		printf("Position solution nr:%d /// x:%f y:%f z%f\n",1,p3p_pos_sol_1.x,p3p_pos_sol_1.y,p3p_pos_sol_1.z);
-		float_eulers_of_rmat(&R_eulers,&R_mat_1);
-		printf("Eulers_1 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
-		
-		printf("R_mat_2:\n");
- 		print_mat(R_mat_2);
-		printf("Position solution nr:%d /// x:%f y:%f z%f\n",2,p3p_pos_sol_2.x,p3p_pos_sol_2.y,p3p_pos_sol_2.z);
-		float_eulers_of_rmat(&R_eulers,&R_mat_2);
-		printf("Eulers_2 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
-		
-		
-		printf("R_mat_3:\n");
- 		print_mat(R_mat_3);
-		printf("Position solution nr:%d /// x:%f y:%f z%f\n",3,p3p_pos_sol_3.x,p3p_pos_sol_3.y,p3p_pos_sol_3.z);
-		float_eulers_of_rmat(&R_eulers,&R_mat_3);
-		printf("Eulers_3 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+// 	  	printf("R_mat_0:\n");
+//  		print_mat(R_mat_0);
+// 		printf("Position solution nr:%d /// x:%f y:%f z%f\n",0,p3p_pos_sol_0.x,p3p_pos_sol_0.y,p3p_pos_sol_0.z);
+// 		float_eulers_of_rmat(&R_eulers,&R_mat_0);
+// 		printf("Eulers_0 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+// 		
+// 		printf("R_mat_1:\n");
+//  		print_mat(R_mat_1);
+// 		printf("Position solution nr:%d /// x:%f y:%f z%f\n",1,p3p_pos_sol_1.x,p3p_pos_sol_1.y,p3p_pos_sol_1.z);
+// 		float_eulers_of_rmat(&R_eulers,&R_mat_1);
+// 		printf("Eulers_1 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+// 		
+// 		printf("R_mat_2:\n");
+//  		print_mat(R_mat_2);
+// 		printf("Position solution nr:%d /// x:%f y:%f z%f\n",2,p3p_pos_sol_2.x,p3p_pos_sol_2.y,p3p_pos_sol_2.z);
+// 		float_eulers_of_rmat(&R_eulers,&R_mat_2);
+// 		printf("Eulers_2 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+// 		
+// 		
+// 		printf("R_mat_3:\n");
+//  		print_mat(R_mat_3);
+// 		printf("Position solution nr:%d /// x:%f y:%f z%f\n",3,p3p_pos_sol_3.x,p3p_pos_sol_3.y,p3p_pos_sol_3.z);
+// 		float_eulers_of_rmat(&R_eulers,&R_mat_3);
+// 		printf("Eulers_3 Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+// 		
+
+	  	
+		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",0,p3p_pos_sol[0].x,p3p_pos_sol[0].y,p3p_pos_sol[0].z);
+		print_mat(R_mat[0]);
+		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",1,p3p_pos_sol[1].x,p3p_pos_sol[1].y,p3p_pos_sol[1].z);
+		print_mat(R_mat[1]);
+		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",2,p3p_pos_sol[2].x,p3p_pos_sol[2].y,p3p_pos_sol[2].z);
+		print_mat(R_mat[2]);
+		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",3,p3p_pos_sol[3].x,p3p_pos_sol[3].y,p3p_pos_sol[3].z);
+		print_mat(R_mat[3]);
 		
 	  for(int i = 0;i<4;i++)
 	  {
 	    float x_bp;
 	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_sol_0,&R_mat_0,&x_bp,&y_bp);
+	    back_proj_points(&gate_points[i],&p3p_pos_sol[0],&R_mat[0],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
 // 	    debug_1 = x_bp;
@@ -955,7 +991,7 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  {
 	    float x_bp;
 	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_sol_1,&R_mat_1,&x_bp,&y_bp);
+	    back_proj_points(&gate_points[i],&p3p_pos_sol[1],&R_mat[1],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
 	  }
@@ -965,7 +1001,7 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  {
 	    float x_bp;
 	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_sol_2,&R_mat_2,&x_bp,&y_bp);
+	    back_proj_points(&gate_points[i],&p3p_pos_sol[2],&R_mat[2],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
 	  }
@@ -975,7 +1011,7 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  {
 	    float x_bp;
 	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_sol_3,&R_mat_3,&x_bp,&y_bp);
+	    back_proj_points(&gate_points[i],&p3p_pos_sol[3],&R_mat[3],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
 	  }
@@ -1050,6 +1086,12 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	
 	
   return img; // snake_gate_detection did not make a new image
+}
+
+float euclidean_distance(float x_i, float x_bp, float y_i, float y_bp)
+{
+  float dist = sqrt(pow((x_i - x_bp),2)+pow((y_i - y_bp),2));
+  return dist;
 }
 
 void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center)
@@ -1137,6 +1179,7 @@ void back_proj_points(struct FloatVect3 *gate_point, struct FloatVect3 *cam_pos,
   VECT3_DIFF(temp1,*gate_point,*cam_pos);
   MAT33_TRANS(R_t,*R_mat);
   MAT33_VECT3_MUL(point_3d,R_t,temp1);
+//   MAT33_VECT3_MUL(point_3d,*R_mat,temp1);
   hom_coord.x = point_3d.y/point_3d.x;
   hom_coord.y = -point_3d.z/point_3d.x;
   hom_coord.z = 1;
