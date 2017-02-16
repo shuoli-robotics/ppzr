@@ -626,8 +626,8 @@ int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_poi
 		
 		MAT33_COPY(R_solutions[i],R);
 		
- 		printf("R_mat:\n");
- 		print_mat(R);
+//  		printf("R_mat:\n");
+//  		print_mat(R);
 		
 		
 
@@ -637,7 +637,7 @@ int P3p_computePoses(struct FloatVect3 *gate_point_0,struct FloatVect3 *gate_poi
 		solutions.T()[i*4+3] = R.T()[2];*/
 		//copy position result only
 
-	printf("Position solution nr:%d /// x:%f y:%f z%f\n",i,C.x,C.y,C.z);
+	//printf("Position solution nr:%d /// x:%f y:%f z%f\n",i,C.x,C.y,C.z);
 
 		
 

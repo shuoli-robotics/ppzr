@@ -788,6 +788,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  struct FloatVect3 gate_shift_points[4];
 	  struct FloatVect3 gate_shift_vec[4];
 	  struct FloatMat33 R_mat[4];
+	  //ransac 
+	  int ransac_error[4];
+	  float ransac_rep_error[4];
+	  struct FloatVect3 ransac_pos[4];
+	  struct FloatMat33 ransac_R_mat[4];
 	  
 	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
 	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
@@ -907,7 +912,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  printf("gate_shift_points[%d] x:%f y:%f z%f\n",2,gate_shift_points[2].x,gate_shift_points[2].y,gate_shift_points[2].z);
 	  printf("gate_shift_points[%d] x:%f y:%f z%f\n",3,gate_shift_points[3].x,gate_shift_points[3].y,gate_shift_points[3].z);
 	
-	}
+	//}
 	
 	
 	 //p3p algorithm
@@ -918,8 +923,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 // 			   &p3p_pos_sol_0,&p3p_pos_sol_1,&p3p_pos_sol_2,&p3p_pos_sol_3,
 // 			   &R_mat_0,&R_mat_1,&R_mat_2,&R_mat_3);
 	  
-	  P3p_computePoses(&gate_points[0],&gate_points[1],&gate_points[2],
-			   &gate_vectors[0],&gate_vectors[1],&gate_vectors[2],
+// 	  P3p_computePoses(&gate_points[0],&gate_points[1],&gate_points[2],
+// 			   &gate_vectors[0],&gate_vectors[1],&gate_vectors[2],
+// 			   &p3p_pos_sol[0],&p3p_pos_sol[1],&p3p_pos_sol[2],&p3p_pos_sol[3],
+// 			   &R_mat[0],&R_mat[1],&R_mat[2],&R_mat[3]);
+
+	  P3p_computePoses(&gate_shift_points[0],&gate_shift_points[1],&gate_shift_points[2],
+			   &gate_shift_vec[0],&gate_shift_vec[1],&gate_shift_vec[2],
 			   &p3p_pos_sol[0],&p3p_pos_sol[1],&p3p_pos_sol[2],&p3p_pos_sol[3],
 			   &R_mat[0],&R_mat[1],&R_mat[2],&R_mat[3]);
 	
@@ -992,14 +1002,14 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 // 		
 
 	  	
-		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",0,p3p_pos_sol[0].x,p3p_pos_sol[0].y,p3p_pos_sol[0].z);
-		print_mat(R_mat[0]);
-		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",1,p3p_pos_sol[1].x,p3p_pos_sol[1].y,p3p_pos_sol[1].z);
-		print_mat(R_mat[1]);
-		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",2,p3p_pos_sol[2].x,p3p_pos_sol[2].y,p3p_pos_sol[2].z);
-		print_mat(R_mat[2]);
-		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",3,p3p_pos_sol[3].x,p3p_pos_sol[3].y,p3p_pos_sol[3].z);
-		print_mat(R_mat[3]);
+// 		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",0,p3p_pos_sol[0].x,p3p_pos_sol[0].y,p3p_pos_sol[0].z);
+// 		print_mat(R_mat[0]);
+// 		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",1,p3p_pos_sol[1].x,p3p_pos_sol[1].y,p3p_pos_sol[1].z);
+// 		print_mat(R_mat[1]);
+// 		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",2,p3p_pos_sol[2].x,p3p_pos_sol[2].y,p3p_pos_sol[2].z);
+// 		print_mat(R_mat[2]);
+// 		printf("Position solution nr:%d +++ x:%f y:%f z%f\n",3,p3p_pos_sol[3].x,p3p_pos_sol[3].y,p3p_pos_sol[3].z);
+// 		print_mat(R_mat[3]);
 		
 	
 	  reprojection_error[0] = 0;
@@ -1058,19 +1068,41 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  
 	 
 	  int min_loc = find_minimum(reprojection_error);
+	  ransac_rep_error[s] = reprojection_error[min_loc];
+	  ransac_error[s] = min_loc;
+	  ransac_pos[s] = p3p_pos_sol[min_loc];
+	  ransac_R_mat[s] = R_mat[min_loc];
 	  
-	  printf("Minimum error at solution:%d\n",min_loc);
-	  printf("POSITION:\n X:%f\n Y:%f\n Z:%f\n",p3p_pos_sol[min_loc].x,p3p_pos_sol[min_loc].y,p3p_pos_sol[min_loc].z);
-	  //print best gate
+	}
+	  
+	  int best_loc = find_minimum(ransac_error);
+	  //best_loc = 3;
+	  printf("Minimum error at solution:%d\n",best_loc);
+	  printf("Minimum error in pixels:%f\n",ransac_rep_error[best_loc]);
+	  printf("POSITION:\n X:%f\n Y:%f\n Z:%f\n",ransac_pos[best_loc].x,ransac_pos[best_loc].y,ransac_pos[best_loc].z);
+	  	 
+	  
 	  for(int i = 0;i<4;i++)
 	  {
 	    float x_bp;
 	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_sol[min_loc],&R_mat[min_loc],&x_bp,&y_bp);
+	    back_proj_points(&gate_points[i],&ransac_pos[best_loc],&ransac_R_mat[best_loc],&x_bp,&y_bp);
 	    x_bp_corners[i] = (int)x_bp;
 	    y_bp_corners[i] = (int)y_bp;
 	  }
-	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	  
+	  if(ransac_rep_error[best_loc] < 25) draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+// 	  printf("POSITION:\n X:%f\n Y:%f\n Z:%f\n",p3p_pos_sol[min_loc].x,p3p_pos_sol[min_loc].y,p3p_pos_sol[min_loc].z);
+	  //print best gate
+// 	  for(int i = 0;i<4;i++)
+// 	  {
+// 	    float x_bp;
+// 	    float y_bp;
+// 	    back_proj_points(&gate_points[i],&p3p_pos_sol[min_loc],&R_mat[min_loc],&x_bp,&y_bp);
+// 	    x_bp_corners[i] = (int)x_bp;
+// 	    y_bp_corners[i] = (int)y_bp;
+// 	  }
+// 	  draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
 	 
 	
 	    //error tests
@@ -1185,7 +1217,9 @@ k = 1.085;
   //debug_2 = (float)f;
   //k = 1.085;
 //k = 1.051;
-   k = 1.118;
+  
+  k = 1.080;
+   //k = 1.118;
  // k = 1.218;
   
   //radial distortion correction
