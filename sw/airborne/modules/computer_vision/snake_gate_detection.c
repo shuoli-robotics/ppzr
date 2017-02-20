@@ -1091,6 +1091,17 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	    y_bp_corners[i] = (int)y_bp;
 	  }
 	  
+	  
+	  //gate size check by calculating total length of elements between polygon gate
+	  //then determining error bound as function of gate size: larger gate -> higher error bound
+	  float gate_size_polygon =  euclidean_distance(x_gate_corners[0], x_gate_corners[1],y_gate_corners[0],y_gate_corners[1]);
+	  gate_size_polygon +=  euclidean_distance(x_gate_corners[1], x_gate_corners[2],y_gate_corners[1],y_gate_corners[2]);
+	  gate_size_polygon +=  euclidean_distance(x_gate_corners[2], x_gate_corners[3],y_gate_corners[2],y_gate_corners[3]);
+	  gate_size_polygon +=  euclidean_distance(x_gate_corners[3], x_gate_corners[0],y_gate_corners[3],y_gate_corners[0]);
+	  
+	  float error_factor =  ransac_rep_error[best_loc]/gate_size_polygon;
+	  printf("error_factor:%f\n",error_factor);
+	  
 	  if(ransac_rep_error[best_loc] < 25) draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
 // 	  printf("POSITION:\n X:%f\n Y:%f\n Z:%f\n",p3p_pos_sol[min_loc].x,p3p_pos_sol[min_loc].y,p3p_pos_sol[min_loc].z);
 	  //print best gate
