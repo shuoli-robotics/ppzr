@@ -51,6 +51,7 @@
 # define Z_SETPOINT -1.5   //was -1.5
 
 float psi0;//
+float v_x_f;
 float psi1;
 float psi_startup;
 float z0;
@@ -138,26 +139,6 @@ void go_straight(float velocity){
    // guidance_v_set_guided_z(z0);
 }
 
-void change_heading_hover(float derta_psi){
-    if(primitive_in_use != CHANGE_HEADING_HOVER)
-    {
-        primitive_in_use = CHANGE_HEADING_HOVER;
-        counter_primitive = 0;
-        time_primitive = 0;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-        psi0 = stateGetNedToBodyEulers_f()->psi;
-	    guidance_loop_set_heading(psi0+derta_psi);
-        states_race.turning = TRUE;
-	z0 = stateGetPositionNed_f()->z;
-    }
-    //guidance_v_set_guided_z(z0);
-
-    if (time_primitive > 1)   // was fabs(stateGetNedToBodyEulers_f()->psi - psi0-derta_psi)<0.05
-    {
-        states_race.turning = FALSE;
-    }
-}
 
 void circle(float radius, float planned_time){
     if(primitive_in_use != CIRCLE  )
@@ -488,7 +469,7 @@ void set_phi(float desired_phi)
 
 
 
-void set_attidude(float desired_theta,float desired_phi)
+void set_attitude(float desired_theta,float desired_phi)
 {
 
     /*if(primitive_in_use != SET_ATTITUDE)*/
@@ -540,4 +521,38 @@ void calculate_attitude_average(double * p_theta,double *p_phi,struct accelerati
    	}
 }
 
+void arc_open_loop(double radius,double theta)
+{
+    if(primitive_in_use != ARC_OPEN_LOOP)
+    { 
+		primitive_in_use = ARC_OPEN_LOOP;
+        psi = stateGetNedToBodyEulers_f()->psi;
+        z0 = stateGetPositionNed_f()->z;
+		v_x_f = 0;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+    }
+   /* float current_vel_x = stateGetSpeedNed_f()->x;*/
+    /*float current_vel_y = stateGetSpeedNed_f()->y;*/
+	/*float psi_a = stateGetNedToBodyEulers_f()->psi;*/
+	float v_x_b = cos(theta)*v_x_f;
+	float phi = stateGetNedToBodyEulers_f()->phi;
+	float v_z_b = cos(phi)*sin(theta)*v_x_f;
+	float drag_x_b = -0.27 * v_x_b - 0.102*v_x_b*v_x_b-0.2276;
+	float drag_z_b = -0.3356 * v_z_b + 0.2789*v_z_b*v_z_b-0.0137;
+	float drag_x_f = cos(theta)*drag_x_b+cos(phi)*sin(theta)*drag_z_b;
+	float drag_z_f = -sin(theta)*drag_x_b+cos(phi)*cos(theta)*drag_z_b;
+	float v_x_f_dot = tan(theta)*(-9.81)+drag_x_f;
+	/*v_x_f = cos(psi_a)*current_vel_x + sin(psi_a)*current_vel_y;*/
 
+	v_x_f = v_x_f + v_x_f_dot/20.0;
+	float psi_dot =  v_x_f/radius;
+	psi = psi + psi_dot *1/20;	
+	double phi_desired = -atan(-v_x_f*psi_dot*cos(theta)/9.81);
+	guidance_loop_set_theta(theta);
+	guidance_loop_set_phi(phi_desired); 
+	guidance_loop_set_heading(psi);
+	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+}

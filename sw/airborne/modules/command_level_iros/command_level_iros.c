@@ -129,7 +129,7 @@ void first_part_logic()
     {
         case PREPARE_CM:
 			calculate_attitude_average(&theta_bias,&phi_bias,&accel_bias);
-            if (sample_pointer == SAMPLE_NUM)
+			if (sample_pointer == SAMPLE_NUM)
             {
                 previous_lower_level = PREPARE_CM;
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
@@ -156,11 +156,12 @@ void first_part_logic()
 
         case HOVER_CM:
             hover();
-			calculate_attitude_average(&theta_hover,&phi_hover,&accel_hover);
-					if (sample_pointer == SAMPLE_NUM)
+			/*calculate_attitude_average(&theta_hover,&phi_hover,&accel_hover);*/
+					/*if (sample_pointer == SAMPLE_NUM)*/
+					if (1)
 					{
 							previous_mode = HOVER_CM;
-							state_lower_level = ATTITUDE_CONTROL_CM;
+							state_lower_level = APPROACH_GATE_CM;
 							state_upper_level = SECOND_PART;
 							counter_temp3 = 0;
 							time_temp3 = 0;
@@ -168,39 +169,6 @@ void first_part_logic()
 					}
             break;
 
-		case HOVER_ATTITUDE_CM:
-			/*set_attidude(theta_hover,phi_hover);*/
-			set_attidude(0,0);
-			if(time_primitive > 20)
-			{
-					previous_mode == HOVER_ATTITUDE_CM;
-					state_lower_level = ATTITUDE_CONTROL_CM;
-					state_upper_level = SECOND_PART;
-			}
-			break;
-
-		case TURN_CM:
-			
-			change_heading_absolute(0.0);
-			if(states_race.turning == FALSE)
-			{
-					state_upper_level = SECOND_PART;
-					state_lower_level = ATTITUDE_CONTROL_CM; 
-				    counter_temp3 = 0;
-					time_temp3 = 0;
-					printf("iiiiiiiiiiiiiiiiiiiiii\n");
-			}
-			break;
-
-		case LAND_CM:
-			land();
-			if ( states_race.land_is_finished == 1)
-			{			
-					state_lower_level = LAND_CM; 
-					states_race.land_is_finished = 0;
-
-			}
-			break;
     }
 }
 
@@ -210,30 +178,8 @@ void second_part_logic()
 {
 	switch(state_lower_level)
 	{
-		case ATTITUDE_CONTROL_CM:
-				if(time_temp3<5)
-				{
-						/*desired_theta = -1.0/9.8*(-0.5760*pow(time_temp3,2)+1.9200*time_temp3)+theta_bias;*/
-						desired_theta = theta_bias+(-3.0/180.0*3.14);
-						/*desired_theta = theta_hover;*/
-						/*desired_phi = phi_hover;*/
-						/*desired_phi = phi_bias;*/
-						desired_phi = -1.0/180.0*3.14 ;
-				}
-				/*else*/
-				/*{*/
-						/*desired_theta = -1.0/9.8*(-1.32*pow(time_temp3,2)+13.32*time_temp3-32.0)+theta_hover;*/
-						/*[>desired_theta = theta_hover;<]*/
-						/*desired_phi = phi_hover+(-0.0/180*3.14);*/
-                        /*[>desired_phi = 0;<]*/
-				/*}*/
-				set_attidude(desired_theta,desired_phi);
-				if (time_temp3>5)
-				{
-						state_upper_level = FIRST_PART;
-						state_lower_level = LAND_CM; 
-						/*file_logger_stop();*/
-				}
+			case APPROACH_GATE_CM:
+					arc_open_loop(1.0,-10.0/180*3.14);
 	}
 }
 

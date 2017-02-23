@@ -190,7 +190,7 @@ void guidance_loop_pid()
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
-    if (primitive_in_use == SET_ATTITUDE)
+    if (primitive_in_use == SET_ATTITUDE||primitive_in_use == ARC_OPEN_LOOP)
 			return;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
@@ -205,7 +205,7 @@ void guidance_loop_pid()
 
 void guidance_loop_set_heading(float heading){
 	/*guidance_rp_command.psi = heading;*/
-	guidance_module.cmd.theta = BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
+	guidance_module.cmd.psi= BFP_OF_REAL(heading, INT32_ANGLE_FRAC);
 }
 
 void guidance_loop_set_velocity(float vx_earth, float vy_earth){

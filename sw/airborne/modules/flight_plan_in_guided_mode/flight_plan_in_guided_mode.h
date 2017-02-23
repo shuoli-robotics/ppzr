@@ -50,6 +50,7 @@
 #define SET_PHI                  18
 #define SET_ATTITUDE             19
 #define CALCULATE_ATTITUDE_BIAS  20 
+#define ARC_OPEN_LOOP            21 
 
 
 #ifndef PREPARE_TIME
@@ -90,8 +91,9 @@ struct acceleration{
 extern  void change_heading_absolute(float psi);
 extern void set_theta(float desired_theta);
 extern void set_phi(float desired_phi);
-extern void set_attidude(float desired_theta,float desired_phi);
+extern void set_attitude(float desired_theta,float desired_phi);
 extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
+extern void arc_open_loop(double radius,double theta);
 
 extern int sample_pointer;
 #endif
