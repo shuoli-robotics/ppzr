@@ -49,6 +49,7 @@ void state_autonomous_race_init() {
     states_race.land_is_finished =FALSE;
     states_race.gate_counter_in_second_part = 0;
     states_race.gate_counter_in_third_part = 0;
+	states_race.attitude_control = FALSE;
 }
 
 void display_states()
@@ -64,7 +65,7 @@ void display_states()
     printf("\n");
     printf("\n");
     printf("\n");
-	debug_information();
+	/*debug_information();*/
 }
 
 void display_lower_state()
@@ -185,20 +186,5 @@ void display_guidance_mode()
 
 void debug_information()
 {
-		printf("THETA_BIAS ====== %f\n",theta_bias/3.14*180);
-		printf("PHI_BIAS ====== %f\n",phi_bias/3.14*180);
-		printf("ax_BIAS ====== %f\n",accel_bias.ax*0.0009766);
-		printf("ay_BIAS ====== %f\n",accel_bias.ay*0.0009766);
-		printf("az_BIAS ====== %f\n",accel_bias.az*0.0009766);
-		printf("SAMPLE_POINTER ====== %d\n",sample_pointer);
-    printf("\n");
-	printf("\n");
-    printf("\n");
-		printf("THETA_HOVER ====== %f\n",theta_hover/3.14*180);
-		printf("PHI_HOVER ====== %f\n",phi_hover/3.14*180);
-		printf("ax_HOVER ====== %f\n",accel_hover.ax*0.0009766);
-		printf("ay_HOVER ====== %f\n",accel_hover.ay*0.0009766);
-		printf("az_HOVER ====== %f\n",accel_hover.az*0.0009766);
-		printf("SAMPLE_POINTER ====== %d\n",sample_pointer);
 }
 

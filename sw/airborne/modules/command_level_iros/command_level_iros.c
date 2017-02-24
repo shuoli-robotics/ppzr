@@ -79,7 +79,7 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = PREPARE_CM; //PREPARE_CM;
+        state_lower_level = TAKE_OFF_CLOSE_LOOP_CM; //PREPARE_CM;
         state_upper_level = FIRST_PART;
         init_heading = stateGetNedToBodyEulers_f()->psi;
 		flag_init_geo = FALSE;
@@ -128,12 +128,8 @@ void first_part_logic()
     switch(state_lower_level)
     {
         case PREPARE_CM:
-			calculate_attitude_average(&theta_bias,&phi_bias,&accel_bias);
-			if (sample_pointer == SAMPLE_NUM)
-            {
                 previous_lower_level = PREPARE_CM;
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
-            }
             break;
 			
         case TAKE_OFF_OPEN_LOOP_CM:
@@ -150,22 +146,24 @@ void first_part_logic()
             if(states_race.altitude_is_achieved == TRUE)
             {
                 previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
-                state_lower_level = HOVER_CM;
+                state_lower_level = HOVER_AT_ORIGIN_CM;
             }
             break;
 
+        case HOVER_AT_ORIGIN_CM:
+					if (hover_at_origin() == TRUE)
+					{
+							previous_mode = HOVER_AT_ORIGIN_CM;
+							state_lower_level = HOVER_CM;
+					}
+            break;
         case HOVER_CM:
-            hover();
-			/*calculate_attitude_average(&theta_hover,&phi_hover,&accel_hover);*/
-					/*if (sample_pointer == SAMPLE_NUM)*/
-					if (1)
+			hover();
+			if (time_primitive > 2.0)
 					{
 							previous_mode = HOVER_CM;
-							state_lower_level = APPROACH_GATE_CM;
+							state_lower_level = GO_STRAIGHT_CM;
 							state_upper_level = SECOND_PART;
-							counter_temp3 = 0;
-							time_temp3 = 0;
-							/*file_logger_start();*/
 					}
             break;
 
@@ -178,14 +176,35 @@ void second_part_logic()
 {
 	switch(state_lower_level)
 	{
+			case GO_STRAIGHT_CM:
+					if(go_straight(-10.0/180*PI,2.0,0) == TRUE)
+					{
+							previous_mode = GO_THROUGH_CM;
+							state_lower_level = APPROACH_GATE_CM;
+					}
+					break;
 			case APPROACH_GATE_CM:
-					arc_open_loop(1.0,-10.0/180*3.14);
+				if(	arc_open_loop(1.5,-10.0/180*3.14,175.0/180*PI) == TRUE)
+				{
+							previous_mode = APPROACH_GATE_CM;
+							state_lower_level = LAND_CM;
+				}
+				break;
+			case LAND_CM:
+					if(go_straight(-10.0/180*PI,2.0,3.0) == TRUE)
+					{
+							previous_mode = LAND_CM;
+							state_lower_level = APPROACH_GATE_CM;
+							/*state_upper_level = THIRD_PART;*/
+					}
+					break;
+
 	}
 }
 
 void third_part_logic()
 {
-
+		land();
 }
 
 

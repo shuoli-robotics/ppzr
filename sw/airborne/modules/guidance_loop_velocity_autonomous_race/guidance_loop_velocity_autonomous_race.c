@@ -31,6 +31,7 @@
 #include "modules/command_level_iros/command_level_iros.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_indi.h"
+#include "modules/state_autonomous_race/state_autonomous_race.h"
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -190,7 +191,7 @@ void guidance_loop_pid()
     float c_psi = cosf(psi);
     phi_desired_f = s_psi * cmd_f.x + c_psi * cmd_f.y;
     theta_desired_f = c_psi * cmd_f.x - s_psi * cmd_f.y;
-    if (primitive_in_use == SET_ATTITUDE||primitive_in_use == ARC_OPEN_LOOP)
+    if (states_race.attitude_control == TRUE)
 			return;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
