@@ -52,6 +52,7 @@
 #define CALCULATE_ATTITUDE_BIAS  20 
 #define ARC_OPEN_LOOP            21 
 #define HOVER_AT_ORIGIN          22 
+#define PREPARE_BEFORE_TAKE_OFF  23 
 
 
 #ifndef PREPARE_TIME
@@ -96,6 +97,7 @@ extern void set_attitude(float desired_theta,float desired_phi);
 extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
 extern bool arc_open_loop(double radius,double theta,float delta_psi);
 extern bool hover_at_origin(void);
+extern bool prepare_before_take_off(double prepare_time);
 extern int sample_pointer;
 #endif
 

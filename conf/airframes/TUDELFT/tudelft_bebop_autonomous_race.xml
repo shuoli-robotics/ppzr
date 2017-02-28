@@ -149,10 +149,10 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G1_P" value="0.0639"/>
-    <define name="G1_Q" value="0.0361"/>
-    <define name="G1_R" value="0.0022"/>
-    <define name="G2_R" value="0.1450"/>
+    <define name="G1_P" value="0.0277"/>
+    <define name="G1_Q" value="0.0244"/>
+    <define name="G1_R" value="0.0007"/>
+    <define name="G2_R" value="0.10502"/>
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="600.0"/>
@@ -213,17 +213,17 @@
     <define name="DEADBAND_R" value="50"/>
 
     <!-- reference -->
-    <define name="REF_OMEGA_P" value="450" unit="deg/s"/>
+    <define name="REF_OMEGA_P" value="1000" unit="deg/s"/>
     <define name="REF_ZETA_P" value="0.9"/>
     <define name="REF_MAX_P" value="600." unit="deg/s"/>
     <define name="REF_MAX_PDOT" value="RadOfDeg(8000.)"/>
 
-    <define name="REF_OMEGA_Q" value="450" unit="deg/s"/>
+    <define name="REF_OMEGA_Q" value="1000" unit="deg/s"/>
     <define name="REF_ZETA_Q" value="0.9"/>
     <define name="REF_MAX_Q" value="600." unit="deg/s"/>
     <define name="REF_MAX_QDOT" value="RadOfDeg(8000.)"/>
 
-    <define name="REF_OMEGA_R" value="450" unit="deg/s"/>
+    <define name="REF_OMEGA_R" value="1000" unit="deg/s"/>
     <define name="REF_ZETA_R" value="0.9"/>
     <define name="REF_MAX_R" value="600." unit="deg/s"/>
     <define name="REF_MAX_RDOT" value="RadOfDeg(8000.)"/>

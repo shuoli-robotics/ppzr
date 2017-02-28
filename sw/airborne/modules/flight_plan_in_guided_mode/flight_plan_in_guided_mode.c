@@ -42,9 +42,10 @@
 
 
 
-#define KP_Y 0 
-#define KI_Y 0.00
-#define KD_Y 0.00
+#define KP_Y 0.6 
+#define KI_Y 0.0
+#define KD_Y 0.3
+#define MAX_PHI  20.0/180*3.14
 
 
 float psi0;//
@@ -78,7 +79,24 @@ void display_information()
 {
 }
 
-
+bool prepare_before_take_off(double prepare_time)
+{
+    if(primitive_in_use != PREPARE_BEFORE_TAKE_OFF){
+        primitive_in_use = PREPARE_BEFORE_TAKE_OFF;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+    }
+	if (time_primitive > prepare_time)
+	{
+			return 1;
+	}
+	else
+	{
+			return 0;
+	}
+}
 
 
 void hover()
@@ -105,17 +123,35 @@ bool go_straight(float theta,float distance,double ref_y){
         y_start = stateGetPositionNed_f()->y;
 		sum_y_error = 0;
 		states_race.attitude_control = TRUE;
+		if (arc_counter == 0)
+		{
+
+				guidance_loop_set_heading(0.0);
+		}
+		else
+		{
+				guidance_loop_set_heading(3.14);
+		}
     }
 
 	float current_y = stateGetPositionNed_f()->y;
-	float error_y = ref_y - current_y;
+	float sign = 1;
+	if(ref_y > 1.5)sign = -1;
+	float error_y = (ref_y - current_y)*sign;
 	sum_y_error += error_y/20.0;
 	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20 + KI_Y*sum_y_error;
+	if(phi > MAX_PHI)phi = MAX_PHI;
+	if(phi < -MAX_PHI)phi = -MAX_PHI;
 	guidance_loop_set_theta(theta);
 	guidance_loop_set_phi(phi); 
-	guidance_loop_set_heading(psi0);
+	/*guidance_loop_set_heading(psi0);*/
 	previous_error_y = error_y;
-	if (time_primitive > 1.0)
+	//if (time_primitive > 1.0)
+	if(ref_y < 1.5 && stateGetPositionNed_f()->x > 3)   
+	{
+			return TRUE;
+	}
+	else if(ref_y > 1.5 && stateGetPositionNed_f()->x < 0)   
 	{
 			return TRUE;
 	}
@@ -191,20 +227,19 @@ void hold_altitude(float desired_altitude)
     if (primitive_in_use != HOLD_ALTITUDE)
     {
         primitive_in_use = HOLD_ALTITUDE;
-        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
         counter_primitive = 0;
         time_primitive = 0;
         states_race.altitude_is_achieved = 0;
         guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 		states_race.attitude_control = FALSE;
-		guidance_loop_set_velocity(0.0, 0.0);
+		/*guidance_loop_set_velocity(0.0, 0.0);*/
         return;
     }
-    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 5)
+    if (fabs(stateGetPositionNed_f()->z - desired_altitude)<0.1 && time_primitive > 2)
 	{
         // psi1 = stateGetNedToBodyEulers_f()->psi;
-        guidance_loop_set_heading(psi_startup);
         states_race.altitude_is_achieved = 1;
         return;
     }
@@ -230,7 +265,20 @@ void set_phi(float desired_phi)
 
 void set_attitude(float desired_theta,float desired_phi)
 {
-
+    if(primitive_in_use != SET_ATTITUDE)
+    { 
+		primitive_in_use = SET_ATTITUDE;
+        psi0 = stateGetNedToBodyEulers_f()->psi;
+        z0 = stateGetPositionNed_f()->z;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+		states_race.attitude_control = TRUE;
+    }
+	guidance_loop_set_theta(desired_theta);
+	guidance_loop_set_phi(desired_phi); 
+	guidance_loop_set_heading(psi0);
 }
 
 
@@ -276,7 +324,8 @@ bool arc_open_loop(double radius,double theta,float delta_psi)
 	guidance_loop_set_phi(phi_desired); 
 	guidance_loop_set_heading(psi);
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
-	if (stateGetNedToBodyEulers_f()->psi>(psi0+delta_psi))
+	//if (stateGetNedToBodyEulers_f()->psi>(psi0+delta_psi))
+	if (psi>(psi0+delta_psi))
 	{
 			return 1;}
 	else
@@ -303,7 +352,7 @@ bool hover_at_origin()
     }
  float current_x = stateGetPositionNed_f()->x;
  float current_y = stateGetPositionNed_f()->y;
- if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 2)
+ if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 5)
  {
 		 return 1;
  }

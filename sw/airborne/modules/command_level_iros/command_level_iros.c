@@ -47,6 +47,9 @@ struct acceleration accel_hover;
 double desired_theta;
 double desired_phi;
 
+int arc_counter;
+float reference_y;
+
 void first_part_logic(void);
 void second_part_logic(void);
 void third_part_logic(void);
@@ -79,10 +82,11 @@ void command_run() {
         counter_autopilot_mode = 0;
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
-        state_lower_level = TAKE_OFF_CLOSE_LOOP_CM; //PREPARE_CM;
+        state_lower_level = PREPARE_CM; //PREPARE_CM;
         state_upper_level = FIRST_PART;
         init_heading = stateGetNedToBodyEulers_f()->psi;
 		flag_init_geo = FALSE;
+		arc_counter = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -128,7 +132,7 @@ void first_part_logic()
     switch(state_lower_level)
     {
         case PREPARE_CM:
-                previous_lower_level = PREPARE_CM;
+				if(prepare_before_take_off(3.0) == TRUE)
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
             break;
 			
@@ -154,7 +158,8 @@ void first_part_logic()
 					if (hover_at_origin() == TRUE)
 					{
 							previous_mode = HOVER_AT_ORIGIN_CM;
-							state_lower_level = HOVER_CM;
+							state_lower_level = GO_STRAIGHT_CM;
+							state_upper_level = SECOND_PART;
 					}
             break;
         case HOVER_CM:
@@ -177,26 +182,38 @@ void second_part_logic()
 	switch(state_lower_level)
 	{
 			case GO_STRAIGHT_CM:
-					if(go_straight(-10.0/180*PI,2.0,0) == TRUE)
+					if (arc_counter == 0)
+					{
+
+							reference_y = 0;
+					}
+					else 
+					{
+							reference_y = 3;
+					}
+					if(go_straight(-7.0/180*PI,2.0,reference_y) == TRUE)
 					{
 							previous_mode = GO_THROUGH_CM;
 							state_lower_level = APPROACH_GATE_CM;
 					}
 					break;
 			case APPROACH_GATE_CM:
-				if(	arc_open_loop(1.5,-10.0/180*3.14,175.0/180*PI) == TRUE)
+				if(	arc_open_loop(1.5,-7.0/180*3.14,180.0/180*PI) == TRUE)
 				{
 							previous_mode = APPROACH_GATE_CM;
-							state_lower_level = LAND_CM;
+							state_lower_level = GO_STRAIGHT_CM;
+							if (arc_counter ==0)
+							{
+									arc_counter =1;
+							}
+							else
+							{
+									arc_counter = 0;
+							}
 				}
 				break;
 			case LAND_CM:
-					if(go_straight(-10.0/180*PI,2.0,3.0) == TRUE)
-					{
-							previous_mode = LAND_CM;
-							state_lower_level = APPROACH_GATE_CM;
-							/*state_upper_level = THIRD_PART;*/
-					}
+				set_attitude(-10.0/180*3.14,0.0);
 					break;
 
 	}

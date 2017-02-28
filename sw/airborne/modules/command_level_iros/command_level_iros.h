@@ -102,5 +102,6 @@ extern double theta_hover;
 extern double phi_hover;
 extern struct acceleration accel_bias;
 extern struct acceleration accel_hover;
+extern int arc_counter;
 #endif
 
