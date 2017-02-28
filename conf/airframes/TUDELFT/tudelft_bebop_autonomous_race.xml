@@ -37,6 +37,7 @@
     <module name="ahrs" type="int_cmpl_quat">
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
+      <define name="AHRS_GRAVITY_UPDATA_COORDINATED_TURN" value="TRUE"/>
     </module>
     <module name="ins" type="gps_passthrough"/><!--extended-->
   </firmware>

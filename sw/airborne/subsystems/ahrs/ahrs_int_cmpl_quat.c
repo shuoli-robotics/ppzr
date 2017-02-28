@@ -32,6 +32,7 @@
 
 #include "subsystems/ahrs/ahrs_int_cmpl_quat.h"
 #include "subsystems/ahrs/ahrs_int_utils.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 
 #if USE_GPS
 #include "subsystems/gps.h"
@@ -522,7 +523,8 @@ void ahrs_icq_update_gps(struct GpsState *gps_s __attribute__((unused)))
 {
 #if AHRS_GRAVITY_UPDATE_COORDINATED_TURN && USE_GPS
   if (gps_s->fix >= GPS_FIX_3D) {
-    ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(gps_s->speed_3d / 100.);
+    /*ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(gps_s->speed_3d / 100.);*/
+    ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(v_x_f);
     ahrs_icq.ltp_vel_norm_valid = true;
   } else {
     ahrs_icq.ltp_vel_norm_valid = false;
