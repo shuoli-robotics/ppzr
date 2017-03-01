@@ -1099,10 +1099,17 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  gate_size_polygon +=  euclidean_distance(x_gate_corners[2], x_gate_corners[3],y_gate_corners[2],y_gate_corners[3]);
 	  gate_size_polygon +=  euclidean_distance(x_gate_corners[3], x_gate_corners[0],y_gate_corners[3],y_gate_corners[0]);
 	  
-	  float error_factor =  ransac_rep_error[best_loc]/gate_size_polygon;
+	  float error_factor =  ransac_rep_error[best_loc]/gate_size_polygon;//ration between gate size and reprojection error
 	  printf("error_factor:%f\n",error_factor);
+	  if(error_factor < 0.07)
+	  {
+	    draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);//if low enough plot green gate
 	  
-	  if(ransac_rep_error[best_loc] < 25) draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
+	    float_eulers_of_rmat(&R_eulers,&ransac_R_mat[best_loc]);
+	    printf("Eulers Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+	  }
+	  
+	  //if(ransac_rep_error[best_loc] < 25) draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
 // 	  printf("POSITION:\n X:%f\n Y:%f\n Z:%f\n",p3p_pos_sol[min_loc].x,p3p_pos_sol[min_loc].y,p3p_pos_sol[min_loc].z);
 	  //print best gate
 // 	  for(int i = 0;i<4;i++)
