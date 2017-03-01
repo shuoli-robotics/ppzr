@@ -1,0 +1,15 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="kalman_filter">
+  <doc>
+    <description></description>
+  </doc>
+  <header>
+    <file name="kalman_filter.h"/>
+  </header>
+  <periodic fun="extended_kalman_filter()" freq="512"/>
+  <makefile>
+    <file name="kalman_filter.c"/>
+  </makefile>
+</module>
+

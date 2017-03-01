@@ -47,7 +47,7 @@
 
 
 #ifndef HOVER_TIME
-#define HOVER_TIME 1.5
+#define HOVER_TIME 6
 #endif
 
 #ifndef NUMBER_OF_ZIGZAG
@@ -66,8 +66,14 @@
 #define APPROACH_TIME 3.5
 #endif
 
-#ifndef PREPARE_TIME
-#define PREPARE_TIME 1
+
+#ifndef THETA_TIME 
+#define THETA_TIME 10 
+#endif
+
+
+#ifndef PHI_TIME 
+#define PHI_TIME 3  
 #endif
 
 #ifndef HEIGHT_FIRST_PART
@@ -77,37 +83,25 @@
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
 
-enum states_lower_level{WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
+enum states_lower_level{HOVER_AT_ORIGIN_CM,WAIT_FOR_DETECTION_CM,ADJUST_POSITION_CM,GO_THROUGH_CM,HOVER_CM,
 TURN_CM,SEARCH_GATE_CM,TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,ADJUST_HEIGHT_CM,PREPARE_CM,
-    REPLAY_CM,APPROACH_GATE_CM,SET_THETA_CM,THETA_PHI_CM,CHANGE_HEADING_ABSOLUTE_CM};
+    REPLAY_CM,APPROACH_GATE_CM,SET_THETA_CM,THETA_PHI_CM,CHANGE_HEADING_ABSOLUTE_CM,FLIGHT_TEST_THETA1_CM,FLIGHT_TEST_THETA2_CM,FLIGHT_TEST_PHI1_CM,FLIGHT_TEST_PHI2_CM,HOVER_ATTITUDE_CM,
+     ATTITUDE_CONTROL_CM};
 
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART};
 
-struct parameters_to_be_tuned{
-    float heading_after_gate[NUMBER_OF_GATES];
-    float distance_after_gate[NUMBER_OF_GATES];
-    float height_after_gate[NUMBER_OF_GATES];
-    float approach_after_gate[NUMBER_OF_GATES];
-    bool flag_zigzag[NUMBER_OF_ZIGZAG];
-    float distance_after_zigzag[NUMBER_OF_ZIGZAG];
-    float heading_after_zigzag[NUMBER_OF_ZIGZAG];
-    int search_gate_velocity_in_zigzag[NUMBER_OF_ZIGZAG];
-    float search_time_in_zigzag[NUMBER_OF_ZIGZAG];
-};
 
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
 
-extern struct parameters_to_be_tuned parameter_to_be_tuned;
+
+extern double theta_bias;
+extern double phi_bias;
 extern uint8_t previous_lower_level;
-
-extern bool approach_first_part;
-
-
-extern float angle_after_half_gate;
-extern float velocity_in_first_part;
-extern float straight_time;
-extern float approach_time;
-
+extern double theta_hover;
+extern double phi_hover;
+extern struct acceleration accel_bias;
+extern struct acceleration accel_hover;
+extern int arc_counter;
 #endif
 

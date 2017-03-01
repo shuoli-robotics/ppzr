@@ -48,6 +48,26 @@
 #define CHANGE_HEADING_ABSOLUTE  16
 #define SET_THETA                17
 #define SET_PHI                  18
+#define SET_ATTITUDE             19
+#define CALCULATE_ATTITUDE_BIAS  20 
+#define ARC_OPEN_LOOP            21 
+#define HOVER_AT_ORIGIN          22 
+#define PREPARE_BEFORE_TAKE_OFF  23 
+
+
+#ifndef PREPARE_TIME
+#define PREPARE_TIME 3
+#endif
+
+#ifndef SAMPLE_NUM 
+#define SAMPLE_NUM  20
+#endif
+
+struct acceleration{
+		double ax;
+		double ay;
+		double az;
+};
 
  extern bool arc_is_finished;
  extern int primitive_in_use;
@@ -56,7 +76,7 @@
  extern void flight_plan_in_guided_mode_init(void);
  extern void display_information(void);
  extern void hover(void);
- extern void go_straight(float velocity);
+ extern bool go_straight(float theta,float distance,double ref_y);
  extern void change_heading_hover(float derta_psi);
  extern void circle(float radius, float planned_time);
  extern void go_left_right(float velocity);
@@ -73,6 +93,11 @@
 extern  void change_heading_absolute(float psi);
 extern void set_theta(float desired_theta);
 extern void set_phi(float desired_phi);
-		
+extern void set_attitude(float desired_theta,float desired_phi);
+extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
+extern bool arc_open_loop(double radius,double theta,float delta_psi);
+extern bool hover_at_origin(void);
+extern bool prepare_before_take_off(double prepare_time);
+extern int sample_pointer;
 #endif
 

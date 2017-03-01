@@ -28,9 +28,8 @@
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
+#include "modules/kalman_filter/kalman_filter.h"
 
-//void state_autonomous_race_init();
-//void display_lower_state();
 
 
 
@@ -39,7 +38,8 @@ struct state_autonomous_race states_race;
 void display_upper_state(void);
 void display_lower_state(void);
 void display_guidance_mode(void);
-
+void debug_information(void);
+/*void display_matrix(double a[][3],int n);*/
 
 void state_autonomous_race_init() {
     states_race.gate_counter = 0;
@@ -49,27 +49,23 @@ void state_autonomous_race_init() {
     states_race.land_is_finished =FALSE;
     states_race.gate_counter_in_second_part = 0;
     states_race.gate_counter_in_third_part = 0;
+	states_race.attitude_control = FALSE;
 }
 
 void display_states()
 {
-    //printf("Thrust is %d\n",stabilization_cmd[COMMAND_THRUST]);
     if (autopilot_mode != AP_MODE_MODULE)
         return;
-   // printf("gate_counter is %d \n",states_race.gate_counter);
 
     display_upper_state();
     display_lower_state();
     printf("\n");
     printf("\n");
     printf("\n");
-   // display_guidance_mode();
     printf("\n");
     printf("\n");
     printf("\n");
-   // printf("Time in primitve is %f\n",time_primitive);
-
-
+	/*debug_information();*/
 }
 
 void display_lower_state()
@@ -111,14 +107,26 @@ void display_lower_state()
         case PREPARE_CM:
             printf("It is in PREPARE\n");
             break;
-        case REPLAY_CM:
-            printf("It is in REPLAY\n");
-            break;
+        /*case REPLAY_CM:*/
+            /*printf("It is in REPLAY\n");*/
+            /*break;*/
         case APPROACH_GATE_CM:
             printf("It is in APPROACH_GATE\n");
             break;
+        case FLIGHT_TEST_PHI1_CM:
+            printf("It is in FLIGHT_TEST_PHI1\n");
+            break;
+        case FLIGHT_TEST_PHI2_CM:
+            printf("It is in FLIGHT_TEST_PHI2\n");
+            break;
+        case FLIGHT_TEST_THETA1_CM:
+            printf("It is in FLIGHT_TEST_THETA\n");
+            break;
+		case FLIGHT_TEST_THETA2_CM:
+            printf("It is in FLIGHT_TEST_THETA2\n");
+            break;
         default:
-            printf("It is in APPROACH_GATE\n");
+            printf("It is in nothing\n");
             break;
 
     }
@@ -141,7 +149,7 @@ void display_upper_state()
             printf("It is in FOURTH_PART\n");
             break;
         default:
-            printf("It is in APPROACH_GATE\n");
+            printf("It is in NOTHING\n");
             break;
     }
 };
@@ -174,3 +182,9 @@ void display_guidance_mode()
             break;
     }
 }
+
+
+void debug_information()
+{
+}
+

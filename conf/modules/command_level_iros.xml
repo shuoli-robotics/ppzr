@@ -5,25 +5,6 @@
     <description>This module is the highest level</description>
   </doc>
 
-  <settings>
-    <dl_settings>
-      <dl_settings NAME="command">
-        <dl_setting var="angle_after_half_gate" min="70" step="1" max="120" shortname="heading_1st_part" />
-        <dl_setting var="straight_time" min="8" step="0.1" max="20" shortname="straight_time" />
-        <dl_setting var="approach_time " min="0" step="0.1" max="5" shortname="approach_time" />
-        <dl_setting var="parameter_to_be_tuned.distance_after_gate[0]" min="0" step="0.1" max="2" shortname="dis_1" />
-        <dl_setting var="parameter_to_be_tuned.distance_after_gate[1]" min="0" step="0.1" max="2" shortname="dis_2" />
-        <dl_setting var="parameter_to_be_tuned.distance_after_gate[2]" min="0" step="0.1" max="5" shortname="dis_3" />
-        <dl_setting var="parameter_to_be_tuned.distance_after_gate[3]" min="0" step="0.1" max="3" shortname="dis_4" />
-        <dl_setting var="parameter_to_be_tuned.distance_after_gate[4]" min="0" step="0.1" max="8" shortname="dis_5" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_gate[0]" min="-3.14" step="0.01" max="3.14" shortname="heading1" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_gate[1]" min="-3.14" step="0.01" max="3.14" shortname="heading2" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_gate[2]" min="-3.14" step="0.01" max="3.14" shortname="heading3" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_gate[3]" min="-3.14" step="0.01" max="3.14" shortname="heading4" />
-        <dl_setting var="parameter_to_be_tuned.heading_after_gate[4]" min="-3.14" step="0.01" max="3.14" shortname="heading5" />
-      </dl_settings>
-    </dl_settings>
-  </settings>
 
   <header>
     <file name="command_level_iros.h"/>
