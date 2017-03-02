@@ -59,7 +59,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE
-#define TAKE_OFF_ALTITUDE -1.5
+#define TAKE_OFF_ALTITUDE -1.4
 #endif
 
 #ifndef APPROACH_TIME

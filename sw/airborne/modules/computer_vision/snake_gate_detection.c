@@ -94,6 +94,9 @@ int sz = 0;
 int szx1 = 0;
 int szx2 = 0;
 
+int x = 0;
+int y = 0;
+
 
 // Result
 int color_count = 0;
@@ -139,9 +142,10 @@ float predicted_x_gate = 0;
 float predicted_y_gate = 0;
 float predicted_z_gate = 0;
 
-//float current_x_gate = 0;
-//float current_y_gate = 0;
-//float current_z_gate = 0;
+float current_x_gate = 0;
+float current_y_gate = 0;
+float current_z_gate = 0;
+
 float delta_z_gate   = 0;
 
 float previous_x_gate = 0;

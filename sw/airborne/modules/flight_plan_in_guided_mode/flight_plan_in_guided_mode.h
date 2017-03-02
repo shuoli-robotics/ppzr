@@ -99,5 +99,6 @@ extern bool arc_open_loop(double radius,double theta,float delta_psi);
 extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
 extern int sample_pointer;
+extern float v_x_f;
 #endif
 

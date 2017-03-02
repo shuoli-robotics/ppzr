@@ -147,6 +147,12 @@ bool go_straight(float theta,float distance,double ref_y){
 	/*guidance_loop_set_heading(psi0);*/
 	previous_error_y = error_y;
 	//if (time_primitive > 1.0)
+	
+	//update body speed for use in ahrs_int_cmpl_quat.c
+	float v_x_e = stateGetSpeedNed_f()->x;
+	float v_y_e = stateGetSpeedNed_f()->y;
+	v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
+	
 	if(ref_y < 1.5 && stateGetPositionNed_f()->x > 3)   
 	{
 			return TRUE;

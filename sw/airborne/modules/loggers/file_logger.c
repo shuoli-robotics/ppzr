@@ -45,7 +45,7 @@
 #endif
 
 struct timeval stop, start;
-float time_stamp = 0;
+//float time_stamp = 0;
 float prev_ss_time = 0;
 int take_shot = 0;
 int shots = 0;
@@ -99,8 +99,8 @@ void file_logger_periodic(void)
   }
   //timing
   gettimeofday(&stop, 0);
-  double curr_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
-  double time_stamp = curr_time - (double)(start.tv_sec + start.tv_usec / 1000000.0);
+  double curr_time_1 = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+  double time_stamp = curr_time_1 - (double)(start.tv_sec + start.tv_usec / 1000000.0);
   
   
   if((time_stamp - prev_ss_time)>0.2)//for 5hz
