@@ -123,6 +123,9 @@ bool go_straight(float theta,float distance,double ref_y){
         y_start = stateGetPositionNed_f()->y;
 		sum_y_error = 0;
 		states_race.attitude_control = TRUE;
+		float v_x_e = stateGetSpeedNed_f()->x;
+		float v_y_e = stateGetSpeedNed_f()->y;
+		v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
 		if (arc_counter == 0)
 		{
 

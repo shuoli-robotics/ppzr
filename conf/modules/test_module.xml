@@ -1,0 +1,15 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="test_module">
+  <doc>
+    <description>test </description>
+  </doc>
+  <header>
+    <file name="test_module.h"/>
+  </header>
+  <periodic fun="print_state()" freq="20"/>
+  <makefile>
+    <file name="test_module.c"/>
+  </makefile>
+</module>
+

@@ -38,6 +38,7 @@
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
       <define name="AHRS_GRAVITY_UPDATA_COORDINATED_TURN" value="TRUE"/>
+      <configure name="USE_GPS" value="TRUE"/>
     </module>
     <module name="ins" type="gps_passthrough"/><!--extended-->
   </firmware>
@@ -47,6 +48,7 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
+    <module name="test_module"/>
     <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
     </module>
