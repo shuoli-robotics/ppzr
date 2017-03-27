@@ -31,6 +31,7 @@
 #include "subsystems/datalink/telemetry.h"
 //#include "modules/computer_vision/lib/vision/gate_detection.h"
 #include "modules/computer_vision/lib/vision/gate_detection_free.h"
+#include "modules/computer_vision/lib/vision/gate_corner_refine.h"
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
@@ -449,7 +450,8 @@ void snake_gate_periodic(void)
 struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
-  int filter = 0;
+  int filter = 1;
+  int gate_graphics = 1;
   int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;
@@ -638,16 +640,22 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
           min_y = (min_y < 0) ? 0 : min_y;
           int16_t max_y = gates[gate_nr].y + ROI_size;
           max_y = (max_y < img->w) ? max_y : img->w;
-          //draw_gate(img, gates[gate_nr]);
+    //draw_gate(img, gates[gate_nr]);
 	  gates_sz = gates[gate_nr].sz;
 	  x_center = gates[gate_nr].x;
 	  y_center = gates[gate_nr].y;
 	  radius   = gates_sz;
           // detect the gate:
-          gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
-                         &(gates[gate_nr].sz),
-                         (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-                         &s_left, &s_right);
+//           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
+//                          &(gates[gate_nr].sz),
+//                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
+//                          &s_left, &s_right);
+	  int x_center_p = x_center;
+	  int y_center_p = y_center;
+	  int radius_p   = radius;
+	  gate_corner_ref(img, points_x, points_y, &x_center_p, &y_center_p, &radius_p,
+                         (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y);
+	  
 	  //draw_gate_polygon(img,points_x,points_y,blue_color);
           //if (fitness < best_fitness) {
             //best_fitness = fitness;
@@ -694,50 +702,50 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   }
 
-  /*
-  * What is better? The current or previous gate?
-  */
-  if(previous_best_gate.sz != 0 && best_quality > min_gate_quality && n_gates > 0)
-  {
-    // refit the previous best gate in the current image and compare the quality:
-    int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor);
-    int16_t min_x = previous_best_gate.x - ROI_size;
-    min_x = (min_x < 0) ? 0 : min_x;
-    int16_t max_x = previous_best_gate.x + ROI_size;
-    max_x = (max_x < img->h) ? max_x : img->h;
-    int16_t min_y = previous_best_gate.y - ROI_size;
-    min_y = (min_y < 0) ? 0 : min_y;
-    int16_t max_y = previous_best_gate.y + ROI_size;
-    max_y = (max_y < img->w) ? max_y : img->w;
-
-    // detect the gate:
-    gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
-                   &(previous_best_gate.sz),
-                   (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-                   &s_left, &s_right);
-//draw_gate_polygon(img,points_x,points_y,blue_color);
-    // store the information in the gate:
-    previous_best_gate.x = (int) x_center;
-    previous_best_gate.y = (int) y_center;
-    previous_best_gate.sz = (int) radius;
-    previous_best_gate.sz_left = (int) s_left;
-    previous_best_gate.sz_right = (int) s_right;
-
-    // also get the color fitness
-    check_gate_free(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
-
-    // if the quality of the "old" gate is better, keep the old gate:
-    if(previous_best_gate.gate_q > best_gate.gate_q &&  previous_best_gate.n_sides > 2)//n_sides
-    {
-      best_gate.x = previous_best_gate.x;
-      best_gate.y = previous_best_gate.y;
-      best_gate.sz = previous_best_gate.sz;
-      best_gate.sz_left = previous_best_gate.sz_left;
-      best_gate.sz_right = previous_best_gate.sz_right;
-      best_gate.gate_q = previous_best_gate.gate_q;
-      best_gate.n_sides = previous_best_gate.n_sides;
-    }
-  }
+//   /*
+//   * What is better? The current or previous gate?
+//   */
+//   if(previous_best_gate.sz != 0 && best_quality > min_gate_quality && n_gates > 0)
+//   {
+//     // refit the previous best gate in the current image and compare the quality:
+//     int16_t ROI_size = (int16_t)(((float) previous_best_gate.sz) * size_factor);
+//     int16_t min_x = previous_best_gate.x - ROI_size;
+//     min_x = (min_x < 0) ? 0 : min_x;
+//     int16_t max_x = previous_best_gate.x + ROI_size;
+//     max_x = (max_x < img->h) ? max_x : img->h;
+//     int16_t min_y = previous_best_gate.y - ROI_size;
+//     min_y = (min_y < 0) ? 0 : min_y;
+//     int16_t max_y = previous_best_gate.y + ROI_size;
+//     max_y = (max_y < img->w) ? max_y : img->w;
+// 
+//     // detect the gate:
+//     gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(previous_best_gate.x), &(previous_best_gate.y),
+//                    &(previous_best_gate.sz),
+//                    (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
+//                    &s_left, &s_right);
+// //draw_gate_polygon(img,points_x,points_y,blue_color);
+//     // store the information in the gate:
+//     previous_best_gate.x = (int) x_center;
+//     previous_best_gate.y = (int) y_center;
+//     previous_best_gate.sz = (int) radius;
+//     previous_best_gate.sz_left = (int) s_left;
+//     previous_best_gate.sz_right = (int) s_right;
+// 
+//     // also get the color fitness
+//     check_gate_free(img, previous_best_gate, &previous_best_gate.gate_q, &previous_best_gate.n_sides);
+// 
+//     // if the quality of the "old" gate is better, keep the old gate:
+//     if(previous_best_gate.gate_q > best_gate.gate_q &&  previous_best_gate.n_sides > 2)//n_sides
+//     {
+//       best_gate.x = previous_best_gate.x;
+//       best_gate.y = previous_best_gate.y;
+//       best_gate.sz = previous_best_gate.sz;
+//       best_gate.sz_left = previous_best_gate.sz_left;
+//       best_gate.sz_right = previous_best_gate.sz_right;
+//       best_gate.gate_q = previous_best_gate.gate_q;
+//       best_gate.n_sides = previous_best_gate.n_sides;
+//     }
+//   }
 
   // prepare for the next time:
   previous_best_gate.x = best_gate.x;
@@ -868,7 +876,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  x_gate_corners[i] = undist_x+157.0;
 	  y_gate_corners[i] = undist_y+32.0;
 	  
-	  draw_cross(img,((int)x_gate_corners[i]),((int)y_gate_corners[i]),green_color);
+	  if(gate_graphics)draw_cross(img,((int)x_gate_corners[i]),((int)y_gate_corners[i]),green_color);
 	  vec_from_point_ned(undist_x, undist_y, f_fisheye,&gate_vectors[i]);
 	  
 	   //debug_1 = undist_x;
@@ -1105,7 +1113,7 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  
 	  float error_factor =  ransac_rep_error[best_loc]/gate_size_polygon;//ration between gate size and reprojection error
 	  printf("error_factor:%f\n",error_factor);
-	  if(error_factor < 0.07)
+	  if(error_factor < 0.07 && gate_graphics)
 	  {
 	    draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);//if low enough plot green gate
 	  
