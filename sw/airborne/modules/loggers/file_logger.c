@@ -38,6 +38,8 @@
 #include "subsystems/electrical.h"
 #include "modules/computer_vision/video_capture.h"
 //#include "boards/bebop/actuators.h"
+#include "modules/computer_vision/snake_gate_detection.h"
+#include "modules/sonar/sonar_bebop.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -118,7 +120,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
           counter,
 	  
 	  time_stamp,
@@ -168,7 +170,17 @@ void file_logger_periodic(void)
 	  actuators_bebop.rpm_obs[1],//rf
 	  actuators_bebop.rpm_obs[2],//rb
 	  actuators_bebop.rpm_obs[3],//lb
-	  shots
+	  shots,
+	  p3p_result_x,//p3p posiitons in m
+	  p3p_result_y,
+	  p3p_result_z,
+	  p3p_result_phi,//p3p derived angles in radians
+	  p3p_result_theta,
+	  p3p_result_psi,
+	  snake_res_x,
+	  snake_res_y,
+	  snake_res_z,
+	  distance_after_filter//sonar in meters filtered 
          );
   counter++;
 }

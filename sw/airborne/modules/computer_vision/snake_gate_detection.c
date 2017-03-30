@@ -75,7 +75,7 @@ uint8_t color_cr_min  = 139;//138;//146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
-int n_samples = 1000;//1000;//500;
+int n_samples = 2000;//1000;//500;
 int min_pixel_size = 20;//40;//100;
 float min_gate_quality = 0.20;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
@@ -204,6 +204,18 @@ float debug_3 = 3.3;
 //optic flow dummy
 float opt_body_v_x = 0;
 float opt_body_v_y = 0;
+
+//p3p final results
+float p3p_result_x = 0;
+float p3p_result_y = 0;
+float p3p_result_z = 0;
+float p3p_result_phi = 0;
+float p3p_result_theta = 0;
+float p3p_result_psi = 0;
+float snake_res_x = 0;
+float snake_res_y = 0;
+float snake_res_z = 0;
+
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
@@ -463,6 +475,15 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //pix_x = img->w;
   //pix_y = img->h;
 
+  p3p_result_x = 0;
+  p3p_result_y = 0;
+  p3p_result_z = 0;
+  p3p_result_phi = 0;
+  p3p_result_theta = 0;
+  p3p_result_psi = 0;
+  snake_res_x = 0;
+  snake_res_y = 0;
+  snake_res_z = 0;
 
 
   n_gates = 0;
@@ -565,7 +586,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     //if (gen_alg) {
 
-      int max_candidate_gates = 1;//10;
+      int max_candidate_gates = 10;//10;
 
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
@@ -590,9 +611,14 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  y_center = gates_y;
 	  radius   = gates_sz;
           // detect the gate:
-          gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
-                         (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-                         &s_left, &s_right);
+//           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
+//                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
+//                          &s_left, &s_right);
+	  int x_center_p = x_center;
+	  int y_center_p = y_center;
+	  int radius_p   = radius;
+	  gate_corner_ref(img, points_x, points_y, &x_center_p, &y_center_p, &radius_p,
+                         (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y);
 //draw_gate_polygon(img,points_x,points_y,blue_color);
           //if (fitness < best_fitness) {
             //best_fitness = fitness;
@@ -768,7 +794,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   /**************************************
   * BEST GATE -> TRANSFORM TO COORDINATES
   ***************************************/
-
+  //xyz_dist zero unless sufficient quality
+  x_dist = 0;
+  y_dist = 0;
+  z_dist = 0;
+  if(best_gate.gate_q > (min_gate_quality*2)){
+  calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
+  draw_gate_color(img, best_gate, blue_color);
+  snake_res_x = x_dist;
+  snake_res_y = y_dist;
+  snake_res_z = z_dist;
+  }
   if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) {//n_sides was > 2
 
     current_quality = best_quality;
@@ -778,11 +814,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     gate_quality = best_gate.gate_q;
     
-
     //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);
 
     //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
-    calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
+    //was here
+    //calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
+    
 
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
@@ -1119,6 +1156,14 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  
 	    float_eulers_of_rmat(&R_eulers,&ransac_R_mat[best_loc]);
 	    printf("Eulers Phi:%f \n Theta: %f \n Psi: %f \n",(R_eulers.phi*57),(R_eulers.theta*57),(R_eulers.psi*57));
+	    
+	    //fill vision end results
+	      p3p_result_x = ransac_pos[best_loc].x;
+	      p3p_result_y = ransac_pos[best_loc].y;
+	      p3p_result_z = ransac_pos[best_loc].z;
+	      p3p_result_phi = R_eulers.phi;
+	      p3p_result_theta = R_eulers.theta;
+	      p3p_result_psi = R_eulers.psi;
 	  }
 	  
 	  //if(ransac_rep_error[best_loc] < 25) draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);
@@ -1247,8 +1292,8 @@ k = 1.085;
   //debug_2 = (float)f;
   //k = 1.085;
 //k = 1.051;
-  
-  k = 1.080;
+
+k = 1.080;//last k
    //k = 1.118;
  // k = 1.218;
   

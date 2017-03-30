@@ -90,11 +90,23 @@ extern float measured_y_gate;
 extern float measured_z_gate;
 extern float delta_z_gate;
 
+extern float x_dist;
+
 extern float current_x_gate;
 extern float current_y_gate;
 extern float current_z_gate;
 extern char fitness;
 extern int gate_detected;
 extern int init_pos_filter;
+
+extern float p3p_result_x;
+extern float p3p_result_y;
+extern float p3p_result_z;
+extern float p3p_result_phi;
+extern float p3p_result_theta;
+extern float p3p_result_psi;
+extern float snake_res_x;
+extern float snake_res_y;
+extern float snake_res_z;
 
 #endif /* SNAKE_GATE_DETECTION_CV_PLUGIN_H */

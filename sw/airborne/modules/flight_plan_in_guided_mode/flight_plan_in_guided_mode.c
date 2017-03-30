@@ -42,9 +42,9 @@
 
 
 
-#define KP_Y 0.6 
+#define KP_Y 0.6//raw vision:0.2 
 #define KI_Y 0.0
-#define KD_Y 0.3
+#define KD_Y 0.3//raw vision:0.0
 #define MAX_PHI  20.0/180*3.14
 
 
@@ -134,9 +134,15 @@ bool go_straight(float theta,float distance,double ref_y){
 		}
     }
 
-	float current_y = stateGetPositionNed_f()->y;
+	float current_y;
 	float sign = 1;
-	if(ref_y > 1.5)sign = -1;
+	if(ref_y > 1.5){
+	 sign = -1;
+	 current_y = stateGetPositionNed_f()->y;
+	}
+	else{
+	  current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
+	}
 	float error_y = (ref_y - current_y)*sign;
 	sum_y_error += error_y/20.0;
 	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20 + KI_Y*sum_y_error;
@@ -315,16 +321,16 @@ bool arc_open_loop(double radius,double theta,float delta_psi)
 	float v_x_b = cos(theta)*v_x_f;
 	float phi = stateGetNedToBodyEulers_f()->phi;
 	float v_z_b = cos(phi)*sin(theta)*v_x_f;
-	float drag_x_b = -0.27 * v_x_b - 0.102*v_x_b*v_x_b-0.2276;
+	float drag_x_b = -0.5 * v_x_b;// - 0.102*v_x_b*v_x_b-0.2276;//was 0.27*v_x_b
 	float drag_z_b = -0.3356 * v_z_b + 0.2789*v_z_b*v_z_b-0.0137;
 	float drag_x_f = cos(theta)*drag_x_b+cos(phi)*sin(theta)*drag_z_b;
 	float drag_z_f = -sin(theta)*drag_x_b+cos(phi)*cos(theta)*drag_z_b;
 	float v_x_f_dot = tan(theta)*(-9.81)+drag_x_f;
 	/*v_x_f = cos(psi_a)*current_vel_x + sin(psi_a)*current_vel_y;*/
 
-	v_x_f = v_x_f + v_x_f_dot/20.0;
+	v_x_f = v_x_f + v_x_f_dot*1/20;//20.0;
 	float psi_dot =  v_x_f/radius;
-	psi = psi + psi_dot *1/20;	
+	psi = psi + psi_dot *1/20;//20;	
 	double phi_desired = -atan(-v_x_f*psi_dot*cos(theta)/9.81);
 	guidance_loop_set_theta(theta);
 	guidance_loop_set_phi(phi_desired); 

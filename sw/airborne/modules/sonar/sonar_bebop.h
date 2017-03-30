@@ -38,5 +38,6 @@ struct SonarBebop {
 extern struct SonarBebop sonar_bebop;
 
 extern void sonar_bebop_init(void);
+extern float distance_after_filter;
 
 #endif /* SONAR_BEBOP_H */
