@@ -34,6 +34,7 @@
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_int.h"
 #include "subsystems/electrical.h"
 #include "modules/computer_vision/video_capture.h"
@@ -118,7 +119,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
           counter,
 	  
 	  time_stamp,
@@ -168,7 +169,19 @@ void file_logger_periodic(void)
 	  actuators_bebop.rpm_obs[1],//rf
 	  actuators_bebop.rpm_obs[2],//rb
 	  actuators_bebop.rpm_obs[3],//lb
-	  shots
+	  shots,
+
+	  arc_status.x,
+	  arc_status.y,
+	  arc_status.z,
+	  arc_status.v_x_f,
+	  arc_status.v_y_f,
+	  arc_status.v_z_f,
+	  arc_status.phi_cmd,
+	  arc_status.theta_cmd,
+	  arc_status.psi_cmd,
+	  arc_status.flag_in_arc
+			  
          );
   counter++;
 }

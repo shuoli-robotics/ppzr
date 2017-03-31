@@ -64,6 +64,7 @@ void display_states()
     printf("\n");
     printf("\n");
     printf("\n");
+	printf("psi_cmd = %f\n",arc_status.psi_cmd);
     printf("\n");
 	/*debug_information();*/
 }

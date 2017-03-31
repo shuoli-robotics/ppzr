@@ -43,12 +43,12 @@ void flight_plan_clock_run() {
     counter_temp2++;
     counter_temp3++;
     counter_gate_detected++;
-    time_global = counter_global/20.0;
-    time_autopilot_mode = counter_autopilot_mode/20.0;
-    time_primitive = counter_primitive/20.0;
-    time_temp1 = counter_temp1/20.0;
-    time_temp2 = counter_temp2/20.0;
-    time_temp3 = counter_temp3/20.0;
-    time_gate_detected = counter_gate_detected/20.0;
+    time_global = counter_global/100.0;
+    time_autopilot_mode = counter_autopilot_mode/100.0;
+   time_primitive = counter_primitive/100.0;
+    time_temp1 = counter_temp1/100.0;
+    time_temp2 = counter_temp2/100.0;
+    time_temp3 = counter_temp3/100.0;
+    time_gate_detected = counter_gate_detected/100.0;
 }
 
