@@ -44,8 +44,8 @@
 
 #define KP_Y 0.6//raw vision:0.2 
 #define KI_Y 0.0
-#define KD_Y 0.3//raw vision:0.0
-#define MAX_PHI  20.0/180*3.14
+#define KD_Y 0.25//raw vision:0.0
+#define MAX_PHI  25.0/180*3.14
 
 
 float psi0;//

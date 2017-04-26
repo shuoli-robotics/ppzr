@@ -1150,7 +1150,7 @@ Position solution nr:1 /// x:2.295645 y:0.877159 z-1.031926*/
 	  
 	  float error_factor =  ransac_rep_error[best_loc]/gate_size_polygon;//ration between gate size and reprojection error
 	  printf("error_factor:%f\n",error_factor);
-	  if(error_factor < 0.07 && gate_graphics)
+	  if(error_factor < 0.05 && gate_graphics)//was 0.07
 	  {
 	    draw_gate_polygon(img,x_bp_corners,y_bp_corners,blue_color);//if low enough plot green gate
 	  
@@ -1293,9 +1293,9 @@ k = 1.085;
   //k = 1.085;
 //k = 1.051;
 
-k = 1.080;//last k
-   //k = 1.118;
- // k = 1.218;
+//k = 1.080;//last k
+   k = 1.118;
+  //k = 1.218;
   
   //radial distortion correction
   float R = (float)f*tan(asin(sin( atan(r/(float)f))*k));
