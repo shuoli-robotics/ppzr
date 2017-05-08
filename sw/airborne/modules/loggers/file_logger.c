@@ -170,8 +170,8 @@ void file_logger_periodic(void)
 	  actuators_bebop.rpm_obs[1],//rf
 	  actuators_bebop.rpm_obs[2],//rb
 	  actuators_bebop.rpm_obs[3],//lb
-	  /*shots,
-	  p3p_result_x,//p3p posiitons in m
+	  shots,
+	  /*p3p_result_x,//p3p posiitons in m
 	  p3p_result_y,
 	  p3p_result_z,
 	  p3p_result_phi,//p3p derived angles in radians
@@ -188,7 +188,10 @@ void file_logger_periodic(void)
 	  gate_img_point_x_3,
 	  gate_img_point_y_3,
 	  gate_img_point_x_4,
-	  gate_img_point_y_4
+	  gate_img_point_y_4,
+	  //snake_res_y,
+	  snake_res_z,
+	  distance_after_filter
          );
   counter++;
 }
