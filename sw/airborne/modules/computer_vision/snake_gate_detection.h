@@ -57,6 +57,7 @@ extern int check_back_side_QR_code(struct image_t* im, struct gate_img best_gate
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
 
 void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec);
+void vec_from_point_2(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void vec_from_point_ned(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, float *undistorted_y, int f, float k, float x_img_center, float y_img_center);
 void back_proj_points(struct FloatVect3 *gate_point, struct FloatVect3 *cam_pos, struct FloatMat33 *R_mat, float *x_res, float *y_res);
@@ -109,6 +110,16 @@ extern float snake_res_x;
 extern float snake_res_y;
 extern float snake_res_z;
 
+//logging corner points in image plane
+extern float gate_img_point_x_1;
+extern float gate_img_point_y_1;
+extern float gate_img_point_x_2;
+extern float gate_img_point_y_2;
+extern float gate_img_point_x_3;
+extern float gate_img_point_y_3;
+extern float gate_img_point_x_4;
+extern float gate_img_point_y_4;
+
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */
 #define VECT3_VECT3_TRANS_MUL(_mat, _v_a,_v_b) {    \
@@ -125,25 +136,25 @@ extern float snake_res_z;
 
 #define MAT33_MAT33_DIFF(_mat1,_mat2,_mat3) {     \
     MAT33_ELMT((_mat1),0,0) = MAT33_ELMT((_mat2),0,0)-MAT33_ELMT((_mat3),0,0);  \
-    MAT33_ELMT((_mat1),0,1) = MAT33_ELMT((_mat2),1,0)-MAT33_ELMT((_mat3),1,0);  \
-    MAT33_ELMT((_mat1),0,2) = MAT33_ELMT((_mat2),2,0)-MAT33_ELMT((_mat3),2,0);  \
-    MAT33_ELMT((_mat1),1,0) = MAT33_ELMT((_mat2),0,1)-MAT33_ELMT((_mat3),0,1);  \
+    MAT33_ELMT((_mat1),0,1) = MAT33_ELMT((_mat2),0,1)-MAT33_ELMT((_mat3),0,1);  \
+    MAT33_ELMT((_mat1),0,2) = MAT33_ELMT((_mat2),0,2)-MAT33_ELMT((_mat3),0,2);  \
+    MAT33_ELMT((_mat1),1,0) = MAT33_ELMT((_mat2),1,0)-MAT33_ELMT((_mat3),1,0);  \
     MAT33_ELMT((_mat1),1,1) = MAT33_ELMT((_mat2),1,1)-MAT33_ELMT((_mat3),1,1);  \
-    MAT33_ELMT((_mat1),1,2) = MAT33_ELMT((_mat2),2,1)-MAT33_ELMT((_mat3),2,1);  \
-    MAT33_ELMT((_mat1),2,0) = MAT33_ELMT((_mat2),0,2)-MAT33_ELMT((_mat3),0,2);  \
-    MAT33_ELMT((_mat1),2,1) = MAT33_ELMT((_mat2),1,2)-MAT33_ELMT((_mat3),1,2);  \
+    MAT33_ELMT((_mat1),1,2) = MAT33_ELMT((_mat2),1,2)-MAT33_ELMT((_mat3),1,2);  \
+    MAT33_ELMT((_mat1),2,0) = MAT33_ELMT((_mat2),2,0)-MAT33_ELMT((_mat3),2,0);  \
+    MAT33_ELMT((_mat1),2,1) = MAT33_ELMT((_mat2),2,1)-MAT33_ELMT((_mat3),2,1);  \
     MAT33_ELMT((_mat1),2,2) = MAT33_ELMT((_mat2),2,2)-MAT33_ELMT((_mat3),2,2);  \
   }
   
 #define MAT33_MAT33_SUM(_mat1,_mat2,_mat3) {     \
     MAT33_ELMT((_mat1),0,0) = MAT33_ELMT((_mat2),0,0)+MAT33_ELMT((_mat3),0,0);  \
-    MAT33_ELMT((_mat1),0,1) = MAT33_ELMT((_mat2),1,0)+MAT33_ELMT((_mat3),1,0);  \
-    MAT33_ELMT((_mat1),0,2) = MAT33_ELMT((_mat2),2,0)+MAT33_ELMT((_mat3),2,0);  \
-    MAT33_ELMT((_mat1),1,0) = MAT33_ELMT((_mat2),0,1)+MAT33_ELMT((_mat3),0,1);  \
+    MAT33_ELMT((_mat1),0,1) = MAT33_ELMT((_mat2),0,1)+MAT33_ELMT((_mat3),0,1);  \
+    MAT33_ELMT((_mat1),0,2) = MAT33_ELMT((_mat2),0,2)+MAT33_ELMT((_mat3),0,2);  \
+    MAT33_ELMT((_mat1),1,0) = MAT33_ELMT((_mat2),1,0)+MAT33_ELMT((_mat3),1,0);  \
     MAT33_ELMT((_mat1),1,1) = MAT33_ELMT((_mat2),1,1)+MAT33_ELMT((_mat3),1,1);  \
-    MAT33_ELMT((_mat1),1,2) = MAT33_ELMT((_mat2),2,1)+MAT33_ELMT((_mat3),2,1);  \
-    MAT33_ELMT((_mat1),2,0) = MAT33_ELMT((_mat2),0,2)+MAT33_ELMT((_mat3),0,2);  \
-    MAT33_ELMT((_mat1),2,1) = MAT33_ELMT((_mat2),1,2)+MAT33_ELMT((_mat3),1,2);  \
+    MAT33_ELMT((_mat1),1,2) = MAT33_ELMT((_mat2),1,2)+MAT33_ELMT((_mat3),1,2);  \
+    MAT33_ELMT((_mat1),2,0) = MAT33_ELMT((_mat2),2,0)+MAT33_ELMT((_mat3),2,0);  \
+    MAT33_ELMT((_mat1),2,1) = MAT33_ELMT((_mat2),2,1)+MAT33_ELMT((_mat3),2,1);  \
     MAT33_ELMT((_mat1),2,2) = MAT33_ELMT((_mat2),2,2)+MAT33_ELMT((_mat3),2,2);  \
   }
 
