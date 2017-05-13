@@ -45,7 +45,7 @@
 #define KP_Y 0.6 
 #define KI_Y 0.0
 #define KD_Y 0.5
-#define MAX_PHI  20.0/180*3.14
+#define MAX_PHI  30.0/180*3.14
 
 
 float psi0;//
@@ -319,15 +319,24 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 		states_race.attitude_control = TRUE;
-		arc_status.drag_coef_body_x_1 = -0.27;
-		arc_status.drag_coef_body_y_1 = 0;
-		arc_status.drag_coef_body_z_1 = -0.3356;
-		arc_status.drag_coef_body_x_0 = -0.2276;
-		arc_status.drag_coef_body_y_0 = 0;
-		arc_status.drag_coef_body_z_0 = -0.0137;
-		arc_status.drag_coef_body_x_2 = -0.102;
+		arc_status.drag_coef_body_x_1 = -0.5051;
+		arc_status.drag_coef_body_y_1 = -0.8371;
+		arc_status.drag_coef_body_z_1 = 0;
+		arc_status.drag_coef_body_x_0 = 0.0236;
+		arc_status.drag_coef_body_y_0 = -0.2077;
+		arc_status.drag_coef_body_z_0 = 0;
+		arc_status.drag_coef_body_x_2 = 0;
 		arc_status.drag_coef_body_y_2 = 0;
-		arc_status.drag_coef_body_z_2 = 0.2789;
+		arc_status.drag_coef_body_z_2 = 0;
+		/*arc_status.drag_coef_body_x_1 = -0.5;*/
+		/*arc_status.drag_coef_body_y_1 = 0;*/
+		/*arc_status.drag_coef_body_z_1 = -0;*/
+		/*arc_status.drag_coef_body_x_0 = -0;*/
+		/*arc_status.drag_coef_body_y_0 = 0;*/
+		/*arc_status.drag_coef_body_z_0 = -0;*/
+		/*arc_status.drag_coef_body_x_2 = -0;*/
+		/*arc_status.drag_coef_body_y_2 = 0;*/
+		/*arc_status.drag_coef_body_z_2 = 0;*/
     }
 // calculate command needed
 // transfer velocity from earth coordinate to body and body fixed coordinate
@@ -349,16 +358,9 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	/*arc_status.v_z_b = cos(phi)*sin(theta)*arc_status.v_x_f;*/
 
 //  calculate drag in body velocity
-	arc_status.drag_x_b = arc_status.drag_coef_body_x_1*arc_status.v_x_b+
-			arc_status.drag_coef_body_x_2* arc_status.v_x_b*arc_status.v_x_b+
-			arc_status.drag_coef_body_x_0;
-	arc_status.drag_y_b = arc_status.drag_coef_body_y_1*arc_status.v_y_b+
-			arc_status.drag_coef_body_y_2*arc_status.v_y_b*arc_status.v_y_b+
-			arc_status.drag_coef_body_y_0;
-	arc_status.drag_y_b = 0;
-	arc_status.drag_z_b = arc_status.drag_coef_body_z_1*arc_status.v_z_b+
-			arc_status.drag_coef_body_z_2*arc_status.v_z_b*arc_status.v_z_b+
-			arc_status.drag_coef_body_z_0;
+	arc_status.drag_x_b = arc_status.drag_coef_body_x_1*arc_status.v_x_b;
+	arc_status.drag_y_b = arc_status.drag_coef_body_y_1*arc_status.v_y_b;
+	arc_status.drag_z_b = arc_status.drag_coef_body_z_1*arc_status.v_z_b;
 
 //  transfer drag from body coordinate to body fixed coordinate
 	arc_status.drag_x_f = cos(theta)*arc_status.drag_x_b+sin(phi)*sin(theta)*arc_status.drag_y_b
@@ -368,6 +370,15 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	arc_status.drag_z_f = -sin(theta)*arc_status.drag_x_b+sin(phi)*cos(theta)*arc_status.drag_y_b+
 			cos(phi)*cos(theta)*arc_status.drag_z_b;
 
+
+//  calculate command
+	double d_psi = arc_status.v_x_f/radius;
+	arc_status.psi_cmd += d_psi/20.0;
+	arc_status.theta_cmd = desired_theta;
+	arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+			(9.8+arc_status.drag_z_f));
+	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
+	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
 	// euler method to predict
 	drone_model(&arc_status);
 
@@ -379,15 +390,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	arc_status.v_z_f += arc_status.dv_z_f/20.0;
 
 
-//  calculate command
-	double d_psi = arc_status.v_x_f/radius;
-	arc_status.psi_cmd += d_psi/20.0;
-	arc_status.theta_cmd = desired_theta;
-	arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
-			(9.8+arc_status.drag_z_f));
-	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
-	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
-
+/*printf("v_x_f is %f\n",arc_status.v_x_f);*/
 
 
 	guidance_loop_set_theta(arc_status.theta_cmd);
@@ -414,12 +417,12 @@ void drone_model(struct arc_open_loop_status* sta)
 		double psi = sta->psi_cmd;
 
 		sta->dx = cos(psi)*sta->v_x_f-sin(psi)*sta->v_y_f;
-		sta->dz = sin(psi)*sta->v_x_f+cos(psi)*sta->v_y_f;
+		sta->dy = sin(psi)*sta->v_x_f+cos(psi)*sta->v_y_f;
 		sta->dz = sta->v_z_f;
 		
 		double T = arc_status.thrust_cmd;
 		/*double T = -9.8/cos(theta)/cos(phi);*/
-		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_y_f*sta->v_y_f/1.5;
+		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_x_f*sta->v_y_f/1.5;
 		/*sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f;*/
 		sta->dv_y_f = -sin(phi)*T+sta->drag_y_f-sta->v_x_f*sta->v_x_f/1.5; 	
 		sta->dv_z_f = 9.8+cos(phi)*cos(theta)*T+sta->drag_z_f; 	
@@ -443,7 +446,7 @@ bool hover_at_origin()
     }
  float current_x = stateGetPositionNed_f()->x;
  float current_y = stateGetPositionNed_f()->y;
- if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 5)
+ if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 10)
  {
 		 return 1;
  }

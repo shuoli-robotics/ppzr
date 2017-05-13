@@ -524,10 +524,12 @@ void ahrs_icq_update_gps(struct GpsState *gps_s __attribute__((unused)))
 #if AHRS_GRAVITY_UPDATE_COORDINATED_TURN && USE_GPS
   if (gps_s->fix >= GPS_FIX_3D) {
     /*ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(gps_s->speed_3d / 100.);*/
-    ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(v_x_f);
+    ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(arc_status.v_x_f);
+	printf("v_x_f is %f \n",arc_status.v_x_f);
     ahrs_icq.ltp_vel_norm_valid = true;
   } else {
     ahrs_icq.ltp_vel_norm_valid = false;
+	printf("aaaaaaaaaaaaaaaaaaaaaaaaaaa!\n");
   }
 #endif
 

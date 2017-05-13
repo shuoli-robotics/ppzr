@@ -144,7 +144,6 @@ extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
 extern struct arc_open_loop_status arc_status;
 extern int sample_pointer;
-extern float v_x_f;
 extern struct arc_open_loop_status arc_status;
 #endif
 
