@@ -47,7 +47,8 @@
 #endif
 
 struct timeval stop, start;
-//float time_stamp = 0;
+double time_stamp_1 = 0;
+double start_time = 0;
 float prev_ss_time = 0;
 int take_shot = 0;
 int shots = 0;
@@ -75,6 +76,7 @@ void file_logger_start(void)
   
   //start clock
   gettimeofday(&start, 0);
+  start_time =(double)(start.tv_sec + start.tv_usec / 1000000.0);
 
 /*  if (file_logger != NULL) {
     fprintf(
@@ -102,13 +104,13 @@ void file_logger_periodic(void)
   //timing
   gettimeofday(&stop, 0);
   double curr_time_1 = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
-  double time_stamp = curr_time_1 - (double)(start.tv_sec + start.tv_usec / 1000000.0);
+  time_stamp_1 = curr_time_1 - start_time;
   
   
-  if((time_stamp - prev_ss_time)>0.2)//for 5hz
+  if((time_stamp_1 - prev_ss_time)>0.2)//for 5hz
   {
     //video_capture_shoot();
-    prev_ss_time = time_stamp;
+    prev_ss_time = time_stamp_1;
     take_shot = shots;
     shots +=1;
   }
@@ -123,7 +125,7 @@ void file_logger_periodic(void)
   fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
           counter,
 	  
-	  time_stamp,
+	  time_stamp_1,
 	  
 	  imu.gyro.p,//right hand rule
           imu.gyro.q,

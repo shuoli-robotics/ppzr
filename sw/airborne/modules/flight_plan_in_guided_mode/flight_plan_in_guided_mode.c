@@ -321,7 +321,7 @@ bool arc_open_loop(double radius,double theta,float delta_psi)
 	float v_x_b = cos(theta)*v_x_f;
 	float phi = stateGetNedToBodyEulers_f()->phi;
 	float v_z_b = cos(phi)*sin(theta)*v_x_f;
-	float drag_x_b = -0.5 * v_x_b;// - 0.102*v_x_b*v_x_b-0.2276;//was 0.27*v_x_b
+	float drag_x_b = -0.5051 * v_x_b+0.0236;// - 0.102*v_x_b*v_x_b-0.2276;//was 0.27*v_x_b
 	float drag_z_b = -0.3356 * v_z_b + 0.2789*v_z_b*v_z_b-0.0137;
 	float drag_x_f = cos(theta)*drag_x_b+cos(phi)*sin(theta)*drag_z_b;
 	float drag_z_f = -sin(theta)*drag_x_b+cos(phi)*cos(theta)*drag_z_b;
