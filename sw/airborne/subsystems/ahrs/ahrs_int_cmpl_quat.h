@@ -161,4 +161,5 @@ static inline void ahrs_int_cmpl_quat_SetMagZeta(float zeta)
 }
 
 
+extern struct FloatVect3 accel_AHRS;
 #endif /* AHRS_INT_CMPL_QUAT_H */

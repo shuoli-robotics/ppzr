@@ -110,6 +110,10 @@ PRINT_CONFIG_VAR(AHRS_MAG_ZETA)
 
 struct AhrsIntCmplQuat ahrs_icq;
 
+
+// save acceleration sent to ACCEL update to check how accelorometer works during the arc
+struct FloatVect3 accel_AHRS;
+
 static inline void UNUSED ahrs_icq_update_mag_full(struct Int32Vect3 *mag, float dt);
 static inline void ahrs_icq_update_mag_2d(struct Int32Vect3 *mag, float dt);
 
@@ -246,6 +250,8 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     return;
   }
 
+  
+    ACCELS_FLOAT_OF_BFP(accel_AHRS,*accel);
   // c2 = ltp z-axis in imu-frame
   struct Int32RMat ltp_to_imu_rmat;
   int32_rmat_of_quat(&ltp_to_imu_rmat, &ahrs_icq.ltp_to_imu_quat);
@@ -286,6 +292,7 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     /* and subtract it from imu measurement to get a corrected measurement
      * of the gravity vector */
     VECT3_DIFF(pseudo_gravity_measurement, *accel, acc_c_imu);
+	printf("!!!!!!!!!!!!!!!!!!!!!!\n");
   } else {
     VECT3_COPY(pseudo_gravity_measurement, *accel);
   }
@@ -525,11 +532,9 @@ void ahrs_icq_update_gps(struct GpsState *gps_s __attribute__((unused)))
   if (gps_s->fix >= GPS_FIX_3D) {
     /*ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(gps_s->speed_3d / 100.);*/
     ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(arc_status.v_x_f);
-	printf("v_x_f is %f \n",arc_status.v_x_f);
     ahrs_icq.ltp_vel_norm_valid = true;
   } else {
     ahrs_icq.ltp_vel_norm_valid = false;
-	printf("aaaaaaaaaaaaaaaaaaaaaaaaaaa!\n");
   }
 #endif
 

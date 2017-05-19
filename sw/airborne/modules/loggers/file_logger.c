@@ -38,6 +38,7 @@
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_int.h"
 #include "subsystems/electrical.h"
 #include "modules/computer_vision/video_capture.h"
+#include "subsystems/ahrs/ahrs_int_cmpl_quat.h"
 //#include "boards/bebop/actuators.h"
 
 /** Set the default File logger path to the USB drive */
@@ -119,7 +120,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%f,%f,%f\n",
           counter,
 	  
 	  time_stamp,
@@ -180,7 +181,13 @@ void file_logger_periodic(void)
 	  arc_status.phi_cmd,
 	  arc_status.theta_cmd,
 	  arc_status.psi_cmd,
-	  arc_status.flag_in_arc
+	  arc_status.flag_in_arc,
+
+	  accel_AHRS.x,
+	  accel_AHRS.y,
+	  accel_AHRS.z
+
+			  
 			  
          );
   counter++;
