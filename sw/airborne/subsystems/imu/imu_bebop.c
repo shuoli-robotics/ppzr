@@ -123,7 +123,6 @@ void imu_bebop_event(void)
     imu_bebop.mpu.data_available = false;
     imu_scale_gyro(&imu);
     imu_scale_accel(&imu);
-	printf("IMU Bebop acceleration is %d\n")
     AbiSendMsgIMU_GYRO_INT32(IMU_BOARD_ID, now_ts, &imu.gyro);
     AbiSendMsgIMU_ACCEL_INT32(IMU_BOARD_ID, now_ts, &imu.accel);
   }

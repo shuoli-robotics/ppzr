@@ -263,7 +263,8 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 
   struct Int32Vect3 pseudo_gravity_measurement;
 
-  if (ahrs_icq.correct_gravity && ahrs_icq.ltp_vel_norm_valid) {
+  /*if (ahrs_icq.correct_gravity && ahrs_icq.ltp_vel_norm_valid) {*/
+  if (0) {
     /*
      * centrifugal acceleration in body frame
      * a_c_body = omega x (omega x r)
@@ -292,9 +293,9 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     /* and subtract it from imu measurement to get a corrected measurement
      * of the gravity vector */
     VECT3_DIFF(pseudo_gravity_measurement, *accel, acc_c_imu);
-	printf("!!!!!!!!!!!!!!!!!!!!!!\n");
   } else {
     VECT3_COPY(pseudo_gravity_measurement, *accel);
+	printf("aaaaaaaaaaaaaaaaaaaaaaaaaaa!\n");
   }
 
   /* compute the residual of the pseudo gravity vector in imu frame */
