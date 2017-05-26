@@ -35,6 +35,7 @@
     <module name="stabilization" type="rate_indi"/>
     <!--module name="stabilization" type="int_quat"/-->
     <module name="ahrs" type="int_cmpl_quat">
+
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
       <configure name="USE_GPS" value="TRUE"/>
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->

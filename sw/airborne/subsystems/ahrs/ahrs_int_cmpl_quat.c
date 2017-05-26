@@ -295,7 +295,6 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     VECT3_DIFF(pseudo_gravity_measurement, *accel, acc_c_imu);
   } else {
     VECT3_COPY(pseudo_gravity_measurement, *accel);
-	printf("aaaaaaaaaaaaaaaaaaaaaaaaaaa!\n");
   }
 
   /* compute the residual of the pseudo gravity vector in imu frame */
@@ -350,6 +349,7 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   ahrs_icq.rate_correction.p -= residual.x / inv_rate_scale;
   ahrs_icq.rate_correction.q -= residual.y / inv_rate_scale;
   ahrs_icq.rate_correction.r -= residual.z / inv_rate_scale;
+	printf("ddddddddddddddddddddddddddddddddd\n");
 
   // reset accel propagation counter
   ahrs_icq.accel_cnt = 0;
