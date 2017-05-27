@@ -120,7 +120,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,          %d,%d,%f,%f,%f,%f,%f,%f,%f\n",
           counter,
 	  
 	  time_stamp,
@@ -181,7 +181,18 @@ void file_logger_periodic(void)
 	  arc_status.phi_cmd,
 	  arc_status.theta_cmd,
 	  arc_status.psi_cmd,
-	  arc_status.flag_in_arc
+	  arc_status.flag_in_arc,
+
+
+	  test_ahrs.frequency_counter,
+	  test_ahrs.signal_state,
+	  test_ahrs.frequency,
+	  test_ahrs.desired_phi,
+	  test_ahrs.desired_theta,
+	  test_ahrs.desired_psi,
+	  test_ahrs.a_x_b,
+	  test_ahrs.a_y_b,
+	  test_ahrs.a_z_b
 
 
 			  

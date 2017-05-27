@@ -29,6 +29,7 @@
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude.h"
 #include "modules/kalman_filter/kalman_filter.h"
+#include "subsystems/ahrs/ahrs_int_cmpl_quat.h"
 
 
 
@@ -57,14 +58,16 @@ void display_states()
     if (autopilot_mode != AP_MODE_MODULE)
         return;
 
-    display_upper_state();
-    display_lower_state();
+    /*display_upper_state();*/
+    /*display_lower_state();*/
+	printf("signal state = %d\n",test_ahrs.signal_state);
+	printf("frequency_counter = %d\n",test_ahrs.frequency_counter);
+	printf("signal frequency = %f\n",test_ahrs.frequency);
     printf("\n");
     printf("\n");
     printf("\n");
     printf("\n");
     printf("\n");
-	printf("psi_cmd = %f\n",arc_status.psi_cmd);
     printf("\n");
 	/*debug_information();*/
 }

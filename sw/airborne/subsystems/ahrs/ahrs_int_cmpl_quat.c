@@ -109,7 +109,7 @@ PRINT_CONFIG_VAR(AHRS_MAG_ZETA)
 #endif
 
 struct AhrsIntCmplQuat ahrs_icq;
-
+struct TestAHRS test_ahrs;
 
 // save acceleration sent to ACCEL update to check how accelorometer works during the arc
 struct FloatVect3 accel_AHRS;
@@ -157,6 +157,21 @@ void ahrs_icq_init(void)
 
   ahrs_icq.accel_cnt = 0;
   ahrs_icq.mag_cnt = 0;
+
+
+  // add codes of test_ahrs
+  test_ahrs.startTest = FALSE;
+  test_ahrs.phi0 = PI/2;
+  test_ahrs.theta0 = PI/2;
+  test_ahrs.psi0 = PI;
+test_ahrs.frequency_counter = 0;
+test_ahrs.frequency_time = 3.0;
+test_ahrs.signal_state = FALSE;
+counter_temp1 = 0;
+time_temp1 = 0;
+counter_temp2 = 0;
+time_temp2 = 0;
+test_ahrs.frequency = 0.0;
 }
 
 
@@ -250,7 +265,35 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     return;
   }
 
-  
+  struct Int32Vect3 testAccel;
+
+  accel = &testAccel;
+
+  if (test_ahrs.signal_state == TRUE)
+  {
+		  test_ahrs.frequency = (test_ahrs.frequency_counter-1)*0.01;
+		  test_ahrs.desired_phi = test_ahrs.phi0*cos(test_ahrs.frequency*time_temp2);
+		  test_ahrs.desired_theta = test_ahrs.theta0*cos(test_ahrs.frequency*time_temp2+PI/2);
+		  test_ahrs.desired_psi = test_ahrs.psi0*cos(test_ahrs.frequency*time_temp2+PI/4);
+  }
+  else
+  {
+		  test_ahrs.desired_phi = 0;
+		  test_ahrs.desired_theta = 0;
+		  test_ahrs.desired_psi = 0;
+  }
+
+  /*printf("frequency counter is %d\n",test_ahrs.frequency_counter);*/
+  /*printf("temp time 2 is %f\n",time_temp2);*/
+  /*printf("test frequency is  %f\n",test_ahrs.frequency);*/
+
+  test_ahrs.a_x_b = -sin(test_ahrs.desired_theta)*9.81;
+  test_ahrs.a_y_b = sin(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*9.81;
+  test_ahrs.a_z_b = cos(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*9.81;
+
+  accel->x = ACCEL_BFP_OF_REAL(test_ahrs.a_x_b);
+  accel->y = ACCEL_BFP_OF_REAL(test_ahrs.a_y_b);
+  accel->z = ACCEL_BFP_OF_REAL(test_ahrs.a_z_b);
     ACCELS_FLOAT_OF_BFP(accel_AHRS,*accel);
   // c2 = ltp z-axis in imu-frame
   struct Int32RMat ltp_to_imu_rmat;
@@ -349,7 +392,6 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   ahrs_icq.rate_correction.p -= residual.x / inv_rate_scale;
   ahrs_icq.rate_correction.q -= residual.y / inv_rate_scale;
   ahrs_icq.rate_correction.r -= residual.z / inv_rate_scale;
-	printf("ddddddddddddddddddddddddddddddddd\n");
 
   // reset accel propagation counter
   ahrs_icq.accel_cnt = 0;
@@ -379,6 +421,23 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 
   INT_RATES_RSHIFT(ahrs_icq.gyro_bias, ahrs_icq.high_rez_bias, 28);
 
+  if (test_ahrs.signal_state == FALSE && fabs(time_temp2-test_ahrs.frequency_time)<0.1)
+  {
+		 // it is the end of 0 input 
+		test_ahrs.signal_state = TRUE ;
+		counter_temp2 = 0;
+		time_temp2 = 0;
+		test_ahrs.frequency_counter++;
+		printf("!!!!------------_!!!!!!!!!!-------------\n");
+  }
+  else if (test_ahrs.signal_state == TRUE && fabs(time_temp2-test_ahrs.frequency_time)<0.1)
+  {
+		 // it is the end of sin  input 
+		test_ahrs.signal_state = FALSE ;
+		counter_temp2 = 0;
+		time_temp2 = 0;
+
+  }
 }
 
 
