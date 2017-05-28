@@ -111,6 +111,9 @@ PRINT_CONFIG_VAR(AHRS_MAG_ZETA)
 struct AhrsIntCmplQuat ahrs_icq;
 struct TestAHRS test_ahrs;
 
+double phi_b;
+double theta_b;
+
 // save acceleration sent to ACCEL update to check how accelorometer works during the arc
 struct FloatVect3 accel_AHRS;
 
@@ -164,14 +167,16 @@ void ahrs_icq_init(void)
   test_ahrs.phi0 = PI/2;
   test_ahrs.theta0 = PI/2;
   test_ahrs.psi0 = PI;
-test_ahrs.frequency_counter = 0;
-test_ahrs.frequency_time = 3.0;
-test_ahrs.signal_state = FALSE;
+test_ahrs.frequency_counter = 1;
+test_ahrs.frequency_time = 100.0;
+test_ahrs.signal_state = TRUE;
 counter_temp1 = 0;
 time_temp1 = 0;
 counter_temp2 = 0;
 time_temp2 = 0;
 test_ahrs.frequency = 0.0;
+phi_b = 0;
+theta_b = 0;
 }
 
 
@@ -271,10 +276,9 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 
   if (test_ahrs.signal_state == TRUE)
   {
-		  test_ahrs.frequency = (test_ahrs.frequency_counter-1)*0.01;
-		  test_ahrs.desired_phi = test_ahrs.phi0*cos(test_ahrs.frequency*time_temp2);
-		  test_ahrs.desired_theta = test_ahrs.theta0*cos(test_ahrs.frequency*time_temp2+PI/2);
-		  test_ahrs.desired_psi = test_ahrs.psi0*cos(test_ahrs.frequency*time_temp2+PI/4);
+		  test_ahrs.desired_phi = test_ahrs.phi0*sin(test_ahrs.frequency*time_temp1+phi_b);
+		  test_ahrs.desired_theta = test_ahrs.theta0*sin(test_ahrs.frequency*time_temp1+theta_b);
+		  test_ahrs.desired_psi = 0.0;
   }
   else
   {
@@ -287,9 +291,9 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   /*printf("temp time 2 is %f\n",time_temp2);*/
   /*printf("test frequency is  %f\n",test_ahrs.frequency);*/
 
-  test_ahrs.a_x_b = -sin(test_ahrs.desired_theta)*9.81;
-  test_ahrs.a_y_b = sin(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*9.81;
-  test_ahrs.a_z_b = cos(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*9.81;
+  test_ahrs.a_x_b = -sin(test_ahrs.desired_theta)*-9.81;
+  test_ahrs.a_y_b = sin(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*-9.81;
+  test_ahrs.a_z_b = cos(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*-9.81;
 
   accel->x = ACCEL_BFP_OF_REAL(test_ahrs.a_x_b);
   accel->y = ACCEL_BFP_OF_REAL(test_ahrs.a_y_b);
@@ -433,9 +437,32 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   else if (test_ahrs.signal_state == TRUE && fabs(time_temp2-test_ahrs.frequency_time)<0.1)
   {
 		 // it is the end of sin  input 
-		test_ahrs.signal_state = FALSE ;
+		test_ahrs.signal_state = TRUE ;
 		counter_temp2 = 0;
 		time_temp2 = 0;
+
+		double phi = test_ahrs.desired_phi;
+		double theta = test_ahrs.desired_theta;
+		double d_phi = test_ahrs.frequency*test_ahrs.phi0*cos(test_ahrs.frequency*time_temp1+phi_b);
+		double d_theta = test_ahrs.frequency*test_ahrs.theta0*cos(test_ahrs.frequency*time_temp1+theta_b);
+
+		test_ahrs.frequency_counter++;
+		test_ahrs.frequency = (test_ahrs.frequency_counter-1)*0.01;
+
+		if(test_ahrs.frequency_counter == 2)
+		{
+            test_ahrs.phi0 = PI/2;
+            test_ahrs.theta0 = PI/2;
+			phi_b = -test_ahrs.frequency*time_temp1;
+			theta_b = -test_ahrs.frequency*time_temp1;
+		}
+		else
+		{
+				phi_b = atan2(phi*test_ahrs.frequency,d_phi)-test_ahrs.frequency*time_temp1;
+				test_ahrs.phi0 = phi/sin(test_ahrs.frequency*time_temp1+phi_b);
+				theta_b = atan2(theta*test_ahrs.frequency,d_theta)-test_ahrs.frequency*time_temp1;
+				test_ahrs.theta0 = theta/sin(test_ahrs.frequency*time_temp1+theta_b);
+		}
 
   }
 }
