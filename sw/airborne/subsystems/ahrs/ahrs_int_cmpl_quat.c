@@ -164,11 +164,11 @@ void ahrs_icq_init(void)
 
   // add codes of test_ahrs
   test_ahrs.startTest = FALSE;
-  test_ahrs.phi0 = PI/2;
-  test_ahrs.theta0 = PI/2;
+  test_ahrs.phi0 = PI/3;
+  test_ahrs.theta0 = PI/3;
   test_ahrs.psi0 = PI;
 test_ahrs.frequency_counter = 1;
-test_ahrs.frequency_time = 100.0;
+test_ahrs.frequency_time = 10.0;
 test_ahrs.signal_state = TRUE;
 counter_temp1 = 0;
 time_temp1 = 0;
@@ -276,8 +276,10 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 
   if (test_ahrs.signal_state == TRUE)
   {
-		  test_ahrs.desired_phi = test_ahrs.phi0*sin(test_ahrs.frequency*time_temp1+phi_b);
+		  /*test_ahrs.desired_phi = test_ahrs.phi0*sin(test_ahrs.frequency*time_temp1+phi_b);*/
+		  test_ahrs.desired_phi = 0;
 		  test_ahrs.desired_theta = test_ahrs.theta0*sin(test_ahrs.frequency*time_temp1+theta_b);
+		  /*test_ahrs.desired_theta = 0;*/
 		  test_ahrs.desired_psi = 0.0;
   }
   else
