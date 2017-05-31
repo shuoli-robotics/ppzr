@@ -183,4 +183,25 @@ float a_y_b;
 float a_z_b;
 };
 extern struct TestAHRS test_ahrs;
+
+
+struct AHRS_ACCEL_PQR
+{
+
+		struct Int32Rates rate_P;
+		struct Int32Rates rate_I;
+		struct Int64Rates rate_I_64;
+};
+
+extern struct AHRS_ACCEL_PQR ahrs_accel_pqr;
+
+
+struct AHRS_GPS_PQR
+{
+
+		struct Int32Rates rate_P;
+		struct Int32Rates rate_I;
+		struct Int64Rates rate_I_64;
+};
+extern struct AHRS_GPS_PQR ahrs_gps_pqr;
 #endif /* AHRS_INT_CMPL_QUAT_H */

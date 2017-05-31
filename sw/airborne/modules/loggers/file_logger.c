@@ -120,7 +120,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,          %d,%d,%f,%f,%f,%f,%f,%f,%f\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,          %d,%d,%f,%f,%f,%f,%f,%f,%f,    %d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
           counter,
 	  
 	  time_stamp,
@@ -192,8 +192,18 @@ void file_logger_periodic(void)
 	  test_ahrs.desired_psi,
 	  test_ahrs.a_x_b,
 	  test_ahrs.a_y_b,
-	  test_ahrs.a_z_b
+	  test_ahrs.a_z_b,
 
+	  ahrs_accel_pqr.rate_P.p,
+	  ahrs_accel_pqr.rate_P.q,
+	  ahrs_accel_pqr.rate_P.r,
+	  ahrs_accel_pqr.rate_I.p,
+	  ahrs_accel_pqr.rate_I.q,
+	  ahrs_accel_pqr.rate_I.r,
+	  ahrs_gps_pqr.rate_P.p,
+	  ahrs_gps_pqr.rate_P.q,
+	  ahrs_gps_pqr.rate_P.r,
+	  ahrs_icq.gravity_heuristic_factor
 
 			  
 			  

@@ -149,11 +149,11 @@
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
 
    <define name="ACCEL_X_NEUTRAL" value="106"/>
-   <define name="ACCEL_Y_NEUTRAL" value="7"/>
-   <define name="ACCEL_Z_NEUTRAL" value="193"/>
-   <define name="ACCEL_X_SENS" value="2.4537" integer="16"/>
-   <define name="ACCEL_Y_SENS" value="2.4368"  integer="16"/>
-   <define name="ACCEL_Z_SENS" value="2.4864" integer="16"/>
+   <define name="ACCEL_Y_NEUTRAL" value="8"/>
+   <define name="ACCEL_Z_NEUTRAL" value="239"/>
+   <define name="ACCEL_X_SENS" value="2.4527" integer="16"/>
+   <define name="ACCEL_Y_SENS" value="2.4394"  integer="16"/>
+   <define name="ACCEL_Z_SENS" value="2.4453" integer="16"/>
   </section>
 
 

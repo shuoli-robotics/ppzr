@@ -319,11 +319,11 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 		states_race.attitude_control = TRUE;
-		arc_status.drag_coef_body_x_1 = -0.5051;
-		arc_status.drag_coef_body_y_1 = -0.8371;
+		arc_status.drag_coef_body_x_1 = -0.48;
+		arc_status.drag_coef_body_y_1 = -0.74;
 		arc_status.drag_coef_body_z_1 = 0;
-		arc_status.drag_coef_body_x_0 = 0.0236;
-		arc_status.drag_coef_body_y_0 = -0.2077;
+		arc_status.drag_coef_body_x_0 = 0.18;
+		arc_status.drag_coef_body_y_0 = -0.015;
 		arc_status.drag_coef_body_z_0 = 0;
 		arc_status.drag_coef_body_x_2 = 0;
 		arc_status.drag_coef_body_y_2 = 0;
