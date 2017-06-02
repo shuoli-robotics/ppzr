@@ -40,6 +40,11 @@
 #include "math/pprz_trig_int.h"
 #include "math/pprz_algebra_int.h"
 
+//-----------------------------------Shuo added 2017.5.31
+//
+//#define AHRS_PROPAGATE_LOW_PASS_RATES
+
+//-------------------------------------------------------
 #ifdef AHRS_PROPAGATE_LOW_PASS_RATES
 PRINT_CONFIG_MSG("LOW PASS FILTER ON GYRO RATES")
 #endif
@@ -239,7 +244,6 @@ void ahrs_icq_propagate(struct Int32Rates *gyro, float dt)
   RATES_SDIV(ahrs_icq.imu_rate, ahrs_icq.imu_rate, AHRS_PROPAGATE_LOW_PASS_RATES_DIV);
 #else
   RATES_COPY(ahrs_icq.imu_rate, omega);
-  printf("NO LOWPASS FILTER FOR GYRO\n");
 #endif
 
   /* add correction */
@@ -419,7 +423,6 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     Bound(ahrs_icq.weight, 0.15, 1.0);
   } else {
     ahrs_icq.weight = 1.0;
-	printf("gracity factor is always 1 !!!!!!!!!!!\n");
   }
 
   /* Complementary filter proportional gain.
