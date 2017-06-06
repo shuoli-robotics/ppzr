@@ -117,6 +117,7 @@ struct AhrsIntCmplQuat ahrs_icq;
 struct TestAHRS test_ahrs;
 struct AHRS_ACCEL_PQR ahrs_accel_pqr;
 struct AHRS_GPS_PQR ahrs_gps_pqr;
+struct FILTERED_PQR filtered_pqr;
 
 double phi_b;
 double theta_b;
@@ -197,6 +198,9 @@ void ahrs_icq_init(void)
   ahrs_gps_pqr.rate_P.p = 0;
   ahrs_gps_pqr.rate_P.q = 0;
   ahrs_gps_pqr.rate_P.r = 0;
+  filtered_pqr.p = 0;
+  filtered_pqr.q = 0;
+  filtered_pqr.r = 0;
 }
 
 

@@ -204,4 +204,12 @@ struct AHRS_GPS_PQR
 		struct Int64Rates rate_I_64;
 };
 extern struct AHRS_GPS_PQR ahrs_gps_pqr;
+
+struct FILTERED_PQR
+{
+
+		double p;
+		double q;
+		double r;
+};
 #endif /* AHRS_INT_CMPL_QUAT_H */
