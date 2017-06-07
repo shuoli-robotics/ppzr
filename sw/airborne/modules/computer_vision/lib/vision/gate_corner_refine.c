@@ -60,6 +60,43 @@ void gate_corner_ref(struct image_t* color_image,int *x_points, int *y_points, i
   
 }
 
+void gate_corner_ref_2(struct image_t* color_image,int *x_points, int *y_points, int* radius)
+{
+  //printf("enter gate_corner_ref\n");
+  //corner point coordinates of snake gate square
+  int rad = (*radius);
+  int C_1_x = x_points[0];//(*x_center) - (*radius);
+  int C_1_y = y_points[0];//(*y_center) + (*radius);
+  
+  int C_2_x = x_points[1];//(*x_center) + (*radius);
+  int C_2_y = y_points[1];//(*y_center) + (*radius);
+  
+  int C_3_x = x_points[2];//(*x_center) + (*radius);
+  int C_3_y = y_points[2];//(*y_center) - (*radius);
+  
+  int C_4_x = x_points[3];//(*x_center) - (*radius);
+  int C_4_y = y_points[3];//(*y_center) - (*radius);
+  
+  float corner_area = 0.4f;
+  refine_corner(color_image,&C_1_x,&C_1_y,rad,corner_area);
+  refine_corner(color_image,&C_2_x,&C_2_y,rad,corner_area);
+  refine_corner(color_image,&C_3_x,&C_3_y,rad,corner_area);
+  refine_corner(color_image,&C_4_x,&C_4_y,rad,corner_area);
+  
+  //draw_shape(color_image,C_1_x,C_1_y,C_2_x,C_2_y,C_3_x,C_3_y,C_4_x,C_4_y);
+  
+  x_points[0] = C_1_x;
+  y_points[0] = C_1_y;
+  x_points[1] = C_2_x;
+  y_points[1] = C_2_y;
+  x_points[2] = C_3_x;
+  y_points[2] = C_3_y;
+  x_points[3] = C_4_x;
+  y_points[3] = C_4_y;
+  //printf("exit gate_corner_ref\n");
+  
+}
+
 void refine_corner(struct image_t* im, int *corner_x, int *corner_y, int size, float size_factor)
 {
   //printf("enter refine_corner\n");

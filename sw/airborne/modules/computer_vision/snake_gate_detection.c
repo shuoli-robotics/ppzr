@@ -153,8 +153,12 @@ float previous_x_gate = 0;
 float previous_y_gate = 0;
 float previous_z_gate = 0;
 
+int last_frame_detection = 0;
+int repeat_gate = 0;
+
 // previous best gate:
 struct gate_img previous_best_gate;
+struct gate_img last_gate;
 
 //SAFETY AND RESET FLAGS
 int uncertainty_gate = 0;
@@ -463,6 +467,12 @@ void snake_gate_periodic(void)
   delta_z_gate = current_z_gate - sonar_alt;
 }
 
+//qsort comp function for sorting 
+int cmpfunc (const void * a, const void * b)
+{
+   return ( *(int*)a - *(int*)b );
+}
+
 // Function
 // Samples from the image and checks if the pixel is the right color.
 // If yes, it "snakes" up and down to see if it is the side of a gate.
@@ -590,13 +600,15 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   float size_factor = 1.5;//2;//1.25;
 
   // do an additional fit to improve the gate detection:
-  if (best_quality > min_gate_quality && n_gates > 0) {
+  if ((best_quality > min_gate_quality && n_gates > 0)||last_frame_detection) {
     // temporary variables:
 
 
     //if (gen_alg) {
 
       int max_candidate_gates = 10;//10;
+      
+      repeat_gate = 0;
 
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
@@ -729,7 +741,83 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         /*for (int gate_nr = n_gates - max_candidate_gates; gate_nr < n_gates; gate_nr += 1) {
           draw_gate(img, gates[gate_nr]);
         }*/
-
+///////////////////////////////////////////////Use previous best estimate
+      }
+      
+      if((best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) && last_frame_detection == 1){
+	
+	repeat_gate = 1;
+	
+	int x_values[4];
+	int y_values[4];
+	
+	memcpy(x_values,&(last_gate.x_corners[0]),sizeof(int)*4);
+	memcpy(y_values,&(last_gate.y_corners[0]),sizeof(int)*4);
+	
+	//sort small to large 
+	qsort(x_values, 4, sizeof(int), cmpfunc);
+	qsort(y_values, 4, sizeof(int), cmpfunc);
+	printf("in repeat_gate ########################################################\n ");
+	printf("repeat_gate x1:%d x2:%d x3:%d x4:%d\n",last_gate.x_corners[0],last_gate.x_corners[1],last_gate.x_corners[2],last_gate.x_corners[3]);
+	printf("repeat_gate y1:%d y2:%d y3:%d y4:%d\n",last_gate.y_corners[0],last_gate.y_corners[1],last_gate.y_corners[2],last_gate.y_corners[3]);
+	
+// 	    //   int16_t ROI_size = (int16_t)(((float) last_gate.sz) * size_factor);
+//           int16_t min_x = last_gate.x - ROI_size;
+//           min_x = (min_x < 0) ? 0 : min_x;
+//           int16_t max_x = last_gate.x + ROI_size;
+//           max_x = (max_x < img->h) ? max_x : img->h;
+//           int16_t min_y = last_gate.y - ROI_size;
+//           min_y = (min_y < 0) ? 0 : min_y;
+//           int16_t max_y = last_gate.y + ROI_size;
+//           max_y = (max_y < img->w) ? max_y : img->w;
+//     //draw_gate(img, gates[gate_nr]);
+// 	  gates_sz = last_gate.sz;
+// 	  x_center = last_gate.x;
+// 	  y_center = last_gate.y;
+// 	  radius   = gates_sz;
+//           // detect the gate:
+// //           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
+// //                          &(gates[gate_nr].sz),
+// //                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
+// //                          &s_left, &s_right);
+// 	  int x_center_p = x_center;
+// 	  int y_center_p = y_center;
+	//check x size, maybe use y also later?
+ 	  int radius_p   = x_values[3]-x_values[0];
+	  gate_corner_ref_2(img, last_gate.x_corners, last_gate.y_corners,&radius_p);
+	  
+	  //draw_gate_polygon(img,points_x,points_y,blue_color);
+          //if (fitness < best_fitness) {
+            //best_fitness = fitness;
+            // store the information in the gate: ,do we need to?
+	  /*
+            temp_check_gate.x = (int) x_center;
+            temp_check_gate.y = (int) y_center;
+            temp_check_gate.sz = (int) radius;
+            temp_check_gate.sz_left = (int) s_left;
+            temp_check_gate.sz_right = (int) s_right;*/
+	    
+	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
+	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
+	    
+	    
+            // also get the color fitness
+            check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
+	    
+	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
+	    {
+	    //best_fitness = fitness;
+//             // store the information in the gate:
+//             best_gate.x = temp_check_gate.x;
+//             best_gate.y = temp_check_gate.y;
+//             best_gate.sz = temp_check_gate.sz;
+//             best_gate.sz_left = temp_check_gate.sz_left;
+//             best_gate.sz_right = temp_check_gate.sz_right;
+	    best_gate.gate_q = temp_check_gate.gate_q;
+	    best_gate.n_sides = temp_check_gate.n_sides;
+	    memcpy(&(best_gate.x_corners[0]),&(temp_check_gate.x_corners[0]),sizeof(int)*4);
+	    memcpy(&(best_gate.y_corners[0]),&(temp_check_gate.y_corners[0]),sizeof(int)*4);
+	    }
       }
    
   } else {
@@ -785,8 +873,23 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
  // draw_gate_color(img, best_gate, blue_color);
   
+//   printf("repeat_gate:%d   -------------------------------------\n",repeat_gate);
+  printf("last_frame_detection:%d   -------------------------------------\n",last_frame_detection);
+  
   if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) {//n_sides was > 2
 
+    
+    //sucessfull detection
+    last_frame_detection = 1;
+    //save for next iteration
+    memcpy(&(last_gate.x_corners[0]),&(best_gate.x_corners[0]),sizeof(int)*4);
+    memcpy(&(last_gate.y_corners[0]),&(best_gate.y_corners[0]),sizeof(int)*4);
+    //previous best snake gate
+    last_gate.x = best_gate.x;
+    last_gate.y = best_gate.y;
+    last_gate.sz = best_gate.sz;
+    
+    
     current_quality = best_quality;
     size_left = best_gate.sz_left;
     size_right = best_gate.sz_right;
@@ -804,7 +907,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
         //draw_gate_color(img, best_gate, blue_color);
-	draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
+	if(repeat_gate == 0){
+	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
+	}
+	else if(repeat_gate == 1){
+	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,green_color);
+	}
 //draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
 	
 	//vector and matrix declarations
@@ -954,24 +1062,24 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  //vec_from_point_2(x_trail[i],y_trail[i],168,&temp_vec);
 	  MAT33_TRANS(R_trans,R);
 	  MAT33_VECT3_MUL(n_vec, R_trans, temp_vec);
-	  print_vector(n_vec);
+	  //print_vector(n_vec);
 	 
 	  double vec_norm = sqrt(VECT3_NORM2(n_vec));
 	  VECT3_SDIV(n_vec, n_vec, vec_norm);
-	  printf("n_vec norm:\n");
-	  print_vector(n_vec);
+// 	  printf("n_vec norm:\n");
+// 	  print_vector(n_vec);
 	  VECT3_VECT3_TRANS_MUL(temp_mat, n_vec,n_vec);
-	  printf("n_vec_squared:\n");
-	  print_matrix(temp_mat);
+// 	  printf("n_vec_squared:\n");
+// 	  print_matrix(temp_mat);
 	  MAT33_MAT33_DIFF(temp_mat,I_mat,temp_mat); 
-	  printf("n_vec_squared - I:\n");
-	  print_matrix(temp_mat);
+// 	  printf("n_vec_squared - I:\n");
+// 	  print_matrix(temp_mat);
 	  MAT33_COPY(temp_mat_2,Q_mat);
-	  printf("temp_mat_2:\n");
-	  print_matrix(temp_mat_2);
+// 	  printf("temp_mat_2:\n");
+// 	  print_matrix(temp_mat_2);
 	  MAT33_MAT33_SUM(Q_mat,temp_mat_2,temp_mat);
-	  printf("Q_mat_sum:%d:\n",i);
-	  print_matrix(Q_mat);
+// 	  printf("Q_mat_sum:%d:\n",i);
+// 	  print_matrix(Q_mat);
 	  MAT33_VECT3_MUL(temp_vec, temp_mat, gate_points[i]);
 	  VECT3_SUM(p_vec,p_vec,temp_vec);
 	  
@@ -1014,8 +1122,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  
 	}
 	
-	  printf("Q_mat:\n");
-	  print_matrix(Q_mat);
+// 	  printf("Q_mat:\n");
+// 	  print_matrix(Q_mat);
 	
 	MAT33_INV(temp_mat,Q_mat);
 	
@@ -1025,8 +1133,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	debug_2 = pos_vec.y;
 	//debug_3 = pos_vec.z;
 	
-		printf("R_mat_trans:\n");
-  		print_matrix(R_trans);
+// 		printf("R_mat_trans:\n");
+//   		print_matrix(R_trans);
 	  
 	gate_img_point_x_1 = best_gate.x_corners[0];
 	gate_img_point_y_1 = best_gate.y_corners[0];
@@ -1040,6 +1148,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
   } else {
 
+      //no detection
+      last_frame_detection = 0;
      
       states_race.gate_detected = 0;
       current_quality = 0;
@@ -1169,13 +1279,12 @@ void vec_from_point_2(float point_x, float point_y, int f, struct FloatVect3 *ve
   
   f = 168;
   float focus = (float)f;
-  printf("focus%f\n",focus);
   vec->x = 1.0;
-  printf("Print in point 1\n");
+  //printf("Print in point 1\n");
   vec->y = point_x/focus;
-  printf("Print in point 2\n");
+  //printf("Print in point 2\n");
   vec->z = point_y/focus;
-  printf("Print in point 3\n");
+  //printf("Print in point 3\n");
 }
 
 
