@@ -118,6 +118,10 @@ struct TestAHRS test_ahrs;
 struct AHRS_ACCEL_PQR ahrs_accel_pqr;
 struct AHRS_GPS_PQR ahrs_gps_pqr;
 struct FILTERED_PQR filtered_pqr;
+struct FILTERED_PQR filtered_gyro_f;
+
+struct Int32Rates filtered_gyro_i;
+
 
 double phi_b;
 double theta_b;
@@ -201,6 +205,13 @@ void ahrs_icq_init(void)
   filtered_pqr.p = 0;
   filtered_pqr.q = 0;
   filtered_pqr.r = 0;
+  filtered_gyro_i.p = 0;
+  filtered_gyro_i.q = 0;
+  filtered_gyro_i.r = 0;
+  filtered_gyro_f.p = 0;
+  filtered_gyro_f.q = 0;
+  filtered_gyro_f.r = 0;
+
 }
 
 
@@ -233,10 +244,19 @@ bool ahrs_icq_align(struct Int32Rates *lp_gyro, struct Int32Vect3 *lp_accel,
 }
 
 
+
 void ahrs_icq_propagate(struct Int32Rates *gyro, float dt)
 {
   int32_t freq = (int32_t)(1. / dt);
 
+  /*   filter q here */
+  /*   gyro of bebop always measures noisy q the frequency of noise is larger than 100HZ. So it should be filtered*/
+  double T = 0.01;
+  double q_gyro_f = FLOAT_OF_BFP(gyro->q,INT32_RATE_FRAC);
+  double d_q_f = (q_gyro_f-filtered_gyro_f.q)/T;
+  filtered_gyro_f.q += d_q_f /512.0; 
+  filtered_gyro_i.q = BFP_OF_REAL(filtered_gyro_f.q,INT32_RATE_FRAC); 
+  gyro->q = filtered_gyro_i.q;
   /* unbias gyro             */
   struct Int32Rates omega;
   RATES_DIFF(omega, *gyro, ahrs_icq.gyro_bias);

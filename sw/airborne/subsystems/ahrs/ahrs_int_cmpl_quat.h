@@ -212,4 +212,5 @@ struct FILTERED_PQR
 		double q;
 		double r;
 };
+extern struct FILTERED_PQR filtered_gyro_f;
 #endif /* AHRS_INT_CMPL_QUAT_H */
