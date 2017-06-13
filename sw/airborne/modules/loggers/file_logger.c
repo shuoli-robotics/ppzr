@@ -120,7 +120,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,          %d,%d,%f,%f,%f,%f,%f,%f,%f,    %d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%d,%d,%d,%d,%d,%d,%f\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d     ,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,          %d,%d,%f,%f,%f,%f,%f,%f,%f,    %d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%d,%d,%d,%d,%d,%d,%f,%f\n",
           counter,
 	  
 	  time_stamp,
@@ -210,7 +210,8 @@ void file_logger_periodic(void)
 	  ahrs_icq.gyro_bias.p,
 	  ahrs_icq.gyro_bias.q,
 	  ahrs_icq.gyro_bias.r,
-	  filtered_gyro_f.q
+	  filtered_gyro_f.q,
+	  filtered_gyro_f.p
 
 			  
 			  
