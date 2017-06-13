@@ -989,9 +989,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	float k_fisheye = 1.085;
 	float reprojection_error[4];
 		
-	struct FloatRMat R,R_trans,Q_mat,I_mat, temp_mat, temp_mat_2;
-	struct FloatEulers attitude;
-	struct FloatVect3 p_vec,pos_vec,temp_vec,n_vec;
+	struct FloatRMat R,R_20,R_trans,Q_mat,I_mat, temp_mat, temp_mat_2;
+	struct FloatEulers attitude, cam_body;
+	struct FloatVect3 vec_20, p_vec,pos_vec,temp_vec,n_vec;
 	
 	p_vec.x = 0;
 	p_vec.y = 0;
@@ -1029,13 +1029,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 // 	attitude.phi =    0.0873;//stateGetNedToBodyEulers_f()->phi;//positive ccw
 // 	attitude.theta = 0.3491;//-(stateGetNedToBodyEulers_f()->theta-(20*(3.14/180)));//negative downward
 // 	attitude.psi = 0.1745;//stateGetNedToBodyEulers_f()->psi;
-	attitude.phi =   0;// stateGetNedToBodyEulers_f()->phi;//positive ccw
-	attitude.theta = -(stateGetNedToBodyEulers_f()->theta-(20*(3.14/180)));//negative downward
-	attitude.psi = 0;//stateGetNedToBodyEulers_f()->psi;
+	attitude.phi =    stateGetNedToBodyEulers_f()->phi;//positive ccw
+	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
+	attitude.psi = stateGetNedToBodyEulers_f()->psi;
 	float_rmat_of_eulers_321(&R,&attitude);
 	
 	
-	debug_3 = (180/3.14)*attitude.theta;
+	//debug_3 = (180/3.14)*attitude.theta;
 	
 	float x_trail[4] = {-55.0531, 0.4769, 5.4429, -56.9734};
 	float y_trail[4] = {48.1444, 44.2227, 105.7145, 113.9445};
@@ -1060,9 +1060,21 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  //Least squares stuff here:
 	  vec_from_point_2(undist_x,undist_y,168,&temp_vec);
 	  //vec_from_point_2(x_trail[i],y_trail[i],168,&temp_vec);
+	  
+	  //camera to body rotation
+	  cam_body.phi = 0;
+	  cam_body.theta = -25*(3.14/180);
+	  cam_body.psi = 0;
+	  float_rmat_of_eulers_321(&R_20,&cam_body);
+	  MAT33_VECT3_MUL(vec_20, R_20,temp_vec);
+	  
+	  
 	  MAT33_TRANS(R_trans,R);
-	  MAT33_VECT3_MUL(n_vec, R_trans, temp_vec);
+	  MAT33_VECT3_MUL(n_vec, R_trans, vec_20);
 	  //print_vector(n_vec);
+	  
+	  //to ned
+	  n_vec.z = -n_vec.z;
 	 
 	  double vec_norm = sqrt(VECT3_NORM2(n_vec));
 	  VECT3_SDIV(n_vec, n_vec, vec_norm);
@@ -1131,7 +1143,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	debug_1 = pos_vec.x;
 	debug_2 = pos_vec.y;
-	//debug_3 = pos_vec.z;
+	debug_3 = pos_vec.z;
 	
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
@@ -1233,7 +1245,8 @@ k = 1.085;
 //k = 1.051;
 
 //k = 1.080;//last k
-   k = 1.118;
+ //  k = 1.118;
+  k = 1.500;
   //k = 1.218;
   
   //radial distortion correction
