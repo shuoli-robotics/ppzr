@@ -132,7 +132,7 @@ void first_part_logic()
     switch(state_lower_level)
     {
         case PREPARE_CM:
-				if(prepare_before_take_off(3.0) == TRUE)
+				if(prepare_before_take_off(7.0) == TRUE)
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
             break;
 			
@@ -192,6 +192,7 @@ void second_part_logic()
 							reference_y = 3;
 					}
 					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)//wass -7deg
+
 					{
 							previous_mode = GO_THROUGH_CM;
 							state_lower_level = APPROACH_GATE_CM;
@@ -199,6 +200,7 @@ void second_part_logic()
 					break;
 			case APPROACH_GATE_CM:
 				if(	arc_open_loop(1.5,-5.0/180*3.14,180.0/180*PI) == TRUE)//was -7deg
+
 				{
 							previous_mode = APPROACH_GATE_CM;
 							state_lower_level = GO_STRAIGHT_CM;
@@ -213,9 +215,8 @@ void second_part_logic()
 				}
 				break;
 			case LAND_CM:
-				set_attitude(-10.0/180*3.14,0.0);
+				set_attitude(-5.0/180*3.14,0.0);
 					break;
-
 	}
 }
 

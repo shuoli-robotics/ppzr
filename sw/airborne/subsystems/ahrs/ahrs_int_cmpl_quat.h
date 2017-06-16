@@ -36,6 +36,9 @@
 #include "std.h"
 #include "math/pprz_algebra_int.h"
 #include "math/pprz_orientation_conversion.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+
+#define PI 3.14
 
 enum AhrsICQStatus {
   AHRS_ICQ_UNINIT,
@@ -160,5 +163,54 @@ static inline void ahrs_int_cmpl_quat_SetMagZeta(float zeta)
   ahrs_icq_set_mag_gains();
 }
 
+struct TestAHRS
+{
+  bool startTest;
+  float phi0;
+float theta0;
+float psi0;
+int frequency_counter;
+float frequency_time;
+bool signal_state;  // 1: in cos 0:0
 
+float desired_phi;
+float desired_theta;
+float desired_psi;
+
+float frequency;
+float a_x_b;
+float a_y_b;
+float a_z_b;
+};
+extern struct TestAHRS test_ahrs;
+
+
+struct AHRS_ACCEL_PQR
+{
+
+		struct Int32Rates rate_P;
+		struct Int32Rates rate_I;
+		struct Int64Rates rate_I_64;
+};
+
+extern struct AHRS_ACCEL_PQR ahrs_accel_pqr;
+
+
+struct AHRS_GPS_PQR
+{
+
+		struct Int32Rates rate_P;
+		struct Int32Rates rate_I;
+		struct Int64Rates rate_I_64;
+};
+extern struct AHRS_GPS_PQR ahrs_gps_pqr;
+
+struct FILTERED_PQR
+{
+
+		double p;
+		double q;
+		double r;
+};
+extern struct FILTERED_PQR filtered_gyro_f;
 #endif /* AHRS_INT_CMPL_QUAT_H */

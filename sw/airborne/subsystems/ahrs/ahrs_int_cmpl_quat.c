@@ -32,6 +32,7 @@
 
 #include "subsystems/ahrs/ahrs_int_cmpl_quat.h"
 #include "subsystems/ahrs/ahrs_int_utils.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 
 #if USE_GPS
 #include "subsystems/gps.h"
@@ -41,6 +42,7 @@
 
 //speed for centrifugal forces
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+
 
 #ifdef AHRS_PROPAGATE_LOW_PASS_RATES
 PRINT_CONFIG_MSG("LOW PASS FILTER ON GYRO RATES")
@@ -111,6 +113,20 @@ PRINT_CONFIG_VAR(AHRS_MAG_ZETA)
 #endif
 
 struct AhrsIntCmplQuat ahrs_icq;
+struct TestAHRS test_ahrs;
+struct AHRS_ACCEL_PQR ahrs_accel_pqr;
+struct AHRS_GPS_PQR ahrs_gps_pqr;
+struct FILTERED_PQR filtered_pqr;
+struct FILTERED_PQR filtered_gyro_f;
+
+struct Int32Rates filtered_gyro_i;
+
+
+double phi_b;
+double theta_b;
+
+// save acceleration sent to ACCEL update to check how accelorometer works during the arc
+struct FloatVect3 accel_AHRS;
 
 static inline void UNUSED ahrs_icq_update_mag_full(struct Int32Vect3 *mag, float dt);
 static inline void ahrs_icq_update_mag_2d(struct Int32Vect3 *mag, float dt);
@@ -155,6 +171,46 @@ void ahrs_icq_init(void)
 
   ahrs_icq.accel_cnt = 0;
   ahrs_icq.mag_cnt = 0;
+
+
+  // add codes of test_ahrs
+  test_ahrs.startTest = FALSE;
+  test_ahrs.phi0 = PI/3;
+  test_ahrs.theta0 = PI/3;
+  test_ahrs.psi0 = PI;
+  test_ahrs.frequency_counter = 1;
+  test_ahrs.frequency_time = 120;
+  test_ahrs.signal_state = TRUE;
+  counter_temp1 = 0;
+  time_temp1 = 0;
+  counter_temp2 = 0;
+  time_temp2 = 0;
+  test_ahrs.frequency = 0.0;
+  phi_b = 0;
+  theta_b = 0;
+
+  ahrs_accel_pqr.rate_P.p = 0;
+  ahrs_accel_pqr.rate_P.q = 0;
+  ahrs_accel_pqr.rate_P.r = 0;
+  ahrs_accel_pqr.rate_I.p = 0;
+  ahrs_accel_pqr.rate_I.q = 0;
+  ahrs_accel_pqr.rate_I.r = 0;
+  ahrs_accel_pqr.rate_I_64.p = 0; 
+  ahrs_accel_pqr.rate_I_64.q = 0; 
+  ahrs_accel_pqr.rate_I_64.r = 0; 
+  ahrs_gps_pqr.rate_P.p = 0;
+  ahrs_gps_pqr.rate_P.q = 0;
+  ahrs_gps_pqr.rate_P.r = 0;
+  filtered_pqr.p = 0;
+  filtered_pqr.q = 0;
+  filtered_pqr.r = 0;
+  filtered_gyro_i.p = 0;
+  filtered_gyro_i.q = 0;
+  filtered_gyro_i.r = 0;
+  filtered_gyro_f.p = 0;
+  filtered_gyro_f.q = 0;
+  filtered_gyro_f.r = 0;
+
 }
 
 
@@ -187,10 +243,25 @@ bool ahrs_icq_align(struct Int32Rates *lp_gyro, struct Int32Vect3 *lp_accel,
 }
 
 
+
 void ahrs_icq_propagate(struct Int32Rates *gyro, float dt)
 {
   int32_t freq = (int32_t)(1. / dt);
 
+  /*   filter q here */
+  /*   gyro of bebop always measures noisy q the frequency of noise is larger than 100HZ. So it should be filtered*/
+  double T_q = 0.01;
+  double T_p = 0.005;
+  double q_gyro_f = FLOAT_OF_BFP(gyro->q,INT32_RATE_FRAC);
+  double p_gyro_f = FLOAT_OF_BFP(gyro->p,INT32_RATE_FRAC);
+  double d_q_f = (q_gyro_f-filtered_gyro_f.q)/T_q;
+  double d_p_f = (p_gyro_f-filtered_gyro_f.p)/T_p;
+  filtered_gyro_f.q += d_q_f /512.0; 
+  filtered_gyro_f.p += d_p_f /512.0; 
+  filtered_gyro_i.q = BFP_OF_REAL(filtered_gyro_f.q,INT32_RATE_FRAC); 
+  filtered_gyro_i.p = BFP_OF_REAL(filtered_gyro_f.p,INT32_RATE_FRAC); 
+  /*gyro->q = filtered_gyro_i.q;*/
+  /*gyro->p = filtered_gyro_i.p;*/
   /* unbias gyro             */
   struct Int32Rates omega;
   RATES_DIFF(omega, *gyro, ahrs_icq.gyro_bias);
@@ -248,6 +319,68 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     return;
   }
 
+  struct Int32Vect3 testAccel;
+
+  /*accel = &testAccel;*/
+
+  if (test_ahrs.signal_state == TRUE)
+  {
+		  /*[>test_ahrs.desired_phi = test_ahrs.phi0*sin(test_ahrs.frequency*time_temp1+phi_b);<]*/
+		  /*test_ahrs.desired_phi = 0;*/
+		  /*test_ahrs.desired_theta = test_ahrs.theta0*sin(test_ahrs.frequency*time_temp1+theta_b);*/
+		  /*[>test_ahrs.desired_theta = 0;<]*/
+		  /*test_ahrs.desired_psi = 0.0;*/
+		  switch(test_ahrs.frequency_counter)
+		  {
+
+				  case 1:
+						  test_ahrs.desired_theta = 0;
+						  test_ahrs.desired_phi= 0;
+						  test_ahrs.desired_psi= 0;
+						  break;
+				  case 2:
+						  test_ahrs.desired_theta = 30.0/180*PI;
+						  test_ahrs.desired_phi= 0;
+						  test_ahrs.desired_psi= 0;
+						  break;
+				  case 3:
+						  test_ahrs.desired_theta = 60.0/180*PI;
+						  test_ahrs.desired_phi= 0;
+						  test_ahrs.desired_psi= 0;
+						  break;
+				  case 4:
+						  test_ahrs.desired_theta = -45.0/180*PI;
+						  test_ahrs.desired_phi= 0;
+						  test_ahrs.desired_psi= 0;
+						  break;
+				  case 5:
+						  test_ahrs.desired_theta = -30.0/180*PI;
+						  test_ahrs.desired_phi= 0;
+						  test_ahrs.desired_psi= 0;
+						  break;
+		  }
+  }
+  else
+  {
+		  test_ahrs.desired_phi = 0;
+		  test_ahrs.desired_theta = 0;
+		  test_ahrs.desired_psi = 0;
+  }
+
+  /*printf("frequency counter is %d\n",test_ahrs.frequency_counter);*/
+  /*printf("temp time 2 is %f\n",time_temp2);*/
+  /*printf("test frequency is  %f\n",test_ahrs.frequency);*/
+
+  // comment this part is you want to use original AHRS------------------------
+  /*test_ahrs.a_x_b = -sin(test_ahrs.desired_theta)*-9.81;*/
+  /*test_ahrs.a_y_b = sin(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*-9.81;*/
+  /*test_ahrs.a_z_b = cos(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*-9.81;*/
+
+  /*accel->x = ACCEL_BFP_OF_REAL(test_ahrs.a_x_b);*/
+  /*accel->y = ACCEL_BFP_OF_REAL(test_ahrs.a_y_b);*/
+  /*accel->z = ACCEL_BFP_OF_REAL(test_ahrs.a_z_b);*/
+    ACCELS_FLOAT_OF_BFP(accel_AHRS,*accel);
+	// ----------------------------------------------------------------
   // c2 = ltp z-axis in imu-frame
   struct Int32RMat ltp_to_imu_rmat;
   int32_rmat_of_quat(&ltp_to_imu_rmat, &ahrs_icq.ltp_to_imu_quat);
@@ -260,6 +393,7 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   struct Int32Vect3 pseudo_gravity_measurement;
 
   if (ahrs_icq.correct_gravity && ahrs_icq.ltp_vel_norm_valid) {
+  /*if (0) {*/
     /*
      * centrifugal acceleration in body frame
      * a_c_body = omega x (omega x r)
@@ -348,6 +482,9 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   // reset accel propagation counter
   ahrs_icq.accel_cnt = 0;
 
+  ahrs_accel_pqr.rate_P.p = residual.x / inv_rate_scale;
+  ahrs_accel_pqr.rate_P.q = residual.y / inv_rate_scale;
+  ahrs_accel_pqr.rate_P.r = residual.z / inv_rate_scale;
   /* Complementary filter integral gain
    * Correct the gyro bias.
    * Ki = omega^2 * dt
@@ -373,6 +510,55 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 
   INT_RATES_RSHIFT(ahrs_icq.gyro_bias, ahrs_icq.high_rez_bias, 28);
 
+// Added by Shuo 2017.5.30---------------------------------------  
+  ahrs_accel_pqr.rate_I_64.p += (residual.x / inv_bias_gain) << 5 ;
+  ahrs_accel_pqr.rate_I_64.q += (residual.y / inv_bias_gain) << 5 ;
+  ahrs_accel_pqr.rate_I_64.r += (residual.z / inv_bias_gain) << 5 ;
+  INT_RATES_RSHIFT(ahrs_accel_pqr.rate_I,ahrs_accel_pqr.rate_I_64, 28);
+  //--------------------------------------------------------------------------
+
+  // add by Shuo Li 2017.5.29---------------------------------------------------------------
+  if (test_ahrs.signal_state == FALSE && fabs(time_temp2-test_ahrs.frequency_time)<0.1)
+  {
+		 // it is the end of 0 input 
+		test_ahrs.signal_state = TRUE ;
+		counter_temp2 = 0;
+		time_temp2 = 0;
+		test_ahrs.frequency_counter++;
+		printf("!!!!------------_!!!!!!!!!!-------------\n");
+  }
+  else if (test_ahrs.signal_state == TRUE && fabs(time_temp2-test_ahrs.frequency_time)<0.1)
+  {
+		 // it is the end of sin  input 
+		test_ahrs.signal_state = TRUE ;
+		counter_temp2 = 0;
+		time_temp2 = 0;
+
+		double phi = test_ahrs.desired_phi;
+		double theta = test_ahrs.desired_theta;
+		double d_phi = test_ahrs.frequency*test_ahrs.phi0*cos(test_ahrs.frequency*time_temp1+phi_b);
+		double d_theta = test_ahrs.frequency*test_ahrs.theta0*cos(test_ahrs.frequency*time_temp1+theta_b);
+
+		test_ahrs.frequency_counter++;
+		test_ahrs.frequency = (test_ahrs.frequency_counter-1)*0.01;
+
+		if(test_ahrs.frequency_counter == 2)
+		{
+            test_ahrs.phi0 = PI/2;
+            test_ahrs.theta0 = PI/2;
+			phi_b = -test_ahrs.frequency*time_temp1;
+			theta_b = -test_ahrs.frequency*time_temp1;
+		}
+		else
+		{
+				phi_b = atan2(phi*test_ahrs.frequency,d_phi)-test_ahrs.frequency*time_temp1;
+				test_ahrs.phi0 = phi/sin(test_ahrs.frequency*time_temp1+phi_b);
+				theta_b = atan2(theta*test_ahrs.frequency,d_theta)-test_ahrs.frequency*time_temp1;
+				test_ahrs.theta0 = theta/sin(test_ahrs.frequency*time_temp1+theta_b);
+		}
+
+  }
+  // --------------------------------------------------------------------------
 }
 
 
@@ -525,7 +711,9 @@ void ahrs_icq_update_gps(struct GpsState *gps_s __attribute__((unused)))
 {
 #if AHRS_GRAVITY_UPDATE_COORDINATED_TURN && USE_GPS
   if (gps_s->fix >= GPS_FIX_3D) {
-    ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(v_x_f);//gps_s->speed_3d / 100.);
+
+    /*ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(gps_s->speed_3d / 100.);*/
+    ahrs_icq.ltp_vel_norm = SPEED_BFP_OF_REAL(arc_status.v_x_f);
     ahrs_icq.ltp_vel_norm_valid = true;
   } else {
     ahrs_icq.ltp_vel_norm_valid = false;
@@ -598,6 +786,9 @@ void ahrs_icq_update_heading(int32_t heading)
   ahrs_icq.rate_correction.q += residual_imu.y / 4;
   ahrs_icq.rate_correction.r += residual_imu.z / 4;
 
+  ahrs_gps_pqr.rate_P.p = residual_imu.x / 4;
+  ahrs_gps_pqr.rate_P.q = residual_imu.y / 4;
+  ahrs_gps_pqr.rate_P.r = residual_imu.z / 4;
 
   /* crude attempt to only update bias if deviation is small
    * e.g. needed when you only have gps providing heading

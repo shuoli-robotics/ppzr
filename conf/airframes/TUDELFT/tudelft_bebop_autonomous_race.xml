@@ -35,8 +35,10 @@
     <module name="stabilization" type="rate_indi"/>
     <!--module name="stabilization" type="int_quat"/-->
     <module name="ahrs" type="int_cmpl_quat">
+
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
-      <configure name="USE_GPS" value="TRUE"/> 
+
+      <configure name="USE_GPS" value="TRUE"/>
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
       <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="TRUE"/>
 
@@ -147,19 +149,28 @@
     <define name="BODY_TO_IMU_PHI" value="0." unit="deg"/>
     <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
+
+   <define name="ACCEL_X_NEUTRAL" value="106"/>
+   <define name="ACCEL_Y_NEUTRAL" value="8"/>
+   <define name="ACCEL_Z_NEUTRAL" value="239"/>
+   <define name="ACCEL_X_SENS" value="2.4527" integer="16"/>
+   <define name="ACCEL_Y_SENS" value="2.4394"  integer="16"/>
+   <define name="ACCEL_Z_SENS" value="2.4453" integer="16"/>
   </section>
 
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G1_P" value="0.0287"/>
-    <define name="G1_Q" value="0.0254"/>
-    <define name="G1_R" value="0.0008"/>
-    <define name="G2_R" value="0.11502"/>
-<!--define name="G1_P" value="0.0277"/>
+
+    <!--define name="G1_P" value="0.0277"/>
     <define name="G1_Q" value="0.0244"/>
     <define name="G1_R" value="0.0007"/>
     <define name="G2_R" value="0.10502"/-->
+
+    <define name="G1_P" value="0.03762"/>
+    <define name="G1_Q" value="0.031149"/>
+    <define name="G1_R" value="0.00094"/>
+    <define name="G2_R" value="0.081811"/>
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="600.0"/>

@@ -29,6 +29,7 @@
 #include "modules/computer_vision/lib/vision/image.h"
 #include <stdlib.h>
 #include "subsystems/datalink/telemetry.h"
+#include "subsystems/imu.h"
 //#include "modules/computer_vision/lib/vision/gate_detection.h"
 #include "modules/computer_vision/lib/vision/gate_detection_free.h"
 #include "modules/computer_vision/lib/vision/gate_corner_refine.h"
@@ -43,6 +44,9 @@
 
 #include "math/pprz_algebra.h"
 #include "math/pprz_algebra_float.h"
+#include "math/pprz_simple_matrix.h"
+
+#include "filters/low_pass_filter.h"
 
 #define PI 3.1415926
 
@@ -230,6 +234,135 @@ float gate_img_point_y_3 = 0;
 float gate_img_point_x_4 = 0;
 float gate_img_point_y_4 = 0;
 
+//least squares final results
+float ls_pos_x = 0;
+float ls_pos_y = 0;
+float ls_pos_z = 0;
+
+//KF 
+
+#define dt_  0.002
+
+float Gamma[4][2] = {  
+   {0, 0} ,   /*  initializers for row indexed by 0 */
+   {0, 0} ,   /*  initializers for row indexed by 1 */
+   {1, 0} ,  /*  initializers for row indexed by 2 */
+   {0, 1}
+};
+
+float Phi[4][4] = {  
+   {1, 0, dt_, 0} ,   /*  initializers for row indexed by 0 */
+   {0, 1, 0, dt_} ,   /*  initializers for row indexed by 1 */
+   {0, 0, 1,   0} ,   /*  initializers for row indexed by 2 */
+   {0, 0, 0,   1}
+};
+
+float Psi[4][2] = {  
+   {0,   0} ,   /*  initializers for row indexed by 0 */
+   {0,   0} ,   /*  initializers for row indexed by 1 */
+   {dt_, 0} ,  /*  initializers for row indexed by 2 */
+   {0,   dt_}
+};
+
+float X_int[4][1] = {  
+   {0} ,   /*  initializers for row indexed by 0 */
+   {0} ,   /*  initializers for row indexed by 1 */
+   {0} ,  /*  initializers for row indexed by 2 */
+   {0}
+};
+
+float X_opt[4][1] = {  
+   {0} ,   /*  initializers for row indexed by 0 */
+   {0} ,   /*  initializers for row indexed by 1 */
+   {0} ,  /*  initializers for row indexed by 2 */
+   {0}
+};
+
+float X_prev[4][1] = {  
+   {0} ,   /*  initializers for row indexed by 0 */
+   {0} ,   /*  initializers for row indexed by 1 */
+   {0} ,  /*  initializers for row indexed by 2 */
+   {0}
+};
+
+float X_temp_1[4][1];
+float X_temp_2[4][1];
+float X_temp_3[4][1];
+
+float P_k_1[4][4] = {  
+   {0, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
+   {0, 0, 0, 0} ,   /*  initializers for row indexed by 1 */
+   {0, 0, 0, 0} ,   /*  initializers for row indexed by 2 */
+   {0, 0, 0, 0}
+};
+
+#define init_P 1.0
+float P_k_1_k_1[4][4] = {  
+   {init_P, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
+   {0, init_P, 0, 0} ,   /*  initializers for row indexed by 1 */
+   {0, 0, init_P, 0} ,   /*  initializers for row indexed by 2 */
+   {0, 0, 0, init_P}
+};
+
+float Q_mat[2][2] = {  //try 0.5?
+   {1, 0} ,  
+   {0, 1}  
+};
+
+float R_k[2][2] = {  //try other?
+   {0.2, 0} ,  
+   {0, 0.2}  
+};
+
+//output mat
+float H_k[2][4] = {  
+   {1, 0, 0, 0} ,  
+   {0, 1, 0, 0}  
+};
+
+float u_k[2][1] = {  
+   {0} ,  
+   {0}  
+};
+
+/* low pass filter variables */
+Butterworth2LowPass_int filter_x;
+Butterworth2LowPass_int filter_y;
+Butterworth2LowPass_int filter_z;
+
+int vision_sample = 0;
+
+//KF timing
+
+float KF_dt = 0;
+float KF_m_dt = 0;
+double time_prev = 0;
+double time_prev_m = 0;
+
+float temp_2_4[2][4];
+float temp_4_4_a[4][4];
+float temp_4_4_b[4][4];
+float temp_4_4_c[4][4];
+float temp_4_2_a[4][2];
+float temp_4_2_b[4][2];
+float temp_2_2_a[2][2];
+float temp_2_2_b[2][2];
+
+float inv_2_2[2][2];
+
+float K_k[4][2];
+
+float inn_vec[2][1];
+
+float temp_4_1[4][1];
+
+float eye_4[4][4] = {  
+   {1, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
+   {0, 1, 0, 0} ,   /*  initializers for row indexed by 1 */
+   {0, 0, 1, 0} ,   /*  initializers for row indexed by 2 */
+   {0, 0, 0, 1}
+};
+
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
@@ -353,6 +486,141 @@ void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *i
 //state filter in periodic loop
 void snake_gate_periodic(void)
 {
+  
+  gettimeofday(&stop, 0);
+  double time_now = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+  KF_dt = time_now - time_prev;
+  time_prev = time_now;
+  
+  struct Int32Vect3 acc_meas_body;
+  struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
+  int32_rmat_transp_vmult(&acc_meas_body, body_to_imu_rmat, &imu.accel);
+
+  struct Int32Vect3 acc_body_filtered;
+  acc_body_filtered.x = update_butterworth_2_low_pass_int(&filter_x, acc_meas_body.x);
+  acc_body_filtered.y = update_butterworth_2_low_pass_int(&filter_y, acc_meas_body.y);
+  acc_body_filtered.z = update_butterworth_2_low_pass_int(&filter_z, acc_meas_body.z);
+
+  struct Int32Vect3 filtered_accel_ltp;
+  struct Int32RMat *ltp_to_body_rmat = stateGetNedToBodyRMat_i();
+  int32_rmat_transp_vmult(&filtered_accel_ltp, ltp_to_body_rmat, &acc_body_filtered);
+  u_k[0][0] = ACCEL_FLOAT_OF_BFP(filtered_accel_ltp.x);
+  u_k[1][0] = ACCEL_FLOAT_OF_BFP(filtered_accel_ltp.y);
+  
+  //update dt 
+  Phi[0][2] = KF_dt;
+  Phi[1][3] = KF_dt;
+  
+  Psi[2][0] = KF_dt;
+  Psi[3][1] = KF_dt;
+  
+  //X_int = Phi*X_int_prev' + Psi*u_k(1:2)'
+  
+  // C = A*B   A:(i,k) B:(k,j) C:(i,j)
+  //MAT_MUL(_i, _k, _j, C, A, B)
+  MAT_MUL(4, 4, 1, X_temp_1, Phi, X_prev);
+  
+  MAT_MUL(4, 2, 1, X_temp_2, Psi, u_k);
+  
+  // C = A+B
+  //MAT_SUM(_i, _j, C, A, B)
+  MAT_SUM(4, 1, X_int, X_temp_1, X_temp_2);
+  
+  //bounding pos and speed
+  
+  
+  
+  
+  
+  //if measurement available -> do KF measurement update 
+  if(vision_sample == 1)
+  {
+//      if(0)%in_turn == 1)
+//            X_int(n,1) = arc_pred(n,1);
+//            X_int(n,2) = arc_pred(n,2);
+//         end
+//         
+//         Phi = [1 0 EKF_dt 0;
+//        0 1 0  EKF_dt;
+//        0 0 1  0;
+//        0 0 0  1];
+//         
+//         x_kk_1 = X_int(n,:);
+//         
+//         % P(k+1|k) (prediction covariance matrix)
+//         P_k_1 = Phi*P_k_1_k_1*Phi' + Gamma*Q*Gamma';
+// 
+//         K = P_k_1 * H_k' / (H_k*P_k_1 * H_k' + R_k);
+// 
+//         %z_k = [pos_x(n) pos_y(n) pos_z(n)];
+//         z_k = [pos_x_ls(n) pos_y_ls(n)];
+//        
+//         X_opt = x_kk_1' + K * (z_k - X_int(n,1:2))';
+//         X_int(n,:) = X_opt';
+// 
+//         P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
+    
+    gettimeofday(&stop, 0);
+    double time_m = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+    KF_m_dt = time_m - time_prev_m;
+    time_prev_m = time_m;
+    
+    //update dt 
+    Phi[0][2] = KF_m_dt;
+    Phi[1][3] = KF_m_dt;
+    
+    //P_k_1 = Phi*P_k_1_k_1*Phi' + Gamma*Q*Gamma';
+    
+    // C = A*B'   A:(i,k) B:(j,k) C:(i,j)
+    //MAT_MUL_T(_i, _k, _j, C, A, B) 
+    MAT_MUL_T(2, 2, 4, temp_2_4, Q_mat, Gamma);
+    
+    // C = A*B   A:(i,k) B:(k,j) C:(i,j)
+    //MAT_MUL(_i, _k, _j, C, A, B)
+    MAT_MUL(4, 2, 4, temp_4_4_a, Gamma, temp_2_4);
+    MAT_MUL_T(4, 4, 4, temp_4_4_b, P_k_1_k_1, Phi);
+    MAT_MUL(4, 4, 4, temp_4_4_c, Phi, temp_4_4_b);
+    MAT_SUM(4, 4, P_k_1, temp_4_4_a, temp_4_4_c);
+    
+    //K = P_k_1 * H_k' / (H_k*P_k_1 * H_k' + R_k);
+    MAT_MUL_T(4, 4, 2, temp_4_2_a, P_k_1, H_k);
+    MAT_MUL(2, 4, 2, temp_2_2_a, H_k, temp_4_2_a);
+    MAT_SUM(2, 2, temp_2_2_b, temp_2_2_a, R_k);
+    
+    //calc 2x2 inverse
+    float det_2_2 = 1/(temp_2_2_b[0][0]*temp_2_2_b[1][1]-temp_2_2_b[1][0]*temp_2_2_b[0][1]);
+    printf("det_2_2%f\n",det_2_2);//check for nan!
+    
+    inv_2_2[0][0] = temp_2_2_b[1][1]*det_2_2;
+    inv_2_2[0][1] = -temp_2_2_b[0][1]*det_2_2;
+    inv_2_2[1][0] = -temp_2_2_b[1][0]*det_2_2;
+    inv_2_2[1][1] = temp_2_2_b[0][0]*det_2_2;
+    
+    MAT_MUL(4, 2, 2, K_k, temp_4_2_a, inv_2_2);
+    
+    //X_opt = x_kk_1' + K * (z_k - X_int(n,1:2))';
+    inn_vec[0][0] = ls_pos_x-X_int[0][0];
+    inn_vec[1][0] = ls_pos_y-X_int[1][0];
+    
+    MAT_MUL(4, 2, 1, temp_4_1, K_k, inn_vec);
+    MAT_SUM(4, 1, X_int, X_int, temp_4_1);
+    
+    //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
+    MAT_MUL(4, 2, 4, temp_4_4_a, K_k,H_k);
+    MAT_SUM(4, 1, temp_4_4_b, eye_4, temp_4_4_a);
+    MAT_MUL_T(4, 4, 4, temp_4_4_c, P_k_1, temp_4_4_b);
+    //temp_4_4_a reuse
+    MAT_MUL(4, 2, 4, temp_4_4_a, temp_4_4_b,temp_4_4_c);
+    MAT_MUL_T(2, 2, 4, temp_2_4, R_k, K_k);
+    //temp_4_4_b reuse
+    MAT_MUL(4, 2, 4, temp_4_4_b, K_k,temp_2_4);
+    MAT_SUM(4, 4, P_k_1_k_1, temp_4_4_a, temp_4_4_b);
+    
+    vision_sample = 0;
+  }
+  
+  
+}/*
   //SAFETY  gate_detected
   if (y_dist > 0.6 && y_dist < 4) { // && gate_gen == 1)
     states_race.gate_detected = 1;
@@ -379,93 +647,8 @@ void snake_gate_periodic(void)
     states_race.ready_pass_through = 1;
   }
 
-  // Reinitialization after gate is cleared and turn is made(called from velocity guidance module)
-  if (init_pos_filter == 1) {
-    init_pos_filter = 0;
-    //assumed initial position at other end of the gate
-    //predicted_x_gate = INITIAL_X;//0;
-    //predicted_y_gate = INITIAL_Y;//1.5;
-      current_x_gate = INITIAL_X;//0;
-      current_y_gate = INITIAL_Y;
-      current_z_gate = INITIAL_Z;
-
-  }
-
-  //State filter
-
-
-  //convert earth velocity to body x y velocity
-  float v_x_earth = stateGetSpeedNed_f()->x;
-  float v_y_earth = stateGetSpeedNed_f()->y;
-  float psi = stateGetNedToBodyEulers_f()->psi;
-  //When using optitrack
-  //body_v_x = cosf(psi)*v_x_earth + sinf(psi)*v_y_earth;
-  //body_v_y = -sinf(psi)*v_x_earth+cosf(psi)*v_y_earth;
-
-  body_v_x = opt_body_v_x;
-  body_v_y = opt_body_v_y;
-
-  //body velocity in filter frame
-  body_filter_x = -body_v_y;
-  body_filter_y = -body_v_x;
-
-  gettimeofday(&stop, 0);
-  double curr_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
-  double elapsed = curr_time - (double)(start.tv_sec + start.tv_usec / 1000000.0);
-  gettimeofday(&start, 0);
-  float dt = elapsed;
-
-  fps_filter = (float)1.0 / dt;
-
-  // predict the new location:
-  float dx_gate = dt * body_filter_x;//(cos(current_angle_gate) * gate_turn_rate * current_distance);
-  float dy_gate = dt * body_filter_y; //(velocity_gate - sin(current_angle_gate) * gate_turn_rate * current_distance);
-  predicted_x_gate = previous_x_gate + dx_gate;
-  predicted_y_gate = previous_y_gate + dy_gate;
-  predicted_z_gate = previous_z_gate;
-
-  float sonar_alt = stateGetPositionNed_f()->z;
-
-  if (states_race.gate_detected == 1) {
-
-    // Mix the measurement with the prediction:
-    float weight_measurement;
-    if (uncertainty_gate > 150) {
-      weight_measurement = 1.0f;
-      uncertainty_gate = 151;//max: does not matter - is replaced below
-    } else {
-      weight_measurement = 0.7;  //(GOOD_FIT-best_quality)/GOOD_FIT;//check constant weight
-    }
-
-     float z_weight = 0.2;
-
-    current_x_gate = weight_measurement * x_dist + (1.0f - weight_measurement) * predicted_x_gate;
-    current_y_gate = weight_measurement * y_dist + (1.0f - weight_measurement) * predicted_y_gate;
-    current_z_gate = z_weight * (z_dist + sonar_alt) + (1.0f - z_weight) * predicted_z_gate;
-
-    //psi_bias
-    //if state is adjust position then slowly add bias using the fitness as weight
-    //keep always updating bias based on current angle and limit
-    //psi_filter_weight = GOOD_POLY_FIT - best_fitness;
-    //psi_increment = psi_filter_weight * psi_gate;
-
-    // reset uncertainty:
-    uncertainty_gate = 0;
-  } else {
-    // just the prediction
-    current_x_gate = predicted_x_gate;
-    current_y_gate = predicted_y_gate;
-    current_z_gate = predicted_z_gate;
-
-    // increase uncertainty
-    uncertainty_gate++;
-  }
-  // set the previous state for the next time:
-  previous_x_gate = current_x_gate;
-  previous_y_gate = current_y_gate;
-  previous_z_gate = current_z_gate;
-  delta_z_gate = current_z_gate - sonar_alt;
-}
+ 
+}*/
 
 //qsort comp function for sorting 
 int cmpfunc (const void * a, const void * b)
@@ -757,9 +940,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//sort small to large 
 	qsort(x_values, 4, sizeof(int), cmpfunc);
 	qsort(y_values, 4, sizeof(int), cmpfunc);
-	printf("in repeat_gate ########################################################\n ");
-	printf("repeat_gate x1:%d x2:%d x3:%d x4:%d\n",last_gate.x_corners[0],last_gate.x_corners[1],last_gate.x_corners[2],last_gate.x_corners[3]);
-	printf("repeat_gate y1:%d y2:%d y3:%d y4:%d\n",last_gate.y_corners[0],last_gate.y_corners[1],last_gate.y_corners[2],last_gate.y_corners[3]);
+// 	printf("in repeat_gate ########################################################\n ");
+// 	printf("repeat_gate x1:%d x2:%d x3:%d x4:%d\n",last_gate.x_corners[0],last_gate.x_corners[1],last_gate.x_corners[2],last_gate.x_corners[3]);
+// 	printf("repeat_gate y1:%d y2:%d y3:%d y4:%d\n",last_gate.y_corners[0],last_gate.y_corners[1],last_gate.y_corners[2],last_gate.y_corners[3]);
+// 	
 	
 // 	    //   int16_t ROI_size = (int16_t)(((float) last_gate.sz) * size_factor);
 //           int16_t min_x = last_gate.x - ROI_size;
@@ -874,13 +1058,25 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
  // draw_gate_color(img, best_gate, blue_color);
   
 //   printf("repeat_gate:%d   -------------------------------------\n",repeat_gate);
-  printf("last_frame_detection:%d   -------------------------------------\n",last_frame_detection);
+ // printf("last_frame_detection:%d   -------------------------------------\n",last_frame_detection);
   
   if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) {//n_sides was > 2
 
     
     //sucessfull detection
     last_frame_detection = 1;
+    
+    //draw_gate_color(img, best_gate, blue_color);
+	if(repeat_gate == 0){
+	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
+	}
+	else if(repeat_gate == 1){
+	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,green_color);
+	  for(int i = 0;i < 3;i++){
+	    draw_cross(img,last_gate.x_corners[i],last_gate.y_corners[i],blue_color);
+	  }
+	}
+    
     //save for next iteration
     memcpy(&(last_gate.x_corners[0]),&(best_gate.x_corners[0]),sizeof(int)*4);
     memcpy(&(last_gate.y_corners[0]),&(best_gate.y_corners[0]),sizeof(int)*4);
@@ -906,13 +1102,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
-        //draw_gate_color(img, best_gate, blue_color);
-	if(repeat_gate == 0){
-	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
-	}
-	else if(repeat_gate == 1){
-	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,green_color);
-	}
+        
 //draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
 	
 	//vector and matrix declarations
@@ -931,10 +1121,20 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  struct FloatVect3 ransac_pos[4];
 	  struct FloatMat33 ransac_R_mat[4];
 	  
+	  float gate_dist_x = 3.5;//was4.2
+	  
+	    
+	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
+	  VECT3_ASSIGN(gate_points[1], gate_dist_x,0.5000, -1.9000);
+	  VECT3_ASSIGN(gate_points[2], gate_dist_x,0.5000, -0.9000);
+	  VECT3_ASSIGN(gate_points[3], gate_dist_x,-0.5000, -0.9000);
+	  
+	/*  
 	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
 	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
 	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
-	  VECT3_ASSIGN(gate_points[3], 4.2000,0.3000, -0.9000);
+	  VECT3_ASSIGN(gate_points[3], 4.2000,0.3000, -0.9000);*/
+	
 	
 	//DEBUG----------------------------------------------------------------
 	
@@ -1031,7 +1231,21 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 // 	attitude.psi = 0.1745;//stateGetNedToBodyEulers_f()->psi;
 	attitude.phi =    stateGetNedToBodyEulers_f()->phi;//positive ccw
 	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
-	attitude.psi = stateGetNedToBodyEulers_f()->psi;
+	
+	float temp_psi = stateGetNedToBodyEulers_f()->psi;
+	if(stateGetPositionNed_f()->y>1.5){
+	  if(temp_psi<0){
+		  attitude.psi = temp_psi+3.14;
+	  }
+	  else{
+		  attitude.psi = temp_psi-3.14;
+	  }
+	}
+	else{
+	  attitude.psi = stateGetNedToBodyEulers_f()->psi;
+	}
+	
+	
 	float_rmat_of_eulers_321(&R,&attitude);
 	
 	
@@ -1141,9 +1355,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	MAT33_VECT3_MUL(pos_vec, temp_mat,p_vec);
 	
-	debug_1 = pos_vec.x;
-	debug_2 = pos_vec.y;
-	debug_3 = pos_vec.z;
+	ls_pos_x = pos_vec.x;
+	
+	//bound y to remove outliers 
+	float y_threshold = 0.8;
+	if(pos_vec.y > y_threshold)pos_vec.y = y_threshold;
+	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
+	
+	
+	ls_pos_y = pos_vec.y;//-0.15;//visual bias??
+	ls_pos_z = pos_vec.z;
 	
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
@@ -1161,6 +1382,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   } else {
 
       //no detection
+    
+      ls_pos_x = 0;
+      ls_pos_y = 0;
+      ls_pos_z = 0;
+    
       last_frame_detection = 0;
      
       states_race.gate_detected = 0;
@@ -1168,6 +1394,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       gate_gen = 1;
     
   }
+  
+  debug_1 = ls_pos_x;
+  debug_2 = ls_pos_y;
+  debug_3 = ls_pos_z;
+  
   	//principal point
 	//draw_cross(img,158,12,blue_color);
 	

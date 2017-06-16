@@ -120,6 +120,11 @@ extern float gate_img_point_y_3;
 extern float gate_img_point_x_4;
 extern float gate_img_point_y_4;
 
+//least squares final results
+extern float ls_pos_x;
+extern float ls_pos_y;
+extern float ls_pos_z;
+
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */
 #define VECT3_VECT3_TRANS_MUL(_mat, _v_a,_v_b) {    \
@@ -156,6 +161,16 @@ extern float gate_img_point_y_4;
     MAT33_ELMT((_mat1),2,0) = MAT33_ELMT((_mat2),2,0)+MAT33_ELMT((_mat3),2,0);  \
     MAT33_ELMT((_mat1),2,1) = MAT33_ELMT((_mat2),2,1)+MAT33_ELMT((_mat3),2,1);  \
     MAT33_ELMT((_mat1),2,2) = MAT33_ELMT((_mat2),2,2)+MAT33_ELMT((_mat3),2,2);  \
+  }
+
+//
+// C = A+B
+//
+#define MAT_SUM(_i, _j, C, A, B) {              \
+    int l,c;                                    \
+    for (l=0; l<_i; l++)                        \
+      for (c=0; c<_j; c++)                      \
+        C[l][c] = A[l][c] + B[l][c];            \
   }
 
 #endif /* SNAKE_GATE_DETECTION_CV_PLUGIN_H */

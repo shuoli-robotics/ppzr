@@ -69,6 +69,50 @@ struct acceleration{
 		double az;
 };
 
+struct arc_open_loop_status{
+
+		double x;
+		double y;
+		double z;
+		double v_x_b;
+		double v_y_b;
+		double v_z_b;
+		double v_x_f;
+		double v_y_f;
+		double v_z_f;
+
+
+		double drag_x_b;
+		double drag_y_b;
+		double drag_z_b;
+		double drag_x_f;
+		double drag_y_f;
+		double drag_z_f;
+		double thrust_cmd;
+
+		double phi_cmd;
+		double theta_cmd;
+		double psi_cmd;
+		bool flag_in_arc;
+		double dx;
+		double dy;
+		double dz;
+		double dv_x_f;
+		double dv_y_f;
+		double dv_z_f;
+
+		double drag_coef_body_x_1;
+		double drag_coef_body_y_1;
+		double drag_coef_body_z_1;
+		double drag_coef_body_x_0;
+		double drag_coef_body_y_0;
+		double drag_coef_body_z_0;
+		double drag_coef_body_x_2;
+		double drag_coef_body_y_2;
+		double drag_coef_body_z_2;
+
+};
+
  extern bool arc_is_finished;
  extern int primitive_in_use;
  extern float init_heading;
@@ -98,7 +142,10 @@ extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acc
 extern bool arc_open_loop(double radius,double theta,float delta_psi);
 extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
+extern struct arc_open_loop_status arc_status;
 extern int sample_pointer;
-extern float v_x_f;
+
+extern struct arc_open_loop_status arc_status;
+
 #endif
 

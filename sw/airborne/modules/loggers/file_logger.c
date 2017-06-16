@@ -34,9 +34,11 @@
 #include "state.h"
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/guidance_loop_velocity_autonomous_race/guidance_loop_velocity_autonomous_race.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_attitude_quat_int.h"
 #include "subsystems/electrical.h"
 #include "modules/computer_vision/video_capture.h"
+#include "subsystems/ahrs/ahrs_int_cmpl_quat.h"
 //#include "boards/bebop/actuators.h"
 #include "modules/computer_vision/snake_gate_detection.h"
 #include "modules/sonar/sonar_bebop.h"
@@ -122,7 +124,8 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f, %f,%f,%f\n",
+
           counter,
 	  
 	  time_stamp_1,
@@ -173,6 +176,7 @@ void file_logger_periodic(void)
 	  actuators_bebop.rpm_obs[2],//rb
 	  actuators_bebop.rpm_obs[3],//lb
 	  shots,
+
 	  /*p3p_result_x,//p3p posiitons in m
 	  p3p_result_y,
 	  p3p_result_z,
@@ -193,7 +197,11 @@ void file_logger_periodic(void)
 	  gate_img_point_y_4,
 	  //snake_res_y,
 	  snake_res_z,
-	  distance_after_filter
+	  distance_after_filter,
+	  ls_pos_x,
+	  ls_pos_y,
+	  ls_pos_z
+
          );
   counter++;
 }

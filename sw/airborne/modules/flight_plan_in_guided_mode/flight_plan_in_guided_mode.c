@@ -40,12 +40,16 @@
 #include "modules/kalman_filter/kalman_filter.h"
 #include "subsystems/imu.h"
 
+// #define KP_Y 0.55//0.4 
+// #define KI_Y 0.0
+// #define KD_Y 0.0//0.3
+// #define MAX_PHI  20.0/180*3.14
 
 
-#define KP_Y 0.6//raw vision:0.2 
+#define KP_Y 0.4 
 #define KI_Y 0.0
-#define KD_Y 0.25//raw vision:0.0
-#define MAX_PHI  25.0/180*3.14
+#define KD_Y 0.3
+#define MAX_PHI  30.0/180*3.14
 
 
 float psi0;//
@@ -67,6 +71,7 @@ float velocity_earth_y;
 float init_heading;
 float previous_error_y = 0;
 float sum_y_error = 0;
+double g = 9.81;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
@@ -123,6 +128,9 @@ bool go_straight(float theta,float distance,double ref_y){
         y_start = stateGetPositionNed_f()->y;
 		sum_y_error = 0;
 		states_race.attitude_control = TRUE;
+		float v_x_e = stateGetSpeedNed_f()->x;
+		float v_y_e = stateGetSpeedNed_f()->y;
+		v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
 		if (arc_counter == 0)
 		{
 
@@ -142,10 +150,11 @@ bool go_straight(float theta,float distance,double ref_y){
 	}
 	else{
 	  current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
+	  //current_y = ls_pos_y;
 	}
 	float error_y = (ref_y - current_y)*sign;
 	sum_y_error += error_y/20.0;
-	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20 + KI_Y*sum_y_error;
+	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20.0 + KI_Y*sum_y_error;
 	if(phi > MAX_PHI)phi = MAX_PHI;
 	if(phi < -MAX_PHI)phi = -MAX_PHI;
 	guidance_loop_set_theta(theta);
@@ -298,7 +307,13 @@ void calculate_attitude_average(double * p_theta,double *p_phi,struct accelerati
 {
 }
 
-bool arc_open_loop(double radius,double theta,float delta_psi)
+struct arc_open_loop_status arc_status;
+void drone_model(struct arc_open_loop_status * sta);
+
+
+
+
+bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 {
     if(primitive_in_use != ARC_OPEN_LOOP)
     { 
@@ -306,44 +321,130 @@ bool arc_open_loop(double radius,double theta,float delta_psi)
         psi = stateGetNedToBodyEulers_f()->psi;
 		psi0 = psi;
         z0 = stateGetPositionNed_f()->z;
-		float v_x_e = stateGetSpeedNed_f()->x;
-		float v_y_e = stateGetSpeedNed_f()->y;
-		v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
+		arc_status.flag_in_arc = TRUE;
+		arc_status.x= stateGetPositionNed_f()->x;
+		arc_status.y= stateGetPositionNed_f()->y;
+		arc_status.z= stateGetPositionNed_f()->z;
+		arc_status.phi_cmd = stateGetNedToBodyEulers_f()->phi;
+		arc_status.theta_cmd = desired_theta;
+        arc_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
+		arc_status.v_x_f = cos(arc_status.psi_cmd)*stateGetSpeedNed_f()->x + sin(arc_status.psi_cmd)*stateGetSpeedNed_f()->y; 
+		arc_status.v_y_f = -sin(arc_status.psi_cmd)*stateGetSpeedNed_f()->x + cos(arc_status.psi_cmd)*stateGetSpeedNed_f()->y; 
+		arc_status.v_z_f = stateGetSpeedNed_f()->z;
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 		states_race.attitude_control = TRUE;
+		arc_status.drag_coef_body_x_1 = -0.53;
+		arc_status.drag_coef_body_y_1 = -0.47;
+		arc_status.drag_coef_body_z_1 = 0;
+		arc_status.drag_coef_body_x_0 = 0.0057;
+		arc_status.drag_coef_body_y_0 = -0.025;
+		arc_status.drag_coef_body_z_0 = 0;
+		arc_status.drag_coef_body_x_2 = 0;
+		arc_status.drag_coef_body_y_2 = 0;
+		arc_status.drag_coef_body_z_2 = 0;
+		/*arc_status.drag_coef_body_x_1 = -0.5;*/
+		/*arc_status.drag_coef_body_y_1 = 0;*/
+		/*arc_status.drag_coef_body_z_1 = -0;*/
+		/*arc_status.drag_coef_body_x_0 = -0;*/
+		/*arc_status.drag_coef_body_y_0 = 0;*/
+		/*arc_status.drag_coef_body_z_0 = -0;*/
+		/*arc_status.drag_coef_body_x_2 = -0;*/
+		/*arc_status.drag_coef_body_y_2 = 0;*/
+		/*arc_status.drag_coef_body_z_2 = 0;*/
     }
-   /* float current_vel_x = stateGetSpeedNed_f()->x;*/
-    /*float current_vel_y = stateGetSpeedNed_f()->y;*/
-	/*float psi_a = stateGetNedToBodyEulers_f()->psi;*/
-	float v_x_b = cos(theta)*v_x_f;
-	float phi = stateGetNedToBodyEulers_f()->phi;
-	float v_z_b = cos(phi)*sin(theta)*v_x_f;
-	float drag_x_b = -0.5051 * v_x_b+0.0236;// - 0.102*v_x_b*v_x_b-0.2276;//was 0.27*v_x_b
-	float drag_z_b = -0.3356 * v_z_b + 0.2789*v_z_b*v_z_b-0.0137;
-	float drag_x_f = cos(theta)*drag_x_b+cos(phi)*sin(theta)*drag_z_b;
-	float drag_z_f = -sin(theta)*drag_x_b+cos(phi)*cos(theta)*drag_z_b;
-	float v_x_f_dot = tan(theta)*(-9.81)+drag_x_f;
-	/*v_x_f = cos(psi_a)*current_vel_x + sin(psi_a)*current_vel_y;*/
 
-	v_x_f = v_x_f + v_x_f_dot*1/20;//20.0;
-	float psi_dot =  v_x_f/radius;
-	psi = psi + psi_dot *1/20;//20;	
-	double phi_desired = -atan(-v_x_f*psi_dot*cos(theta)/9.81);
-	guidance_loop_set_theta(theta);
-	guidance_loop_set_phi(phi_desired); 
-	guidance_loop_set_heading(psi);
+// calculate command needed
+// transfer velocity from earth coordinate to body and body fixed coordinate
+	double phi = arc_status.phi_cmd;
+    double theta = arc_status.theta_cmd;
+    double psi = arc_status.psi_cmd;
+	// calculate body velocity
+	arc_status.v_x_b = cos(theta)*arc_status.v_x_f-
+			sin(theta)*arc_status.v_z_f;
+	arc_status.v_y_b = sin(phi)*sin(theta)*arc_status.v_x_f+
+			cos(phi)*arc_status.v_y_f+
+		   sin(phi)*cos(theta)*arc_status.v_z_f;
+	arc_status.v_z_b = cos(phi)*sin(theta)*arc_status.v_x_f-
+		sin(phi)*arc_status.v_y_f+
+		cos(phi)*cos(theta)*arc_status.v_z_f;	
+
+    /*arc_status.v_x_b = cos(theta)*arc_status.v_x_f;*/
+    /*arc_status.v_y_b = 0;*/
+	/*arc_status.v_z_b = cos(phi)*sin(theta)*arc_status.v_x_f;*/
+
+//  calculate drag in body velocity
+	arc_status.drag_x_b = arc_status.drag_coef_body_x_1*arc_status.v_x_b;
+	arc_status.drag_y_b = arc_status.drag_coef_body_y_1*arc_status.v_y_b;
+	arc_status.drag_z_b = arc_status.drag_coef_body_z_1*arc_status.v_z_b;
+
+//  transfer drag from body coordinate to body fixed coordinate
+	arc_status.drag_x_f = cos(theta)*arc_status.drag_x_b+sin(phi)*sin(theta)*arc_status.drag_y_b
+			+cos(phi)*sin(theta)*arc_status.drag_z_b;
+	arc_status.drag_y_f = cos(phi)*arc_status.drag_y_b-sin(phi)*arc_status.drag_z_b;
+	/*arc_status.drag_y_f = 0;*/
+	arc_status.drag_z_f = -sin(theta)*arc_status.drag_x_b+sin(phi)*cos(theta)*arc_status.drag_y_b+
+			cos(phi)*cos(theta)*arc_status.drag_z_b;
+
+
+//  calculate command
+	double d_psi = arc_status.v_x_f/radius;
+	arc_status.psi_cmd += d_psi/20.0;
+	arc_status.theta_cmd = desired_theta;
+	arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+			(9.8+arc_status.drag_z_f));
+	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
+	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
+	// euler method to predict
+	drone_model(&arc_status);
+
+	arc_status.x += arc_status.dx/20.0;
+	arc_status.y += arc_status.dy/20.0;
+	arc_status.z += arc_status.dz/20.0;
+	arc_status.v_x_f += arc_status.dv_x_f/20.0;
+	arc_status.v_y_f += arc_status.dv_y_f/20.0;
+	arc_status.v_z_f += arc_status.dv_z_f/20.0;
+
+
+/*printf("v_x_f is %f\n",arc_status.v_x_f);*/
+
+
+	guidance_loop_set_theta(arc_status.theta_cmd);
+	guidance_loop_set_phi(arc_status.phi_cmd); 
+	guidance_loop_set_heading(arc_status.psi_cmd);
+
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
-	//if (stateGetNedToBodyEulers_f()->psi>(psi0+delta_psi))
-	if (psi>(psi0+delta_psi))
+
+
+	if (arc_status.psi_cmd >(psi0+delta_psi))
 	{
-			return 1;}
+			arc_status.flag_in_arc = FALSE;
+			return 1;
+	}
 	else
 	{
 			return 0;
 	}
+}
+
+void drone_model(struct arc_open_loop_status* sta)
+{
+		double phi = sta->phi_cmd;
+		double theta = sta->theta_cmd;
+		double psi = sta->psi_cmd;
+
+		sta->dx = cos(psi)*sta->v_x_f-sin(psi)*sta->v_y_f;
+		sta->dy = sin(psi)*sta->v_x_f+cos(psi)*sta->v_y_f;
+		sta->dz = sta->v_z_f;
+		
+		double T = arc_status.thrust_cmd;
+		/*double T = -9.8/cos(theta)/cos(phi);*/
+		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_x_f*sta->v_y_f/1.5;
+		/*sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f;*/
+		sta->dv_y_f = -sin(phi)*T+sta->drag_y_f-sta->v_x_f*sta->v_x_f/1.5; 	
+		sta->dv_z_f = 9.8+cos(phi)*cos(theta)*T+sta->drag_z_f; 	
 }
 
 
@@ -364,7 +465,7 @@ bool hover_at_origin()
     }
  float current_x = stateGetPositionNed_f()->x;
  float current_y = stateGetPositionNed_f()->y;
- if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 5)
+ if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 10)
  {
 		 return 1;
  }
