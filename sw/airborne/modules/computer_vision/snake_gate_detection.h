@@ -125,6 +125,10 @@ extern float ls_pos_x;
 extern float ls_pos_y;
 extern float ls_pos_z;
 
+//final KF results
+extern float kf_pos_x;
+extern float kf_pos_y;
+
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */
 #define VECT3_VECT3_TRANS_MUL(_mat, _v_a,_v_b) {    \
@@ -171,6 +175,18 @@ extern float ls_pos_z;
     for (l=0; l<_i; l++)                        \
       for (c=0; c<_j; c++)                      \
         C[l][c] = A[l][c] + B[l][c];            \
+  }
+
+#define MAT_PRINT(_i, _j,A) {           \
+    int l,c;                            \
+    printf(#A);				\
+    printf("\n");			\
+    for (l=0; l<_i; l++){               \
+      for (c=0; c<_j; c++){             \
+	  printf("%f,",A[l][c]);        \
+        }				\
+        printf("\n"); 			\
+     }					\
   }
 
 #endif /* SNAKE_GATE_DETECTION_CV_PLUGIN_H */

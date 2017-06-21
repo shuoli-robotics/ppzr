@@ -48,6 +48,8 @@
 
 #include "filters/low_pass_filter.h"
 
+
+
 #define PI 3.1415926
 
 //initial position after gate pass
@@ -64,6 +66,10 @@
 #define Y_SPEED_MARGIN 0.2//m/s
 
 #define GOOD_FIT 1.0
+
+#define AHRS_PROPAGATE_FREQUENCY 512
+
+#define HFF_LOWPASS_CUTOFF_FREQUENCY 14
 
 
 struct video_listener *listener = NULL;
@@ -363,6 +369,11 @@ float eye_4[4][4] = {
    {0, 0, 0, 1}
 };
 
+//final KF results
+float kf_pos_x = 0;
+float kf_pos_y = 0;
+
+int ekf_debug_cnt = 0;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
@@ -486,7 +497,6 @@ void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *i
 //state filter in periodic loop
 void snake_gate_periodic(void)
 {
-  
   gettimeofday(&stop, 0);
   double time_now = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
   KF_dt = time_now - time_prev;
@@ -495,17 +505,20 @@ void snake_gate_periodic(void)
   struct Int32Vect3 acc_meas_body;
   struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
   int32_rmat_transp_vmult(&acc_meas_body, body_to_imu_rmat, &imu.accel);
-
-  struct Int32Vect3 acc_body_filtered;
-  acc_body_filtered.x = update_butterworth_2_low_pass_int(&filter_x, acc_meas_body.x);
-  acc_body_filtered.y = update_butterworth_2_low_pass_int(&filter_y, acc_meas_body.y);
-  acc_body_filtered.z = update_butterworth_2_low_pass_int(&filter_z, acc_meas_body.z);
-
+  
+//   struct Int32Vect3 acc_body_filtered;
+//   acc_body_filtered.x = update_butterworth_2_low_pass_int(&filter_x, acc_meas_body.x);
+//   acc_body_filtered.y = update_butterworth_2_low_pass_int(&filter_y, acc_meas_body.y);
+//   acc_body_filtered.z = update_butterworth_2_low_pass_int(&filter_z, acc_meas_body.z);
+  
   struct Int32Vect3 filtered_accel_ltp;
   struct Int32RMat *ltp_to_body_rmat = stateGetNedToBodyRMat_i();
-  int32_rmat_transp_vmult(&filtered_accel_ltp, ltp_to_body_rmat, &acc_body_filtered);
+  int32_rmat_transp_vmult(&filtered_accel_ltp, ltp_to_body_rmat, &acc_meas_body);
   u_k[0][0] = ACCEL_FLOAT_OF_BFP(filtered_accel_ltp.x);
   u_k[1][0] = ACCEL_FLOAT_OF_BFP(filtered_accel_ltp.y);
+  
+  //MAT_PRINT(2,1,u_k);
+  
   
   //update dt 
   Phi[0][2] = KF_dt;
@@ -518,8 +531,7 @@ void snake_gate_periodic(void)
   
   // C = A*B   A:(i,k) B:(k,j) C:(i,j)
   //MAT_MUL(_i, _k, _j, C, A, B)
-  MAT_MUL(4, 4, 1, X_temp_1, Phi, X_prev);
-  
+  MAT_MUL(4, 4, 1, X_temp_1, Phi, X_int);
   MAT_MUL(4, 2, 1, X_temp_2, Psi, u_k);
   
   // C = A+B
@@ -527,14 +539,18 @@ void snake_gate_periodic(void)
   MAT_SUM(4, 1, X_int, X_temp_1, X_temp_2);
   
   //bounding pos and speed
-  
+  if(X_int[0][0] > 4)X_int[0][0] = 4;//xmax
+  if(X_int[0][0] < -1)X_int[0][0] = -1;//xmin
+  if(X_int[1][0] > 3)X_int[1][0] = 3;//ymax
+  if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
   
   
   
   
   //if measurement available -> do KF measurement update 
-  if(vision_sample == 1)
+  if(vision_sample == 1)// && ekf_debug_cnt < 3)
   {
+    ekf_debug_cnt+=1;
 //      if(0)%in_turn == 1)
 //            X_int(n,1) = arc_pred(n,1);
 //            X_int(n,2) = arc_pred(n,2);
@@ -565,9 +581,19 @@ void snake_gate_periodic(void)
     KF_m_dt = time_m - time_prev_m;
     time_prev_m = time_m;
     
+    //MAT_PRINT(2, 2,temp_2_2_b);
+    
+    if(KF_m_dt>5.0)KF_m_dt=5.0;
     //update dt 
     Phi[0][2] = KF_m_dt;
     Phi[1][3] = KF_m_dt;
+    
+    MAT_PRINT(4, 4,P_k_1_k_1);
+    MAT_PRINT(4, 4,Phi);
+    
+    MAT_PRINT(4, 2,Gamma);
+    MAT_PRINT(2, 2,Q_mat);
+    
     
     //P_k_1 = Phi*P_k_1_k_1*Phi' + Gamma*Q*Gamma';
     
@@ -578,14 +604,25 @@ void snake_gate_periodic(void)
     // C = A*B   A:(i,k) B:(k,j) C:(i,j)
     //MAT_MUL(_i, _k, _j, C, A, B)
     MAT_MUL(4, 2, 4, temp_4_4_a, Gamma, temp_2_4);
+    MAT_PRINT(4, 4,temp_4_4_a);
+    
     MAT_MUL_T(4, 4, 4, temp_4_4_b, P_k_1_k_1, Phi);
+    MAT_PRINT(4, 4,temp_4_4_b);
     MAT_MUL(4, 4, 4, temp_4_4_c, Phi, temp_4_4_b);
+    MAT_PRINT(4, 4,temp_4_4_c);
     MAT_SUM(4, 4, P_k_1, temp_4_4_a, temp_4_4_c);
     
+    MAT_PRINT(4, 4,P_k_1);
+    
+    MAT_PRINT(2, 4,H_k);
     //K = P_k_1 * H_k' / (H_k*P_k_1 * H_k' + R_k);
     MAT_MUL_T(4, 4, 2, temp_4_2_a, P_k_1, H_k);
+    MAT_PRINT(4, 2,temp_4_2_a);
     MAT_MUL(2, 4, 2, temp_2_2_a, H_k, temp_4_2_a);
+    MAT_PRINT(2, 2,temp_2_2_a);
     MAT_SUM(2, 2, temp_2_2_b, temp_2_2_a, R_k);
+    
+    MAT_PRINT(2, 2,temp_2_2_b);
     
     //calc 2x2 inverse
     float det_2_2 = 1/(temp_2_2_b[0][0]*temp_2_2_b[1][1]-temp_2_2_b[1][0]*temp_2_2_b[0][1]);
@@ -596,26 +633,52 @@ void snake_gate_periodic(void)
     inv_2_2[1][0] = -temp_2_2_b[1][0]*det_2_2;
     inv_2_2[1][1] = temp_2_2_b[0][0]*det_2_2;
     
+    MAT_PRINT(2, 2,inv_2_2);
+    
     MAT_MUL(4, 2, 2, K_k, temp_4_2_a, inv_2_2);
+    
+    MAT_PRINT(4, 2,K_k);
     
     //X_opt = x_kk_1' + K * (z_k - X_int(n,1:2))';
     inn_vec[0][0] = ls_pos_x-X_int[0][0];
     inn_vec[1][0] = ls_pos_y-X_int[1][0];
     
+    printf("ls_pos_x:%f\n",ls_pos_x);
+    printf("X_int[0][0]:%f\n",X_int[0][0]);
+   
+    printf("ls_pos_y:%f\n",ls_pos_y);
+    printf("X_int[1][0]:%f\n",X_int[1][0]);
+    
+    
     MAT_MUL(4, 2, 1, temp_4_1, K_k, inn_vec);
     MAT_SUM(4, 1, X_int, X_int, temp_4_1);
     
+    kf_pos_x = X_int[0][0];
+    kf_pos_y = X_int[1][0];
+    
+    
+    debug_1 = kf_pos_x;
+    debug_2 = kf_pos_y;
+    
     //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
     MAT_MUL(4, 2, 4, temp_4_4_a, K_k,H_k);
-    MAT_SUM(4, 1, temp_4_4_b, eye_4, temp_4_4_a);
+    MAT_PRINT(4, 4,temp_4_4_a);
+    
+    MAT_SUB(4, 4, temp_4_4_b, eye_4, temp_4_4_a);
+    MAT_PRINT(4, 4,temp_4_4_b);
+    //error free until here?
     MAT_MUL_T(4, 4, 4, temp_4_4_c, P_k_1, temp_4_4_b);
+     MAT_PRINT(4, 4,temp_4_4_c);
     //temp_4_4_a reuse
     MAT_MUL(4, 2, 4, temp_4_4_a, temp_4_4_b,temp_4_4_c);
+     MAT_PRINT(4, 4,temp_4_4_a);
     MAT_MUL_T(2, 2, 4, temp_2_4, R_k, K_k);
+     MAT_PRINT(2, 4,temp_2_4);
     //temp_4_4_b reuse
     MAT_MUL(4, 2, 4, temp_4_4_b, K_k,temp_2_4);
+     MAT_PRINT(4, 4,temp_4_4_b);
     MAT_SUM(4, 4, P_k_1_k_1, temp_4_4_a, temp_4_4_b);
-    
+     MAT_PRINT(4, 4,P_k_1_k_1);
     vision_sample = 0;
   }
   
@@ -1065,6 +1128,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
     //sucessfull detection
     last_frame_detection = 1;
+    vision_sample = 1;
     
     //draw_gate_color(img, best_gate, blue_color);
 	if(repeat_gate == 0){
@@ -1358,7 +1422,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	ls_pos_x = pos_vec.x;
 	
 	//bound y to remove outliers 
-	float y_threshold = 0.8;
+	float y_threshold = 1.8;
 	if(pos_vec.y > y_threshold)pos_vec.y = y_threshold;
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
@@ -1395,8 +1459,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
   }
   
-  debug_1 = ls_pos_x;
-  debug_2 = ls_pos_y;
+//   debug_1 = ls_pos_x;
+//   debug_2 = ls_pos_y;
   debug_3 = ls_pos_z;
   
   	//principal point
@@ -2158,4 +2222,9 @@ void snake_gate_detection_init(void)
   listener = cv_add_to_device(&SGD_CAMERA, snake_gate_detection_func);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SNAKE_GATE_INFO, snake_gate_send);
   gettimeofday(&start, NULL);
+  
+  init_butterworth_2_low_pass_int(&filter_x, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
+  init_butterworth_2_low_pass_int(&filter_y, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
+  init_butterworth_2_low_pass_int(&filter_z, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
+  
 }
