@@ -561,7 +561,7 @@ void snake_gate_periodic(void)
 //   debug_2 = u_k[1][0];
   
   //if measurement available -> do KF measurement update 
-  if(vision_sample == 1 || arc_status.flag_in_arc == TRUE)// && ekf_debug_cnt < 3)
+  if((vision_sample == 1 || arc_status.flag_in_arc == TRUE)&& !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
   {
     ekf_debug_cnt+=1;
 //      if(0)%in_turn == 1)
@@ -1446,6 +1446,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	
 	ls_pos_y = pos_vec.y-0.25;//visual bias??
+	
 	ls_pos_z = pos_vec.z;
 	//debug_3 = ls_pos_y;
 // 		printf("R_mat_trans:\n");
