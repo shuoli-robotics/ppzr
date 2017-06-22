@@ -38,6 +38,7 @@
 #include "modules/computer_vision/opticflow/opticflow_calculator.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_clock.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/lib/vision/qr_code_recognition.h"
 #include "modules/computer_vision/lib/vision/calc_p3p.h"
@@ -213,6 +214,7 @@ struct FloatVect3 p3p_pos_solution;
 float debug_1 = 1.1;
 float debug_2 = 2.2;
 float debug_3 = 3.3;
+float debug_4 = 4.4;
 
 
 //optic flow dummy
@@ -379,9 +381,9 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
-                                &current_x_gate, &current_y_gate, &current_z_gate, &debug_1, &debug_2,
+                                &current_x_gate, &current_y_gate, &debug_1, &debug_2, &debug_3,
                                 &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
-                                &debug_3);//psi_gate); //
+                                &debug_4);//psi_gate); //
 }
 
 
@@ -544,11 +546,22 @@ void snake_gate_periodic(void)
   if(X_int[1][0] > 3)X_int[1][0] = 3;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
   
+  kf_pos_x = X_int[0][0];
+  kf_pos_y = X_int[1][0];
+    
+  debug_1 = X_int[0][0];
+  debug_2 = X_int[1][0];
   
+  if(arc_status.flag_in_arc == TRUE){
+    debug_1 = arc_status.x;
+    debug_2 = arc_status.y;
+  }
   
+//   debug_1 = u_k[0][0];
+//   debug_2 = u_k[1][0];
   
   //if measurement available -> do KF measurement update 
-  if(vision_sample == 1)// && ekf_debug_cnt < 3)
+  if(vision_sample == 1 || arc_status.flag_in_arc == TRUE)// && ekf_debug_cnt < 3)
   {
     ekf_debug_cnt+=1;
 //      if(0)%in_turn == 1)
@@ -588,11 +601,11 @@ void snake_gate_periodic(void)
     Phi[0][2] = KF_m_dt;
     Phi[1][3] = KF_m_dt;
     
-    MAT_PRINT(4, 4,P_k_1_k_1);
-    MAT_PRINT(4, 4,Phi);
-    
-    MAT_PRINT(4, 2,Gamma);
-    MAT_PRINT(2, 2,Q_mat);
+//     MAT_PRINT(4, 4,P_k_1_k_1);
+//     MAT_PRINT(4, 4,Phi);
+//     
+//     MAT_PRINT(4, 2,Gamma);
+//     MAT_PRINT(2, 2,Q_mat);
     
     
     //P_k_1 = Phi*P_k_1_k_1*Phi' + Gamma*Q*Gamma';
@@ -604,25 +617,25 @@ void snake_gate_periodic(void)
     // C = A*B   A:(i,k) B:(k,j) C:(i,j)
     //MAT_MUL(_i, _k, _j, C, A, B)
     MAT_MUL(4, 2, 4, temp_4_4_a, Gamma, temp_2_4);
-    MAT_PRINT(4, 4,temp_4_4_a);
+    //MAT_PRINT(4, 4,temp_4_4_a);
     
     MAT_MUL_T(4, 4, 4, temp_4_4_b, P_k_1_k_1, Phi);
-    MAT_PRINT(4, 4,temp_4_4_b);
+    //MAT_PRINT(4, 4,temp_4_4_b);
     MAT_MUL(4, 4, 4, temp_4_4_c, Phi, temp_4_4_b);
-    MAT_PRINT(4, 4,temp_4_4_c);
+    //MAT_PRINT(4, 4,temp_4_4_c);
     MAT_SUM(4, 4, P_k_1, temp_4_4_a, temp_4_4_c);
     
-    MAT_PRINT(4, 4,P_k_1);
+    //MAT_PRINT(4, 4,P_k_1);
     
-    MAT_PRINT(2, 4,H_k);
+    //MAT_PRINT(2, 4,H_k);
     //K = P_k_1 * H_k' / (H_k*P_k_1 * H_k' + R_k);
     MAT_MUL_T(4, 4, 2, temp_4_2_a, P_k_1, H_k);
-    MAT_PRINT(4, 2,temp_4_2_a);
+   // MAT_PRINT(4, 2,temp_4_2_a);
     MAT_MUL(2, 4, 2, temp_2_2_a, H_k, temp_4_2_a);
-    MAT_PRINT(2, 2,temp_2_2_a);
+   // MAT_PRINT(2, 2,temp_2_2_a);
     MAT_SUM(2, 2, temp_2_2_b, temp_2_2_a, R_k);
     
-    MAT_PRINT(2, 2,temp_2_2_b);
+    //MAT_PRINT(2, 2,temp_2_2_b);
     
     //calc 2x2 inverse
     float det_2_2 = 1/(temp_2_2_b[0][0]*temp_2_2_b[1][1]-temp_2_2_b[1][0]*temp_2_2_b[0][1]);
@@ -633,15 +646,22 @@ void snake_gate_periodic(void)
     inv_2_2[1][0] = -temp_2_2_b[1][0]*det_2_2;
     inv_2_2[1][1] = temp_2_2_b[0][0]*det_2_2;
     
-    MAT_PRINT(2, 2,inv_2_2);
+    //MAT_PRINT(2, 2,inv_2_2);
     
     MAT_MUL(4, 2, 2, K_k, temp_4_2_a, inv_2_2);
     
-    MAT_PRINT(4, 2,K_k);
+    //MAT_PRINT(4, 2,K_k);
     
     //X_opt = x_kk_1' + K * (z_k - X_int(n,1:2))';
-    inn_vec[0][0] = ls_pos_x-X_int[0][0];
-    inn_vec[1][0] = ls_pos_y-X_int[1][0];
+    if(arc_status.flag_in_arc == TRUE){
+      inn_vec[0][0] = arc_status.x-X_int[0][0];
+      inn_vec[1][0] = arc_status.y-X_int[1][0];
+      //debug_3 = arc_status.y;
+    }else{
+      inn_vec[0][0] = ls_pos_x-X_int[0][0];
+      inn_vec[1][0] = ls_pos_y-X_int[1][0];
+      debug_3 = ls_pos_y;
+    }
     
     printf("ls_pos_x:%f\n",ls_pos_x);
     printf("X_int[0][0]:%f\n",X_int[0][0]);
@@ -653,32 +673,30 @@ void snake_gate_periodic(void)
     MAT_MUL(4, 2, 1, temp_4_1, K_k, inn_vec);
     MAT_SUM(4, 1, X_int, X_int, temp_4_1);
     
-    kf_pos_x = X_int[0][0];
-    kf_pos_y = X_int[1][0];
     
+//     debug_1 = kf_pos_x;
+//     debug_2 = kf_pos_y;
     
-    debug_1 = kf_pos_x;
-    debug_2 = kf_pos_y;
     
     //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
     MAT_MUL(4, 2, 4, temp_4_4_a, K_k,H_k);
-    MAT_PRINT(4, 4,temp_4_4_a);
+    //MAT_PRINT(4, 4,temp_4_4_a);
     
     MAT_SUB(4, 4, temp_4_4_b, eye_4, temp_4_4_a);
-    MAT_PRINT(4, 4,temp_4_4_b);
+    //MAT_PRINT(4, 4,temp_4_4_b);
     //error free until here?
     MAT_MUL_T(4, 4, 4, temp_4_4_c, P_k_1, temp_4_4_b);
-     MAT_PRINT(4, 4,temp_4_4_c);
+    // MAT_PRINT(4, 4,temp_4_4_c);
     //temp_4_4_a reuse
-    MAT_MUL(4, 2, 4, temp_4_4_a, temp_4_4_b,temp_4_4_c);
-     MAT_PRINT(4, 4,temp_4_4_a);
+    MAT_MUL(4, 4, 4, temp_4_4_a, temp_4_4_b,temp_4_4_c);
+    // MAT_PRINT(4, 4,temp_4_4_a);
     MAT_MUL_T(2, 2, 4, temp_2_4, R_k, K_k);
-     MAT_PRINT(2, 4,temp_2_4);
+   //  MAT_PRINT(2, 4,temp_2_4);
     //temp_4_4_b reuse
     MAT_MUL(4, 2, 4, temp_4_4_b, K_k,temp_2_4);
-     MAT_PRINT(4, 4,temp_4_4_b);
+    // MAT_PRINT(4, 4,temp_4_4_b);
     MAT_SUM(4, 4, P_k_1_k_1, temp_4_4_a, temp_4_4_b);
-     MAT_PRINT(4, 4,P_k_1_k_1);
+    // MAT_PRINT(4, 4,P_k_1_k_1);
     vision_sample = 0;
   }
   
@@ -1422,14 +1440,14 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	ls_pos_x = pos_vec.x;
 	
 	//bound y to remove outliers 
-	float y_threshold = 1.8;
+	float y_threshold = 2.5;
 	if(pos_vec.y > y_threshold)pos_vec.y = y_threshold;
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
 	
-	ls_pos_y = pos_vec.y;//-0.15;//visual bias??
+	ls_pos_y = pos_vec.y-0.25;//visual bias??
 	ls_pos_z = pos_vec.z;
-	
+	//debug_3 = ls_pos_y;
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
 	  
@@ -1447,9 +1465,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
       //no detection
     
-      ls_pos_x = 0;
-      ls_pos_y = 0;
-      ls_pos_z = 0;
+//       ls_pos_x = 0;
+//       ls_pos_y = 0;
+//       ls_pos_z = 0;
     
       last_frame_detection = 0;
      
@@ -1461,7 +1479,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
 //   debug_1 = ls_pos_x;
 //   debug_2 = ls_pos_y;
-  debug_3 = ls_pos_z;
+ // debug_3 = ls_pos_z;
   
   	//principal point
 	//draw_cross(img,158,12,blue_color);

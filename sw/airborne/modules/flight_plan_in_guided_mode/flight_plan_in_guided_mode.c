@@ -46,9 +46,12 @@
 // #define MAX_PHI  20.0/180*3.14
 
 
-#define KP_Y 0.4 
+// #define KP_Y 0.4 
+// #define KI_Y 0.0
+// #define KD_Y 0.3
+#define KP_Y 0.3 
 #define KI_Y 0.0
-#define KD_Y 0.3
+#define KD_Y 0.2
 #define MAX_PHI  30.0/180*3.14
 
 
@@ -149,8 +152,9 @@ bool go_straight(float theta,float distance,double ref_y){
 	 current_y = stateGetPositionNed_f()->y;
 	}
 	else{
-	  current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
+	  //current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
 	  //current_y = ls_pos_y;
+	  current_y = kf_pos_y;
 	}
 	float error_y = (ref_y - current_y)*sign;
 	sum_y_error += error_y/20.0;
