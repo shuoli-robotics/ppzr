@@ -317,6 +317,11 @@ float Q_mat[2][2] = {  //try 0.5?
    {0, 1}  
 };
 
+// float R_k[2][2] = {  //try other?
+//    {0.2, 0} ,  
+//    {0, 0.2}  
+// };
+
 float R_k[2][2] = {  //try other?
    {0.2, 0} ,  
    {0, 0.2}  
@@ -374,14 +379,18 @@ float eye_4[4][4] = {
 //final KF results
 float kf_pos_x = 0;
 float kf_pos_y = 0;
+float kf_vel_x = 0;
+float kf_vel_y = 0;
 
 int ekf_debug_cnt = 0;
+
+double last_detection_time = 0;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
-                                &current_x_gate, &current_y_gate, &debug_1, &debug_2, &debug_3,
+                                &current_x_gate, &debug_1, &debug_2, &debug_3, &debug_4,
                                 &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
                                 &debug_4);//psi_gate); //
 }
@@ -504,6 +513,10 @@ void snake_gate_periodic(void)
   KF_dt = time_now - time_prev;
   time_prev = time_now;
   
+  if((time_now-last_detection_time)>0.3){
+    ls_pos_y = 0;
+  }
+  
   struct Int32Vect3 acc_meas_body;
   struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
   int32_rmat_transp_vmult(&acc_meas_body, body_to_imu_rmat, &imu.accel);
@@ -543,25 +556,28 @@ void snake_gate_periodic(void)
   //bounding pos and speed
   if(X_int[0][0] > 4)X_int[0][0] = 4;//xmax
   if(X_int[0][0] < -1)X_int[0][0] = -1;//xmin
-  if(X_int[1][0] > 3)X_int[1][0] = 3;//ymax
+  if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
   
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
-    
+  kf_vel_x = X_int[2][0];
+  kf_vel_y = X_int[3][0];
+  
+  
   debug_1 = X_int[0][0];
   debug_2 = X_int[1][0];
   
-  if(arc_status.flag_in_arc == TRUE){
-    debug_1 = arc_status.x;
-    debug_2 = arc_status.y;
-  }
+//   if(arc_status.flag_in_arc == TRUE){
+//     debug_1 = arc_status.x;
+//     debug_2 = arc_status.y;
+//   }
   
 //   debug_1 = u_k[0][0];
 //   debug_2 = u_k[1][0];
   
   //if measurement available -> do KF measurement update 
-  if((vision_sample == 1 || arc_status.flag_in_arc == TRUE)&& !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
+  if((vision_sample == 1 || arc_status.flag_in_arc == TRUE)&& !isnan(ls_pos_x) && !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
   {
     ekf_debug_cnt+=1;
 //      if(0)%in_turn == 1)
@@ -658,9 +674,19 @@ void snake_gate_periodic(void)
       inn_vec[1][0] = arc_status.y-X_int[1][0];
       //debug_3 = arc_status.y;
     }else{
-      inn_vec[0][0] = ls_pos_x-X_int[0][0];
-      inn_vec[1][0] = ls_pos_y-X_int[1][0];
-      debug_3 = ls_pos_y;
+      float trans_x;
+      float trans_y;
+      if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
+	trans_x = 3.0-ls_pos_x;
+	trans_y = 3.0 -ls_pos_y -0.15;//correction factor??
+      }else{
+	trans_x = ls_pos_x;
+	trans_y = ls_pos_y;
+      }
+      
+      inn_vec[0][0] = trans_x-X_int[0][0];
+      inn_vec[1][0] = trans_y-X_int[1][0];
+      //debug_3 = ls_pos_y;
     }
     
     printf("ls_pos_x:%f\n",ls_pos_x);
@@ -1148,6 +1174,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     last_frame_detection = 1;
     vision_sample = 1;
     
+    gettimeofday(&stop, 0);
+    last_detection_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+    
+    
+    
     //draw_gate_color(img, best_gate, blue_color);
 	if(repeat_gate == 0){
 	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
@@ -1203,7 +1234,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  struct FloatVect3 ransac_pos[4];
 	  struct FloatMat33 ransac_R_mat[4];
 	  
-	  float gate_dist_x = 3.5;//was4.2
+	  float gate_dist_x = 2.5;//was4.2 then 3.5??maybe lens distortion??
 	  
 	    
 	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
@@ -1315,7 +1346,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
 	
 	float temp_psi = stateGetNedToBodyEulers_f()->psi;
-	if(stateGetPositionNed_f()->y>1.5){
+	if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
 	  if(temp_psi<0){
 		  attitude.psi = temp_psi+3.14;
 	  }
@@ -1445,10 +1476,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
 	
-	ls_pos_y = pos_vec.y-0.25;//visual bias??
+	ls_pos_y = pos_vec.y-0.10;//visual bias??
 	
 	ls_pos_z = pos_vec.z;
-	//debug_3 = ls_pos_y;
+	debug_3 = ls_pos_x;
+	debug_4 = ls_pos_y;
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
 	  

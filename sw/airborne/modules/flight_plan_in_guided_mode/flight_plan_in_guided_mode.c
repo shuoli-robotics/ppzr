@@ -49,10 +49,10 @@
 // #define KP_Y 0.4 
 // #define KI_Y 0.0
 // #define KD_Y 0.3
-#define KP_Y 0.3 
+#define KP_Y 0.4 
 #define KI_Y 0.0
-#define KD_Y 0.2
-#define MAX_PHI  30.0/180*3.14
+#define KD_Y 0.15//was 0.2
+#define MAX_PHI  15.0/180*3.14
 
 
 float psi0;//
@@ -149,7 +149,8 @@ bool go_straight(float theta,float distance,double ref_y){
 	float sign = 1;
 	if(ref_y > 1.5){
 	 sign = -1;
-	 current_y = stateGetPositionNed_f()->y;
+	 //current_y = stateGetPositionNed_f()->y;
+	 current_y = kf_pos_y;
 	}
 	else{
 	  //current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision

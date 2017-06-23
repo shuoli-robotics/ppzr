@@ -128,6 +128,8 @@ extern float ls_pos_z;
 //final KF results
 extern float kf_pos_x;
 extern float kf_pos_y;
+extern float kf_vel_x;
+extern float kf_vel_y;
 
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */

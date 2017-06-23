@@ -191,7 +191,7 @@ void second_part_logic()
 					{
 							reference_y = 3;
 					}
-					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)//wass -7deg
+					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)//wass -7deg then -5
 
 					{
 							previous_mode = GO_THROUGH_CM;
@@ -199,7 +199,7 @@ void second_part_logic()
 					}
 					break;
 			case APPROACH_GATE_CM:
-				if(	arc_open_loop(1.5,-5.0/180*3.14,180.0/180*PI) == TRUE)//was -7deg
+				if(	arc_open_loop(1.5,-5.0/180*3.14,180.0/180*PI) == TRUE)//was -7deg then -5
 
 				{
 							previous_mode = APPROACH_GATE_CM;
