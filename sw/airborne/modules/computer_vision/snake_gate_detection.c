@@ -86,8 +86,8 @@ uint8_t color_cr_min  = 134;//138;//146;//was 180
 uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
-int n_samples = 2000;//1000;//500;
-int min_pixel_size = 20;//40;//100;
+int n_samples = 10000;//2000;//1000;//500;
+int min_pixel_size = 30;//20;//40;//100;
 float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
@@ -215,6 +215,7 @@ float debug_1 = 1.1;
 float debug_2 = 2.2;
 float debug_3 = 3.3;
 float debug_4 = 4.4;
+float debug_5 = 5.5;
 
 
 //optic flow dummy
@@ -392,7 +393,7 @@ static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
                                 &z_dist,
                                 &current_x_gate, &debug_1, &debug_2, &debug_3, &debug_4,
                                 &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
-                                &debug_4);//psi_gate); //
+                                &debug_5);//psi_gate); //
 }
 
 
@@ -568,6 +569,9 @@ void snake_gate_periodic(void)
   debug_1 = X_int[0][0];
   debug_2 = X_int[1][0];
   
+  debug_3 = kf_pos_x;
+  debug_4 = kf_pos_y;
+  
 //   if(arc_status.flag_in_arc == TRUE){
 //     debug_1 = arc_status.x;
 //     debug_2 = arc_status.y;
@@ -678,7 +682,7 @@ void snake_gate_periodic(void)
       float trans_y;
       if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
 	trans_x = 3.0-ls_pos_x;
-	trans_y = 3.0 -ls_pos_y -0.15;//correction factor??
+	trans_y = 3.0 -ls_pos_y +0.15;//correction factor??
       }else{
 	trans_x = ls_pos_x;
 	trans_y = ls_pos_y;
@@ -763,6 +767,33 @@ int cmpfunc (const void * a, const void * b)
    return ( *(int*)a - *(int*)b );
 }
 
+void smooth_hist(int *smooth, int *raw_hist, int window){
+  
+  //start and end of hist padding
+  for(int i = 0;i<window;i++){
+    smooth[i] = 0;
+  }
+  
+  for(int i = 315-window;i<315;i++){
+    smooth[i] = 0;
+  }
+  
+  //avarage over 2 times window size
+  for(int i = window;i<315-window;i++){
+    float sum = 0;
+    for(int c = -window;c<window;c++){
+      sum += raw_hist[c];
+    }
+    sum/=(window*2);
+    smooth[i] = sum;
+  }
+  
+}
+
+//for debugging
+void print_hist(){
+}
+
 // Function
 // Samples from the image and checks if the pixel is the right color.
 // If yes, it "snakes" up and down to see if it is the side of a gate.
@@ -797,6 +828,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
 
   n_gates = 0;
+  
+  //histogram for final approach gate detection
+  int histogram[315] = {0};
 
   //color picker
   //check_color_center(img,&y_center_picker,&cb_center,&cr_center);
@@ -809,6 +843,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     //check_color(img, 1, 1);
     // check if it has the right color
     if (check_color(img, x, y)) {
+      
+      //fill histogram
+      histogram[x]++;
+      
       // snake up and down:
       snake_up_and_down(img, x, y, &y_low, &y_high);
       sz = y_high - y_low;
@@ -888,6 +926,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   int clock_arms = 1;
   // prepare the Region of Interest (ROI), which is larger than the gate:
   float size_factor = 1.5;//2;//1.25;
+  
+  //init best gate
+  best_gate.gate_q = 0;
+  best_gate.n_sides = 0;
+  
+  repeat_gate = 0;
 
   // do an additional fit to improve the gate detection:
   if ((best_quality > min_gate_quality && n_gates > 0)||last_frame_detection) {
@@ -898,7 +942,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
       int max_candidate_gates = 10;//10;
       
-      repeat_gate = 0;
 
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
@@ -946,7 +989,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             // also get the color fitness
             check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
 	    
-	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
+	    if(temp_check_gate.n_sides > 3 && temp_check_gate.gate_q > best_gate.gate_q)
 	    {
 	    best_fitness = fitness;
 	    //best_quality = .gate_q(first maybe zero
@@ -1011,7 +1054,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             // also get the color fitness
             check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
 	    
-	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
+	    if(temp_check_gate.n_sides > 3 && temp_check_gate.gate_q > best_gate.gate_q)
 	    {
 	    //best_fitness = fitness;
             // store the information in the gate:
@@ -1034,9 +1077,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 ///////////////////////////////////////////////Use previous best estimate
       }
       
-      if((best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) && last_frame_detection == 1){
+//       if((best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) && last_frame_detection == 1){
+	 if((best_gate.gate_q == 0 && best_gate.n_sides == 0) && last_frame_detection == 1){
 	
-	repeat_gate = 1;
+// 	repeat_gate = 1;
 	
 	int x_values[4];
 	int y_values[4];
@@ -1088,15 +1132,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.sz_left = (int) s_left;
             temp_check_gate.sz_right = (int) s_right;*/
 	    
-	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
-	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
+// 	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
+// 	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
 	    
 	    
             // also get the color fitness
-            check_gate_free(img, temp_check_gate, &temp_check_gate.gate_q, &temp_check_gate.n_sides);
+            check_gate_free(img, last_gate, &last_gate.gate_q, &last_gate.n_sides);
 	    
-	    if(temp_check_gate.n_sides > 2 && temp_check_gate.gate_q > best_gate.gate_q)
+	    if(last_gate.n_sides > 3 && last_gate.gate_q > best_gate.gate_q)
 	    {
+	      repeat_gate = 1;
 	    //best_fitness = fitness;
 //             // store the information in the gate:
 //             best_gate.x = temp_check_gate.x;
@@ -1104,10 +1149,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 //             best_gate.sz = temp_check_gate.sz;
 //             best_gate.sz_left = temp_check_gate.sz_left;
 //             best_gate.sz_right = temp_check_gate.sz_right;
-	    best_gate.gate_q = temp_check_gate.gate_q;
-	    best_gate.n_sides = temp_check_gate.n_sides;
-	    memcpy(&(best_gate.x_corners[0]),&(temp_check_gate.x_corners[0]),sizeof(int)*4);
-	    memcpy(&(best_gate.y_corners[0]),&(temp_check_gate.y_corners[0]),sizeof(int)*4);
+	    best_gate.gate_q = last_gate.gate_q;
+	    best_gate.n_sides = last_gate.n_sides;
+	    memcpy(&(best_gate.x_corners[0]),&(last_gate.x_corners[0]),sizeof(int)*4);
+	    memcpy(&(best_gate.y_corners[0]),&(last_gate.y_corners[0]),sizeof(int)*4);
 	    }
       }
    
@@ -1346,6 +1391,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
 	
 	float temp_psi = stateGetNedToBodyEulers_f()->psi;
+	//debug_5 = temp_psi;
 	if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
 	  if(temp_psi<0){
 		  attitude.psi = temp_psi+3.14;
@@ -1358,6 +1404,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  attitude.psi = stateGetNedToBodyEulers_f()->psi;
 	}
 	
+	debug_5 = attitude.psi;
 	
 	float_rmat_of_eulers_321(&R,&attitude);
 	
@@ -1471,16 +1518,16 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	ls_pos_x = pos_vec.x;
 	
 	//bound y to remove outliers 
-	float y_threshold = 2.5;
+	float y_threshold = 3.5;//2.5;
 	if(pos_vec.y > y_threshold)pos_vec.y = y_threshold;
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
 	
-	ls_pos_y = pos_vec.y-0.10;//visual bias??
+	ls_pos_y = pos_vec.y;//-0.10;//visual bias??
 	
 	ls_pos_z = pos_vec.z;
-	debug_3 = ls_pos_x;
-	debug_4 = ls_pos_y;
+// 	debug_3 = ls_pos_x;
+// 	debug_4 = ls_pos_y;
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
 	  

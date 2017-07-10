@@ -147,15 +147,22 @@ bool go_straight(float theta,float distance,double ref_y){
 
 	float current_y;
 	float sign = 1;
+	int use_optitrack = 0;//else use vision
 	if(ref_y > 1.5){
 	 sign = -1;
-	 //current_y = stateGetPositionNed_f()->y;
-	 current_y = kf_pos_y;
+	 if(use_optitrack){
+	   current_y = stateGetPositionNed_f()->y;
+	 }else{
+	   current_y = kf_pos_y;
+	 }
 	}
 	else{
-	  //current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
+	  if(use_optitrack){
+	    current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
+	  }else{
 	  //current_y = ls_pos_y;
-	  current_y = kf_pos_y;
+	    current_y = kf_pos_y;
+	  }
 	}
 	float error_y = (ref_y - current_y)*sign;
 	sum_y_error += error_y/20.0;
