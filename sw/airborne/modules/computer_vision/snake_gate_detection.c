@@ -457,9 +457,10 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
   // Copy the creation timestamp (stays the same)
   output->ts = input->ts;
   // if (x % 2 == 1) { x--; }
-  if (y % 2 == 1) { y--; }
+  
+  //if (y % 2 == 1) { y--; }
 
-  if (x < 0 || x >= input->w || y < 0 || y >= input->h) {
+  if (x < 0 || x >= input->h || y < 0 || y >= input->w) {
     return;
   }
 
@@ -468,6 +469,9 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
   source += y * (input->w) * 2 + x * 2;
   dest += y * (output->w) * 2 + x * 2;
   */
+//   source += x * (input->w) * 2 + y * 2;
+//   dest += x * (output->w) * 2 + y * 2;
+
   source += x * (input->w) * 2 + y * 2;
   dest += x * (output->w) * 2 + y * 2;
   // UYVY
@@ -767,6 +771,15 @@ int cmpfunc (const void * a, const void * b)
    return ( *(int*)a - *(int*)b );
 }
 
+int *array;
+//return indexes
+int cmp_i(const void *a, const void *b){
+    int ia = *(int *)a;
+    int ib = *(int *)b;
+    return array[ia] < array[ib] ? -1 : array[ia] > array[ib];
+}
+
+
 void smooth_hist(int *smooth, int *raw_hist, int window){
   
   //start and end of hist padding
@@ -782,7 +795,7 @@ void smooth_hist(int *smooth, int *raw_hist, int window){
   for(int i = window;i<315-window;i++){
     float sum = 0;
     for(int c = -window;c<window;c++){
-      sum += raw_hist[c];
+      sum += raw_hist[i+c];
     }
     sum/=(window*2);
     smooth[i] = sum;
@@ -790,8 +803,120 @@ void smooth_hist(int *smooth, int *raw_hist, int window){
   
 }
 
+int find_max_hist(int *hist){
+  int max = 0;
+  for(int i = 0;i<315;i++){
+    if(hist[i]>max)max = hist[i];
+  }
+  return max;
+}
+
+int find_hist_peeks(float *hist,int *peeks){
+  int peek_count = 0;
+  peeks[0] = 0;
+  for(int i = 1;i<314;i++){
+    if(hist[i] > hist[i-1] && hist[i] > hist[i+1]){
+      peeks[i] = hist[i];
+      
+    }
+    else{
+      peeks[i] =  0;
+    }
+    //peek_count++;
+  }
+  
+  return peek_count;
+}
+
+int find_hist_peeks_flat(int *hist,int *peeks){
+  int peek_count = 0;
+  peeks[0] = 0;
+  int last_sign = 0;
+  int last_idx = 0;
+  
+  memset(peeks,0,315*sizeof(int));//no peeks found yet
+  
+  for(int i = 1;i<314;i++){
+    
+    int sign = hist[i] - hist[i-1];//positive up backwards difference
+    
+    if(last_sign > 0 && sign < 0){
+      int m_idx = (i-last_idx)/2.0;
+      peeks[last_idx+m_idx] = hist[last_idx+m_idx];
+      peek_count++;
+    }
+    
+    if(sign !=0){
+      last_sign = sign;
+      last_idx = i;
+    }
+    //peeks[i] = sign;
+    //peek_count++;
+  }
+  
+  return peek_count;
+}
+
 //for debugging
-void print_hist(){
+void print_hist(struct image_t *img,int *hist){
+  
+  int max_hist = find_max_hist(hist);
+  int bound = max_hist/500;
+  if(bound <= 0)bound = 1;
+  
+  for(int i = 0;i < img->h;i++){
+    image_yuv422_set_color(img,img,i,hist[i]/bound);
+  }
+}
+
+void print_sides(struct image_t *im, int side_1, int side_2){
+    
+    struct point_t from, to;
+    from.x = side_1;
+    from.y = 0;
+    to.x = side_1;
+    to.y = 160;
+    image_draw_line(im, &from, &to);
+    from.x = side_2;
+    from.y = 0;
+    to.x = side_2;
+    to.y = 160;
+    image_draw_line(im, &from, &to);
+  
+}
+
+void detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
+  int hist_peeks[315];//max nr of peeks, for sure
+  int hist_smooth[315];
+  smooth_hist(hist_smooth, hist_raw, 10);
+  int peek_count = find_hist_peeks_flat(hist_smooth,hist_peeks);
+  int max_peek = find_max_hist(hist_raw);
+  
+  int size = sizeof(hist_peeks)/sizeof(*hist_peeks);
+  int index[size];
+  for(int i=0;i<size;i++){
+        index[i] = i;
+    }
+  array = hist_peeks;
+  qsort(index, size, sizeof(*index), cmp_i);
+  //printf("p1:%d p2:%d p3:%d p4:%d p5:%d p6:%d\n",hist_raw[index[0]],hist_raw[index[1]],hist_raw[index[2]],hist_raw[index[3]],hist_raw[index[4]],hist_raw[index[5]]);
+  // printf("size:%d\n",size);
+  //   printf("\n\ndata\tindex\n");
+  //     for(int i=0;i<size;i++){
+  //         printf("%d\t%d,i:%d\n", hist_peeks[index[i]], index[i],i);
+  //     }
+    
+    *side_1 = index[313];
+    *side_2 = index[314];
+  
+//     for(int i = 0;i<315;i++){
+//     printf("hist_peeks[%d]:%d\n",i,hist_peeks[i]);
+//     }
+ 
+//     for(int i = 0;i<315;i++){
+//       printf("hist_raw[%d]:%d hist_smooth[%d]:%d hist_peeks[%d]:%d\n",i,hist_raw[i],i,hist_smooth[i],i,hist_peeks[i]);
+//     }
+
 }
 
 // Function
@@ -803,8 +928,8 @@ void print_hist(){
 struct image_t *snake_gate_detection_func(struct image_t *img);
 struct image_t *snake_gate_detection_func(struct image_t *img)
 {
-  int filter = 1;
-  int gate_graphics = 1;
+  int filter = 0;
+  int gate_graphics = 0;
   int gen_alg = 1;
   uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;
@@ -839,11 +964,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     // get a random coordinate:
     x = rand() % img->h;
     y = rand() % img->w;
+    
+//     image_yuv422_set_color(img,img,x,y);
 
     //check_color(img, 1, 1);
     // check if it has the right color
     if (check_color(img, x, y)) {
-      
+      //image_yuv422_set_color(img,img,x,y);
       //fill histogram
       histogram[x]++;
       
@@ -935,13 +1062,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   // do an additional fit to improve the gate detection:
   if ((best_quality > min_gate_quality && n_gates > 0)||last_frame_detection) {
-    // temporary variables:
 
-
-    //if (gen_alg) {
 
       int max_candidate_gates = 10;//10;
-      
 
       best_fitness = 100;
       if (n_gates > 0 && n_gates < max_candidate_gates) {
@@ -966,17 +1089,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  y_center = gates_y;
 	  radius   = gates_sz;
           // detect the gate:
-//           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &gates_x, &gates_y, &gates_sz,
-//                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-//                          &s_left, &s_right);
+
 	  int x_center_p = x_center;
 	  int y_center_p = y_center;
 	  int radius_p   = radius;
 	  gate_corner_ref(img, points_x, points_y, &x_center_p, &y_center_p, &radius_p,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y);
-//draw_gate_polygon(img,points_x,points_y,blue_color);
-          //if (fitness < best_fitness) {
-            //best_fitness = fitness;
+
             // store the information in the gate:
             temp_check_gate.x = (int) x_center;
             temp_check_gate.y = (int) y_center;
@@ -1027,19 +1146,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  y_center = gates[gate_nr].y;
 	  radius   = gates_sz;
           // detect the gate:
-//           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
-//                          &(gates[gate_nr].sz),
-//                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-//                          &s_left, &s_right);
+
 	  int x_center_p = x_center;
 	  int y_center_p = y_center;
 	  int radius_p   = radius;
 	  gate_corner_ref(img, points_x, points_y, &x_center_p, &y_center_p, &radius_p,
                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y);
 	  
-	  //draw_gate_polygon(img,points_x,points_y,blue_color);
-          //if (fitness < best_fitness) {
-            //best_fitness = fitness;
             // store the information in the gate:
             temp_check_gate.x = (int) x_center;
             temp_check_gate.y = (int) y_center;
@@ -1077,10 +1190,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 ///////////////////////////////////////////////Use previous best estimate
       }
       
-//       if((best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) && last_frame_detection == 1){
 	 if((best_gate.gate_q == 0 && best_gate.n_sides == 0) && last_frame_detection == 1){
-	
-// 	repeat_gate = 1;
 	
 	int x_values[4];
 	int y_values[4];
@@ -1093,48 +1203,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	qsort(y_values, 4, sizeof(int), cmpfunc);
 // 	printf("in repeat_gate ########################################################\n ");
 // 	printf("repeat_gate x1:%d x2:%d x3:%d x4:%d\n",last_gate.x_corners[0],last_gate.x_corners[1],last_gate.x_corners[2],last_gate.x_corners[3]);
-// 	printf("repeat_gate y1:%d y2:%d y3:%d y4:%d\n",last_gate.y_corners[0],last_gate.y_corners[1],last_gate.y_corners[2],last_gate.y_corners[3]);
-// 	
-	
-// 	    //   int16_t ROI_size = (int16_t)(((float) last_gate.sz) * size_factor);
-//           int16_t min_x = last_gate.x - ROI_size;
-//           min_x = (min_x < 0) ? 0 : min_x;
-//           int16_t max_x = last_gate.x + ROI_size;
-//           max_x = (max_x < img->h) ? max_x : img->h;
-//           int16_t min_y = last_gate.y - ROI_size;
-//           min_y = (min_y < 0) ? 0 : min_y;
-//           int16_t max_y = last_gate.y + ROI_size;
-//           max_y = (max_y < img->w) ? max_y : img->w;
-//     //draw_gate(img, gates[gate_nr]);
-// 	  gates_sz = last_gate.sz;
-// 	  x_center = last_gate.x;
-// 	  y_center = last_gate.y;
-// 	  radius   = gates_sz;
-//           // detect the gate:
-// //           gate_detection_free(img, points_x, points_y, &x_center, &y_center, &radius, &fitness, &(gates[gate_nr].x), &(gates[gate_nr].y),
-// //                          &(gates[gate_nr].sz),
-// //                          (uint16_t) min_x, (uint16_t) min_y, (uint16_t) max_x, (uint16_t) max_y, clock_arms, &angle_1, &angle_2, &psi_gate,
-// //                          &s_left, &s_right);
-// 	  int x_center_p = x_center;
-// 	  int y_center_p = y_center;
+// 	printf("repeat_gate y1:%d y2:%d y3:%d y4:%d\n",last_gate.y_corners[0],last_gate.y_corners[1],last_gate.y_corners[2],last_gate.y_corners[3]);	
+
 	//check x size, maybe use y also later?
  	  int radius_p   = x_values[3]-x_values[0];
 	  gate_corner_ref_2(img, last_gate.x_corners, last_gate.y_corners,&radius_p);
-	  
-	  //draw_gate_polygon(img,points_x,points_y,blue_color);
-          //if (fitness < best_fitness) {
-            //best_fitness = fitness;
-            // store the information in the gate: ,do we need to?
-	  /*
-            temp_check_gate.x = (int) x_center;
-            temp_check_gate.y = (int) y_center;
-            temp_check_gate.sz = (int) radius;
-            temp_check_gate.sz_left = (int) s_left;
-            temp_check_gate.sz_right = (int) s_right;*/
-	    
-// 	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
-// 	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
-	    
 	    
             // also get the color fitness
             check_gate_free(img, last_gate, &last_gate.gate_q, &last_gate.n_sides);
@@ -1142,13 +1215,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	    if(last_gate.n_sides > 3 && last_gate.gate_q > best_gate.gate_q)
 	    {
 	      repeat_gate = 1;
-	    //best_fitness = fitness;
-//             // store the information in the gate:
-//             best_gate.x = temp_check_gate.x;
-//             best_gate.y = temp_check_gate.y;
-//             best_gate.sz = temp_check_gate.sz;
-//             best_gate.sz_left = temp_check_gate.sz_left;
-//             best_gate.sz_right = temp_check_gate.sz_right;
+
 	    best_gate.gate_q = last_gate.gate_q;
 	    best_gate.n_sides = last_gate.n_sides;
 	    memcpy(&(best_gate.x_corners[0]),&(last_gate.x_corners[0]),sizeof(int)*4);
@@ -1209,8 +1276,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
  // draw_gate_color(img, best_gate, blue_color);
   
-//   printf("repeat_gate:%d   -------------------------------------\n",repeat_gate);
- // printf("last_frame_detection:%d   -------------------------------------\n",last_frame_detection);
+  int side_1;
+  int side_2;
+  
+  detect_gate_sides(histogram,&side_1, &side_2);
+  
+  printf("side_1[%d] side_2[%d]\n",side_1,side_2);
+  
+  /////////////////////////////////////////////////////////////////////////
+  print_sides(img,side_1,side_2);
+  print_hist(img,histogram);
+  
   
   if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) {//n_sides was > 2
 
@@ -1404,7 +1480,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  attitude.psi = stateGetNedToBodyEulers_f()->psi;
 	}
 	
-	debug_5 = attitude.psi;
+	//debug_5 = attitude.psi;
 	
 	float_rmat_of_eulers_321(&R,&attitude);
 	
