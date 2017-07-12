@@ -573,8 +573,8 @@ void snake_gate_periodic(void)
   debug_1 = X_int[0][0];
   debug_2 = X_int[1][0];
   
-  debug_3 = kf_pos_x;
-  debug_4 = kf_pos_y;
+//   debug_3 = kf_pos_x;
+//   debug_4 = kf_pos_y;
   
 //   if(arc_status.flag_in_arc == TRUE){
 //     debug_1 = arc_status.x;
@@ -906,8 +906,15 @@ void detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
   //         printf("%d\t%d,i:%d\n", hist_peeks[index[i]], index[i],i);
   //     }
     
-    *side_1 = index[313];
-    *side_2 = index[314];
+  //side 1 is left side
+    if(index[313] < index[314]){
+      *side_1 = index[313];
+      *side_2 = index[314];
+    }else{
+      *side_1 = index[314];
+      *side_2 = index[313];
+    }
+  
   
 //     for(int i = 0;i<315;i++){
 //     printf("hist_peeks[%d]:%d\n",i,hist_peeks[i]);
@@ -1283,6 +1290,30 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
   printf("side_1[%d] side_2[%d]\n",side_1,side_2);
   
+  //transform to angles in image frame, ignoring tilt angle of 20 deg
+  float undist_x, undist_y;
+  float princ_x = 157.0;
+  float princ_y = 32.0;
+  int f_fisheye = 168;
+  float psi_comp = stateGetNedToBodyEulers_f()->psi;
+  undistort_fisheye_point(side_1 ,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
+  float side_angle_1 = atanf(undist_x/f_fisheye)+psi_comp;
+  undistort_fisheye_point(side_2 ,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
+  float side_angle_2 = atanf(undist_x/f_fisheye)+psi_comp;
+  
+  float b = tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
+  float y_pos_hist = -(0.5+b);
+  float a = 1-b;
+  float x_pos_hist = (0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
+  
+  debug_3 = y_pos_hist;
+  debug_4 = x_pos_hist;
+  
+//   debug_3 = side_angle_1*57;
+//   debug_4 = side_angle_2;
+  debug_5 = psi_comp*57;
+  
+  
   /////////////////////////////////////////////////////////////////////////
   print_sides(img,side_1,side_2);
   print_hist(img,histogram);
@@ -1419,7 +1450,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//DEBUG---------------------------------------------------------------
 	
 	//Undistort fisheye points
-	int f_fisheye = 168;
 	float k_fisheye = 1.085;
 	float reprojection_error[4];
 		
@@ -1715,7 +1745,11 @@ k = 1.085;
 
 //k = 1.080;//last k
  //  k = 1.118;
-  k = 1.500;
+  ///WAS 1.500 ??? why
+  //k = 1.500;
+  //////////
+  //1.150 used in matlab
+  k = 1.150;
   //k = 1.218;
   
   //radial distortion correction
