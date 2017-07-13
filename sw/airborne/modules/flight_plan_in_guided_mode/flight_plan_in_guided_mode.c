@@ -147,7 +147,7 @@ bool go_straight(float theta,float distance,double ref_y){
 
 	float current_y;
 	float sign = 1;
-	int use_optitrack = 0;//else use vision
+	int use_optitrack = 1;//else use vision
 	if(ref_y > 1.5){
 	 sign = -1;
 	 if(use_optitrack){

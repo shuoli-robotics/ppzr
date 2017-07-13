@@ -387,6 +387,15 @@ int ekf_debug_cnt = 0;
 
 double last_detection_time = 0;
 
+float local_psi = 0;
+
+float gate_dist_x = 3.5;//was 2.5??
+
+int hist_sample = 0;
+
+float x_pos_hist = 0;
+float y_pos_hist = 0;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
@@ -585,7 +594,9 @@ void snake_gate_periodic(void)
 //   debug_2 = u_k[1][0];
   
   //if measurement available -> do KF measurement update 
-  if((vision_sample == 1 || arc_status.flag_in_arc == TRUE)&& !isnan(ls_pos_x) && !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
+  //fix super long if statement??
+  //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
+  if((vision_sample == 1 || arc_status.flag_in_arc == TRUE || hist_sample)&& !isnan(ls_pos_x) && !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
   {
     ekf_debug_cnt+=1;
 //      if(0)%in_turn == 1)
@@ -682,16 +693,35 @@ void snake_gate_periodic(void)
       inn_vec[1][0] = arc_status.y-X_int[1][0];
       //debug_3 = arc_status.y;
     }else{
+      //xy-position in global frame, depending on which part of the track.(later from Shuo module)
       float trans_x;
       float trans_y;
-      if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
-	trans_x = 3.0-ls_pos_x;
-	trans_y = 3.0 -ls_pos_y +0.15;//correction factor??
+      //xy-position in local gate frame(ls, or histogram)
+      float local_x = 0;
+      float local_y = 0;
+      
+      //if histogram detection measures close proximity to the gate, switch to histogram method
+      if(hist_sample){
+	local_x = gate_dist_x - x_pos_hist;
+	local_y = y_pos_hist;
       }else{
-	trans_x = ls_pos_x;
-	trans_y = ls_pos_y;
+	local_x = ls_pos_x;
+	local_y = ls_pos_y;
       }
       
+      //transform to global frame, depending on heading(later depending on which part of the track)
+      if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
+	trans_x = 3.5-local_x;//was 3.0
+	trans_y = 3.5 -local_y;//was 3.0 +0.15;//correction factor??
+      }else{
+	trans_x = local_x;
+	trans_y = local_y;
+      }
+      
+      if(!hist_sample){
+	debug_3 = trans_x;
+	debug_4 = trans_y;
+      }
       inn_vec[0][0] = trans_x-X_int[0][0];
       inn_vec[1][0] = trans_y-X_int[1][0];
       //debug_3 = ls_pos_y;
@@ -708,8 +738,8 @@ void snake_gate_periodic(void)
     MAT_SUM(4, 1, X_int, X_int, temp_4_1);
     
     
-//     debug_1 = kf_pos_x;
-//     debug_2 = kf_pos_y;
+//      debug_3 = kf_pos_x;
+//      debug_4 = kf_pos_y;
     
     
     //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
@@ -885,10 +915,10 @@ void print_sides(struct image_t *im, int side_1, int side_2){
   
 }
 
-void detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
+float detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
   int hist_peeks[315];//max nr of peeks, for sure
   int hist_smooth[315];
-  smooth_hist(hist_smooth, hist_raw, 10);
+  smooth_hist(hist_smooth, hist_raw, 4);//was 10
   int peek_count = find_hist_peeks_flat(hist_smooth,hist_peeks);
   int max_peek = find_max_hist(hist_raw);
   
@@ -914,7 +944,10 @@ void detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
       *side_1 = index[314];
       *side_2 = index[313];
     }
-  
+    
+    //avarage peek height
+    float peek_value = (hist_peeks[index[313]] + hist_peeks[index[314]])/2;
+    debug_5 = peek_value;
   
 //     for(int i = 0;i<315;i++){
 //     printf("hist_peeks[%d]:%d\n",i,hist_peeks[i]);
@@ -923,6 +956,7 @@ void detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
 //     for(int i = 0;i<315;i++){
 //       printf("hist_raw[%d]:%d hist_smooth[%d]:%d hist_peeks[%d]:%d\n",i,hist_raw[i],i,hist_smooth[i],i,hist_peeks[i]);
 //     }
+    return peek_value;
 
 }
 
@@ -1283,10 +1317,26 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
  // draw_gate_color(img, best_gate, blue_color);
   
+  //Global psi to local psi based on heading. Later this will be based on what segment of the track the drone is
+  //TODO check if the switch between track segments, doesn't affect the KF during arc part, probably not, since RMAT is calculated by pprz
+	//debug_5 = local_psi;
+  if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
+    if(stateGetNedToBodyEulers_f()->psi<0){
+	    local_psi = stateGetNedToBodyEulers_f()->psi+3.14;
+    }
+    else{
+	    local_psi = stateGetNedToBodyEulers_f()->psi-3.14;
+    }
+  }
+  else{
+    local_psi = stateGetNedToBodyEulers_f()->psi;
+  }
+  
+  
   int side_1;
   int side_2;
   
-  detect_gate_sides(histogram,&side_1, &side_2);
+  float hist_peek_value = detect_gate_sides(histogram,&side_1, &side_2);
   
   printf("side_1[%d] side_2[%d]\n",side_1,side_2);
   
@@ -1295,27 +1345,33 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   float princ_x = 157.0;
   float princ_y = 32.0;
   int f_fisheye = 168;
-  float psi_comp = stateGetNedToBodyEulers_f()->psi;
+  
+  //float psi_comp = stateGetNedToBodyEulers_f()->psi;
   undistort_fisheye_point(side_1 ,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
-  float side_angle_1 = atanf(undist_x/f_fisheye)+psi_comp;
+  float side_angle_1 = atanf(undist_x/f_fisheye)+local_psi;
   undistort_fisheye_point(side_2 ,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
-  float side_angle_2 = atanf(undist_x/f_fisheye)+psi_comp;
+  float side_angle_2 = atanf(undist_x/f_fisheye)+local_psi;
   
-  float b = tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
-  float y_pos_hist = -(0.5+b);
+  float b = (tanf(side_angle_2)*tanf(side_angle_1))/((tanf(side_angle_1)-tanf(side_angle_2))*tanf(side_angle_1)); //tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
+  y_pos_hist = 0.5+b;
   float a = 1-b;
-  float x_pos_hist = (0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
+  x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   
-  debug_3 = y_pos_hist;
-  debug_4 = x_pos_hist;
+  if(hist_peek_value > 7 && x_pos_hist < 1.5){
+    hist_sample = 1;
+    print_sides(img,side_1,side_2);
+  }else{
+    hist_sample = 0;
+  }
+  
+//   debug_3 = x_pos_hist;
+//   debug_4 = y_pos_hist;
   
 //   debug_3 = side_angle_1*57;
 //   debug_4 = side_angle_2;
-  debug_5 = psi_comp*57;
-  
+  //debug_5 = local_psi*57;
   
   /////////////////////////////////////////////////////////////////////////
-  print_sides(img,side_1,side_2);
   print_hist(img,histogram);
   
   
@@ -1386,7 +1442,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  struct FloatVect3 ransac_pos[4];
 	  struct FloatMat33 ransac_R_mat[4];
 	  
-	  float gate_dist_x = 2.5;//was4.2 then 3.5??maybe lens distortion??
+	  /*float gate_dist_x = 2.5;*///was4.2 then 3.5??maybe lens distortion??
 	  
 	    
 	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
@@ -1496,19 +1552,21 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	attitude.phi =    stateGetNedToBodyEulers_f()->phi;//positive ccw
 	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
 	
-	float temp_psi = stateGetNedToBodyEulers_f()->psi;
-	//debug_5 = temp_psi;
-	if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
-	  if(temp_psi<0){
-		  attitude.psi = temp_psi+3.14;
-	  }
-	  else{
-		  attitude.psi = temp_psi-3.14;
-	  }
-	}
-	else{
-	  attitude.psi = stateGetNedToBodyEulers_f()->psi;
-	}
+// 	float temp_psi = stateGetNedToBodyEulers_f()->psi;
+// 	//debug_5 = temp_psi;
+// 	if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
+// 	  if(temp_psi<0){
+// 		  attitude.psi = temp_psi+3.14;
+// 	  }
+// 	  else{
+// 		  attitude.psi = temp_psi-3.14;
+// 	  }
+// 	}
+// 	else{
+// 	  attitude.psi = stateGetNedToBodyEulers_f()->psi;
+// 	}
+	
+	attitude.psi = local_psi;
 	
 	//debug_5 = attitude.psi;
 	
