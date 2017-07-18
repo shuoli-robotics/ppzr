@@ -49,10 +49,20 @@
 // #define KP_Y 0.4 
 // #define KI_Y 0.0
 // #define KD_Y 0.3
-#define KP_Y 0.4 
+#define KP_Y 0.40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.15//was 0.2
-#define MAX_PHI  15.0/180*3.14
+#define KD_Y 0.04//0.10//was0.15// 0.2
+#define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
+
+//most turns until now
+//P 0.4
+//D 0.07
+//Still suspected d gain noise, add smooth or lowpass
+
+//With low pass
+//close to optitrack performance, except for unknown glitch
+//P 0.4
+//D 0.04
 
 
 float psi0;//
@@ -75,6 +85,9 @@ float init_heading;
 float previous_error_y = 0;
 float sum_y_error = 0;
 double g = 9.81;
+
+//avarage current and previous derivative term 
+float prev_D_term = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
@@ -147,7 +160,7 @@ bool go_straight(float theta,float distance,double ref_y){
 
 	float current_y;
 	float sign = 1;
-	int use_optitrack = 1;//else use vision
+	int use_optitrack = 0;//else use vision
 	if(ref_y > 1.5){
 	 sign = -1;
 	 if(use_optitrack){
@@ -166,7 +179,13 @@ bool go_straight(float theta,float distance,double ref_y){
 	}
 	float error_y = (ref_y - current_y)*sign;
 	sum_y_error += error_y/20.0;
-	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20.0 + KI_Y*sum_y_error;
+	float D_term = error_y-previous_error_y;
+// 	float cuttoff = 0.01;
+// 	if(D_term > cuttoff)D_term = cuttoff;
+// 	if(D_term < -cuttoff)D_term = -cuttoff;
+	float phi = KP_Y * error_y+ KD_Y *((D_term+prev_D_term)/2)*20.0 + KI_Y*sum_y_error;
+	prev_D_term = D_term;
+// 	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20.0 + KI_Y*sum_y_error;
 	if(phi > MAX_PHI)phi = MAX_PHI;
 	if(phi < -MAX_PHI)phi = -MAX_PHI;
 	guidance_loop_set_theta(theta);
@@ -180,7 +199,7 @@ bool go_straight(float theta,float distance,double ref_y){
 	float v_y_e = stateGetSpeedNed_f()->y;
 	v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
 	
-	if(ref_y < 1.5 && stateGetPositionNed_f()->x > 3)   
+	if(ref_y < 1.5 && stateGetPositionNed_f()->x > 3.5)   
 	{
 			return TRUE;
 	}

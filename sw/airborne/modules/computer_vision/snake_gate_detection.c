@@ -529,6 +529,7 @@ void snake_gate_periodic(void)
   
   if((time_now-last_detection_time)>0.3){
     ls_pos_y = 0;
+    ls_pos_x = 0;
   }
   
   struct Int32Vect3 acc_meas_body;
@@ -573,17 +574,24 @@ void snake_gate_periodic(void)
   if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
   
+  if(X_int[2][0] > 3)X_int[2][0] = 3;//xmax
+  if(X_int[2][0] < -3)X_int[2][0] = -3;//xmin
+  if(X_int[3][0] > 3)X_int[3][0] = 3;//ymax
+  if(X_int[3][0] < -3)X_int[3][0] = -3;//ymin
+  
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
   kf_vel_x = X_int[2][0];
   kf_vel_y = X_int[3][0];
   
   
-  debug_1 = X_int[0][0];
-  debug_2 = X_int[1][0];
+   debug_1 = X_int[2][0];
   
-//   debug_3 = kf_pos_x;
-//   debug_4 = kf_pos_y;
+  
+//   debug_2 = X_int[1][0];
+  
+  debug_3 = kf_pos_x;
+  debug_4 = kf_pos_y;
   
 //   if(arc_status.flag_in_arc == TRUE){
 //     debug_1 = arc_status.x;
@@ -598,7 +606,7 @@ void snake_gate_periodic(void)
   //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
   if((vision_sample == 1 || arc_status.flag_in_arc == TRUE || hist_sample)&& !isnan(ls_pos_x) && !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
   {
-    ekf_debug_cnt+=1;
+    //ekf_debug_cnt+=1;
 //      if(0)%in_turn == 1)
 //            X_int(n,1) = arc_pred(n,1);
 //            X_int(n,2) = arc_pred(n,2);
@@ -712,13 +720,15 @@ void snake_gate_periodic(void)
       //transform to global frame, depending on heading(later depending on which part of the track)
       if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
 	trans_x = 3.5-local_x;//was 3.0
-	trans_y = 3.5 -local_y;//was 3.0 +0.15;//correction factor??
+	trans_y = 3.2 -local_y;//was 3.0 +0.15;//correction factor??
       }else{
 	trans_x = local_x;
 	trans_y = local_y;
       }
       
-      if(!hist_sample){
+      
+      
+      if(0){//hist_sample){
 	debug_3 = trans_x;
 	debug_4 = trans_y;
       }
@@ -738,8 +748,8 @@ void snake_gate_periodic(void)
     MAT_SUM(4, 1, X_int, X_int, temp_4_1);
     
     
-//      debug_3 = kf_pos_x;
-//      debug_4 = kf_pos_y;
+     debug_3 = kf_pos_x;
+     debug_4 = kf_pos_y;
     
     
     //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
@@ -1682,12 +1692,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	ls_pos_x = pos_vec.x;
 	
 	//bound y to remove outliers 
-	float y_threshold = 3.5;//2.5;
+	float y_threshold = 4;//2.5;
 	if(pos_vec.y > y_threshold)pos_vec.y = y_threshold;
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
 	
 	ls_pos_y = pos_vec.y;//-0.10;//visual bias??
+	//if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6)ls_pos_y-=0.25;
 	
 	ls_pos_z = pos_vec.z;
 // 	debug_3 = ls_pos_x;
