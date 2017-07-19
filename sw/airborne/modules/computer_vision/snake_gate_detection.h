@@ -125,11 +125,18 @@ extern float ls_pos_x;
 extern float ls_pos_y;
 extern float ls_pos_z;
 
+//hist final approach
+extern float x_pos_hist;
+extern float y_pos_hist;
+
 //final KF results
 extern float kf_pos_x;
 extern float kf_pos_y;
 extern float kf_vel_x;
 extern float kf_vel_y;
+
+//quality check of best gate
+extern float gate_quality;
 
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */

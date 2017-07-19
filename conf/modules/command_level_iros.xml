@@ -10,7 +10,7 @@
     <file name="command_level_iros.h"/>
   </header>
   <init fun="command_init()"/>
-  <periodic fun="command_run()" freq="20"/>
+  <periodic fun="command_run()" freq="100"/>
   <makefile>
     <file name="command_level_iros.c"/>
   </makefile>

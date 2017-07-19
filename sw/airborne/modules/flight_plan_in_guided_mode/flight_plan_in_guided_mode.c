@@ -45,13 +45,14 @@
 // #define KD_Y 0.0//0.3
 // #define MAX_PHI  20.0/180*3.14
 
-
+//Optitrack
 // #define KP_Y 0.4 
 // #define KI_Y 0.0
-// #define KD_Y 0.3
+// #define KD_Y 0.2
+
 #define KP_Y 0.40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.04//0.10//was0.15// 0.2
+#define KD_Y 0.04/////0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 //most turns until now
@@ -178,12 +179,12 @@ bool go_straight(float theta,float distance,double ref_y){
 	  }
 	}
 	float error_y = (ref_y - current_y)*sign;
-	sum_y_error += error_y/20.0;
+	sum_y_error += error_y/100.0;
 	float D_term = error_y-previous_error_y;
 // 	float cuttoff = 0.01;
 // 	if(D_term > cuttoff)D_term = cuttoff;
 // 	if(D_term < -cuttoff)D_term = -cuttoff;
-	float phi = KP_Y * error_y+ KD_Y *((D_term+prev_D_term)/2)*20.0 + KI_Y*sum_y_error;
+	float phi = KP_Y * error_y+ KD_Y *((D_term+prev_D_term)/2)*100.0 + KI_Y*sum_y_error;
 	prev_D_term = D_term;
 // 	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20.0 + KI_Y*sum_y_error;
 	if(phi > MAX_PHI)phi = MAX_PHI;
@@ -422,7 +423,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 
 //  calculate command
 	double d_psi = arc_status.v_x_f/radius;
-	arc_status.psi_cmd += d_psi/20.0;
+	arc_status.psi_cmd += d_psi/100.0;
 	arc_status.theta_cmd = desired_theta;
 	arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
 			(9.8+arc_status.drag_z_f));
@@ -431,12 +432,12 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	// euler method to predict
 	drone_model(&arc_status);
 
-	arc_status.x += arc_status.dx/20.0;
-	arc_status.y += arc_status.dy/20.0;
-	arc_status.z += arc_status.dz/20.0;
-	arc_status.v_x_f += arc_status.dv_x_f/20.0;
-	arc_status.v_y_f += arc_status.dv_y_f/20.0;
-	arc_status.v_z_f += arc_status.dv_z_f/20.0;
+	arc_status.x += arc_status.dx/100.0;
+	arc_status.y += arc_status.dy/100.0;
+	arc_status.z += arc_status.dz/100.0;
+	arc_status.v_x_f += arc_status.dv_x_f/100.0;
+	arc_status.v_y_f += arc_status.dv_y_f/100.0;
+	arc_status.v_z_f += arc_status.dv_z_f/100.0;
 
 
 /*printf("v_x_f is %f\n",arc_status.v_x_f);*/
