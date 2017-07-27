@@ -371,7 +371,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 		int optitrack_speed = 0;
 		float v_ned_x;
 		float v_ned_y;
-		float cruise_speed = 1.8;
+		float cruise_speed = 2.0;
 		if(optitrack_speed){
 		  v_ned_x = stateGetSpeedNed_f()->x;
 		  v_ned_y = stateGetSpeedNed_f()->y;
