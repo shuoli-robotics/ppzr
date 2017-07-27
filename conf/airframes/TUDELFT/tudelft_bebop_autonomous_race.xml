@@ -178,9 +178,9 @@
     <define name="G2_R" value="0.151811"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="600.0"/>
-    <define name="REF_ERR_Q" value="600.0"/>
-    <define name="REF_ERR_R" value="600.0"/>
+    <define name="REF_ERR_P" value="400.0"/><!--600-->
+    <define name="REF_ERR_Q" value="400.0"/>
+    <define name="REF_ERR_R" value="400.0"/>
     <define name="REF_RATE_P" value="28.0"/>
     <define name="REF_RATE_Q" value="28.0"/>
     <define name="REF_RATE_R" value="28.0"/>

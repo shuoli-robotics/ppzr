@@ -50,9 +50,9 @@
 // #define KI_Y 0.0
 // #define KD_Y 0.2
 
-#define KP_Y 0.40 //was 0.4
+#define KP_Y 0.35//40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.04/////0.10//was0.15// 0.2
+#define KD_Y 0.06///0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 //most turns until now
@@ -200,11 +200,18 @@ bool go_straight(float theta,float distance,double ref_y){
 	float v_y_e = stateGetSpeedNed_f()->y;
 	v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
 	
-	if(ref_y < 1.5 && stateGetPositionNed_f()->x > 3.5)   
+	float turn_trigger;
+	if(use_optitrack){
+	  turn_trigger = stateGetPositionNed_f()->x;
+	}else{
+	  turn_trigger = kf_pos_x;
+	}
+	
+	if(ref_y < 1.5 && turn_trigger > 3.5)   
 	{
 			return TRUE;
 	}
-	else if(ref_y > 1.5 && stateGetPositionNed_f()->x < 0)   
+	else if(ref_y > 1.5 && turn_trigger < 0)   
 	{
 			return TRUE;
 	}
@@ -360,8 +367,26 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 		arc_status.phi_cmd = stateGetNedToBodyEulers_f()->phi;
 		arc_status.theta_cmd = desired_theta;
         arc_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
-		arc_status.v_x_f = cos(arc_status.psi_cmd)*stateGetSpeedNed_f()->x + sin(arc_status.psi_cmd)*stateGetSpeedNed_f()->y; 
-		arc_status.v_y_f = -sin(arc_status.psi_cmd)*stateGetSpeedNed_f()->x + cos(arc_status.psi_cmd)*stateGetSpeedNed_f()->y; 
+		
+		int optitrack_speed = 0;
+		float v_ned_x;
+		float v_ned_y;
+		float cruise_speed = 1.8;
+		if(optitrack_speed){
+		  v_ned_x = stateGetSpeedNed_f()->x;
+		  v_ned_y = stateGetSpeedNed_f()->y;
+		}else{
+		  if(stateGetPositionNed_f()->y > 1.5){
+		    v_ned_x = -cruise_speed;
+		  }else{
+		    v_ned_x = cruise_speed;
+		  }
+		  v_ned_y = 0;
+		}
+	
+	
+		arc_status.v_x_f = cos(arc_status.psi_cmd)*v_ned_x + sin(arc_status.psi_cmd)*v_ned_y; 
+		arc_status.v_y_f = -sin(arc_status.psi_cmd)*v_ned_x + cos(arc_status.psi_cmd)*v_ned_y; 
 		arc_status.v_z_f = stateGetSpeedNed_f()->z;
         counter_primitive = 0;
         time_primitive = 0;

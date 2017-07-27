@@ -530,6 +530,7 @@ void snake_gate_periodic(void)
   if((time_now-last_detection_time)>0.3){
     ls_pos_y = 0;
     ls_pos_x = 0;
+    vision_sample == 1;
   }
   
   struct Int32Vect3 acc_meas_body;
@@ -569,8 +570,8 @@ void snake_gate_periodic(void)
   MAT_SUM(4, 1, X_int, X_temp_1, X_temp_2);
   
   //bounding pos and speed
-  if(X_int[0][0] > 4)X_int[0][0] = 4;//xmax
-  if(X_int[0][0] < -1)X_int[0][0] = -1;//xmin
+  if(X_int[0][0] > 6)X_int[0][0] = 6;//xmax
+  if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
   if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
   
@@ -720,7 +721,7 @@ void snake_gate_periodic(void)
       //transform to global frame, depending on heading(later depending on which part of the track)
       if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
 	trans_x = 3.5-local_x;//was 3.0
-	trans_y = 3.2 -local_y;//was 3.0 +0.15;//correction factor??
+	trans_y = 3.0 -local_y;//was 3.0 +0.2;//correction factor??
       }else{
 	trans_x = local_x;
 	trans_y = local_y;
@@ -748,8 +749,8 @@ void snake_gate_periodic(void)
     MAT_SUM(4, 1, X_int, X_int, temp_4_1);
     
     
-     debug_3 = kf_pos_x;
-     debug_4 = kf_pos_y;
+//      debug_3 = kf_pos_x;
+//      debug_4 = kf_pos_y;
     
     
     //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
