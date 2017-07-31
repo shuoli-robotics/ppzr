@@ -455,3 +455,101 @@ bool hover_at_origin()
 		 return 0;
  }
 }
+
+
+struct zigzag_open_loop_status zigzag_status;
+
+bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll)
+{
+    if(primitive_in_use != ZIGZAG_OPEN_LOOP)
+    { 
+		primitive_in_use = ZIGZAG_OPEN_LOOP;
+        psi = stateGetNedToBodyEulers_f()->psi;
+		psi0 = psi;
+        z0 = stateGetPositionNed_f()->z;
+		zigzag_status.flag_in_zigzag = TRUE;
+		zigzag_status.position.x= stateGetPositionNed_f()->x;
+		zigzag_status.position.y= stateGetPositionNed_f()->y;
+		zigzag_status.position.z= stateGetPositionNed_f()->z;
+		zigzag_status.phi_cmd = stateGetNedToBodyEulers_f()->phi;
+		zigzag_status.theta_cmd = desired_theta;
+        zigzag_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
+        counter_primitive = 0;
+        time_primitive = 0;
+        guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+		states_race.attitude_control = TRUE;
+		zigzag_status.drag_coef.x = -0.53;
+		zigzag_status.drag_coef.y = -0.47;
+		zigzag_status.drag_coef.z = 0;
+    }
+// calculate command needed
+// transfer velocity from earth coordinate to body and body fixed coordinate
+	double phi = arc_status.phi_cmd;
+    double theta = arc_status.theta_cmd;
+    double psi = arc_status.psi_cmd;
+	// calculate body velocity
+    zigzag_status.eulers.phi = stateGetNedToBodyEulers_f()->phi;
+    zigzag_status.eulers.theta = stateGetNedToBodyEulers_f()->theta;
+    zigzag_status.eulers.psi = stateGetNedToBodyEulers_f()->psi;
+    float_rmat_of_eulers_321(&zigzag_status.R_E_B,&zigzag_status.eulers); 
+    float_rmat_vmult(&zigzag_status.body_velocity,&zigzag_status.R_E_B,&zigzag_status.velocity);
+
+//  calculate drag in body velocity
+
+	zigzag_status.drag_b.x = zigzag_status.drag_coef.x*zigzag_status.body_velocity.x;
+	zigzag_status.drag_b.y = zigzag_status.drag_coef.y*zigzag_status.body_velocity.y;
+	zigzag_status.drag_b.z = zigzag_status.drag_coef.z*zigzag_status.body_velocity.z;
+
+//  transfer drag from body coordinate to earth coordinate
+
+	float_rmat_transp_vmult(&zigzag_status.drag_e,&zigzag_status.R_E_B,&zigzag_status.drag_b);
+
+//  predict trajectory
+
+	struct FloatVect3 thrust_b; 
+	struct FloatVect3 thrust_e; 
+	struct FloatVect3 g;
+	thrust_b.x = 0;
+	thrust_b.y = 0;
+	thrust_b.z = -9.8/cos(zigzag_status.eulers.phi)/cos(zigzag_status.eulers.theta);
+
+	g.x = 0;
+	g.y = 0;
+	g.z = 9.8;
+
+    float_rmat_transp_vmult(&thrust_e,&zigzag_status.R_E_B,&thrust_b);
+
+	float_vector_sum(&zigzag_status.d_velocity.x,&g.x,&thrust_e.x,3);
+	float_vector_add(&zigzag_status.d_velocity.x,&zigzag_status.drag_e.x,3);
+	float_vector_copy(&zigzag_status.d_position.x,&zigzag_status.velocity.x,3);
+
+//  intergrate position and velocity
+    float_vect3_intrgrate_fi(zigzag_status.position,zigzag_status.d_position,1.0/512);
+    float_vect3_intrgrate_fi(zigzag_status.velocity,zigzag_status.d_velocity,1.0/512);
+
+
+	// calculte angule command
+	guidance_loop_set_theta(desired_theta);
+	if (zigzag_status.position.y < desired_y/2.0)
+	{
+	guidance_loop_set_phi(max_roll); 
+	}
+	else
+	{
+	guidance_loop_set_phi(-max_roll); 
+	}
+	guidance_loop_set_heading(arc_status.psi_cmd);
+	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+
+
+	if (zigzag_status.position.y>desired_y)
+	{
+			zigzag_status.flag_in_zigzag = FALSE;
+			return 1;
+	}
+	else
+	{
+			return 0;
+	}
+}

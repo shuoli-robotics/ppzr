@@ -48,6 +48,7 @@ double desired_theta;
 double desired_phi;
 
 int arc_counter;
+int arc_passed;
 float reference_y;
 
 void first_part_logic(void);
@@ -86,6 +87,7 @@ void command_run() {
         state_upper_level = FIRST_PART;
         init_heading = stateGetNedToBodyEulers_f()->psi;
 		flag_init_geo = FALSE;
+		arc_passed = 0;
 		arc_counter = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
@@ -202,6 +204,13 @@ void second_part_logic()
 				{
 							previous_mode = APPROACH_GATE_CM;
 							state_lower_level = GO_STRAIGHT_CM;
+							arc_passed ++;
+							if (arc_passed == 2)
+							{
+
+									state_upper_level = THIRD_PART;
+									state_lower_level = ZIGZAG_CM;
+							}
 							if (arc_counter ==0)
 							{
 									arc_counter =1;
@@ -220,7 +229,7 @@ void second_part_logic()
 
 void third_part_logic()
 {
-		land();
+
 }
 
 

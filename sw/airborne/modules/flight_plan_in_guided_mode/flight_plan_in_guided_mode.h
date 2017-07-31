@@ -53,6 +53,7 @@
 #define ARC_OPEN_LOOP            21 
 #define HOVER_AT_ORIGIN          22 
 #define PREPARE_BEFORE_TAKE_OFF  23 
+#define ZIGZAG_OPEN_LOOP         24
 
 
 #ifndef PREPARE_TIME
@@ -113,6 +114,66 @@ struct arc_open_loop_status{
 
 };
 
+struct zigzag_open_loop_status{
+
+
+		struct FloatVect3 position;
+		struct FloatVect3 body_velocity;
+		struct FloatVect3 velocity;
+		struct FloatVect3 drag_b;
+		struct FloatVect3 drag_e;
+
+		double thrust_cmd;
+
+		double phi_cmd;
+		double theta_cmd;
+		double psi_cmd;
+		bool flag_in_zigzag;
+		struct FloatVect3 d_velocity;
+		struct FloatVect3 d_position;
+
+		struct FloatVect3 drag_coef;
+		double drag_coef_body_x_0;
+		double drag_coef_body_y_0;
+		double drag_coef_body_z_0;
+		double drag_coef_body_x_2;
+		double drag_coef_body_y_2;
+		double drag_coef_body_z_2;
+
+		struct FloatRMat R_E_B;
+		struct FloatEulers eulers;
+
+};
+
+ extern bool arc_is_finished;
+ extern int primitive_in_use;
+ extern float init_heading;
+ extern bool adjust_position_mask;
+ extern void flight_plan_in_guided_mode_init(void);
+ extern void display_information(void);
+ extern void hover(void);
+ extern bool go_straight(float theta,float distance,double ref_y);
+ extern void change_heading_hover(float derta_psi);
+ extern void circle(float radius, float planned_time);
+ extern void go_left_right(float velocity);
+ extern void set_velocity_test(float vx_earth_t,float vy_earth_t);
+ extern void go_up_down(float derta_altitude);
+ extern void adjust_position(float derta_altitude);
+ extern void arc(float radius, float planned_time, float desired_angle_change);
+ extern void search_gate(void);
+ extern void take_off(float desired_altitude);
+ extern void land(void);
+ extern void adjust_heading(float delta_heading);
+ extern void left_right_back(float velocity_in_body_x,float velocity_in_body_y);
+ extern void hold_altitude(float desired_altitude);
+extern  void change_heading_absolute(float psi);
+extern void set_theta(float desired_theta);
+extern void set_phi(float desired_phi);
+extern void set_attitude(float desired_theta,float desired_phi);
+extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
+extern bool arc_open_loop(double radius,double theta,float delta_psi);
+extern bool hover_at_origin(void);
+extern bool prepare_before_take_off(double prepare_time);
  extern bool arc_is_finished;
  extern int primitive_in_use;
  extern float init_heading;
@@ -145,5 +206,6 @@ extern bool prepare_before_take_off(double prepare_time);
 extern struct arc_open_loop_status arc_status;
 extern int sample_pointer;
 extern struct arc_open_loop_status arc_status;
+extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll);
 #endif
 
