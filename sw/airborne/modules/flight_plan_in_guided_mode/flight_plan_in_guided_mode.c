@@ -39,6 +39,7 @@
 #include "subsystems/ins.h"
 #include "modules/kalman_filter/kalman_filter.h"
 #include "subsystems/imu.h"
+#include "math/pprz_algebra_float.h"
 
 
 
@@ -520,14 +521,13 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll)
 
     float_rmat_transp_vmult(&thrust_e,&zigzag_status.R_E_B,&thrust_b);
 
-	float_vector_sum(&zigzag_status.d_velocity.x,&g.x,&thrust_e.x,3);
-	float_vector_add(&zigzag_status.d_velocity.x,&zigzag_status.drag_e.x,3);
-	float_vector_copy(&zigzag_status.d_position.x,&zigzag_status.velocity.x,3);
+	float_vect_sum(&zigzag_status.d_velocity.x,&g.x,&thrust_e.x,3);
+	float_vect_add(&zigzag_status.d_velocity.x,&zigzag_status.drag_e.x,3);
+	float_vect_copy(&zigzag_status.d_position.x,&zigzag_status.velocity.x,3);
 
 //  intergrate position and velocity
-    float_vect3_intrgrate_fi(zigzag_status.position,zigzag_status.d_position,1.0/512);
-    float_vect3_intrgrate_fi(zigzag_status.velocity,zigzag_status.d_velocity,1.0/512);
-
+    float_vect3_integrate_fi(&zigzag_status.position,&zigzag_status.d_position,1.0/512);
+    float_vect3_integrate_fi(&zigzag_status.velocity,&zigzag_status.d_velocity,1.0/512);
 
 	// calculte angule command
 	guidance_loop_set_theta(desired_theta);
