@@ -143,6 +143,8 @@ struct zigzag_open_loop_status{
 		struct FloatRMat R_E_B;
 		struct FloatEulers eulers;
 
+		bool flag_break;
+
 };
 
  extern bool arc_is_finished;
@@ -206,6 +208,6 @@ extern bool prepare_before_take_off(double prepare_time);
 extern struct arc_open_loop_status arc_status;
 extern int sample_pointer;
 extern struct arc_open_loop_status arc_status;
-extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll);
+extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time);
 #endif
 

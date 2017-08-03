@@ -214,8 +214,9 @@ void take_off(float desired_altitude)
 void land()
 {
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-		guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+		guidance_v_set_guided_z(0.0);
         guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
+		printf("AAAAAAAAAAAAAAAA!!!!!!!!!!!!!!!!\n");
 }
 
 void adjust_heading(float delta_heading) {
@@ -460,7 +461,7 @@ bool hover_at_origin()
 
 struct zigzag_open_loop_status zigzag_status;
 
-bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll)
+bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time)
 {
     if(primitive_in_use != ZIGZAG_OPEN_LOOP)
     { 
@@ -481,14 +482,30 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll)
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 		states_race.attitude_control = TRUE;
 		zigzag_status.drag_coef.x = -0.53;
-		zigzag_status.drag_coef.y = -0.47;
+		zigzag_status.drag_coef.y = -0.61;
 		zigzag_status.drag_coef.z = 0;
+        zigzag_status.velocity.x = stateGetSpeedNed_f()->x ;
+        zigzag_status.velocity.y = stateGetSpeedNed_f()->y ;
+        zigzag_status.velocity.z = stateGetSpeedNed_f()->z ;
+		zigzag_status.flag_break = TRUE;
+		counter_temp3 = 0;
+		time_temp3 = 0;
     }
+
+	if (zigzag_status.flag_break == TRUE)
+	{
+			guidance_loop_set_theta(break_angle);
+			guidance_loop_set_phi(0.0);
+			guidance_loop_set_heading(zigzag_status.psi_cmd);
+			guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+			if(time_temp3 > break_time)
+			{
+					zigzag_status.flag_break = FALSE;
+			}
+			return 0;
+	}
 // calculate command needed
 // transfer velocity from earth coordinate to body and body fixed coordinate
-	double phi = arc_status.phi_cmd;
-    double theta = arc_status.theta_cmd;
-    double psi = arc_status.psi_cmd;
 	// calculate body velocity
     zigzag_status.eulers.phi = stateGetNedToBodyEulers_f()->phi;
     zigzag_status.eulers.theta = stateGetNedToBodyEulers_f()->theta;
@@ -526,24 +543,26 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll)
 	float_vect_copy(&zigzag_status.d_position.x,&zigzag_status.velocity.x,3);
 
 //  intergrate position and velocity
-    float_vect3_integrate_fi(&zigzag_status.position,&zigzag_status.d_position,1.0/512);
-    float_vect3_integrate_fi(&zigzag_status.velocity,&zigzag_status.d_velocity,1.0/512);
+    float_vect3_integrate_fi(&zigzag_status.position,&zigzag_status.d_position,1.0/20.0);
+    float_vect3_integrate_fi(&zigzag_status.velocity,&zigzag_status.d_velocity,1.0/20.0);
 
 	// calculte angule command
 	guidance_loop_set_theta(desired_theta);
 	if (zigzag_status.position.y < desired_y/2.0)
 	{
 	guidance_loop_set_phi(max_roll); 
+	printf("predicted position y == %f\n",zigzag_status.position.y);
 	}
 	else
 	{
 	guidance_loop_set_phi(-max_roll); 
+	printf("predicted position y == %f\n",zigzag_status.position.y);
 	}
-	guidance_loop_set_heading(arc_status.psi_cmd);
+	guidance_loop_set_heading(zigzag_status.psi_cmd);
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 
 
-	if (zigzag_status.position.y>desired_y)
+	if (fabs(zigzag_status.position.y-desired_y)<0.2)
 	{
 			zigzag_status.flag_in_zigzag = FALSE;
 			return 1;

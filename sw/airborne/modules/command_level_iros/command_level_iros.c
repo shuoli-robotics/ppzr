@@ -134,7 +134,7 @@ void first_part_logic()
     switch(state_lower_level)
     {
         case PREPARE_CM:
-				if(prepare_before_take_off(7.0) == TRUE)
+				if(prepare_before_take_off(3.0) == TRUE)
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
             break;
 			
@@ -170,7 +170,7 @@ void first_part_logic()
 					{
 							previous_mode = HOVER_CM;
 							state_lower_level = GO_STRAIGHT_CM;
-							state_upper_level = SECOND_PART;
+							state_upper_level = THIRD_PART;
 					}
             break;
 
@@ -186,7 +186,6 @@ void second_part_logic()
 			case GO_STRAIGHT_CM:
 					if (arc_counter == 0)
 					{
-
 							reference_y = 0;
 					}
 					else 
@@ -222,14 +221,16 @@ void second_part_logic()
 				}
 				break;
 			case LAND_CM:
-				set_attitude(-5.0/180*3.14,0.0);
 					break;
 	}
 }
 
 void third_part_logic()
 {
-
+		if(zigzag_open_loop(3.0,-10.0/180*3.14,10.0/180*3.14,10.0/180*PI,1.5))
+		{
+				land();
+		}
 }
 
 
