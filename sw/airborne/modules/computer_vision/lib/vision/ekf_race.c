@@ -1,0 +1,184 @@
+
+#include <stdint.h>
+#include "subsystems/imu.h"
+#include "state.h"
+#include "modules/computer_vision/snake_gate_detection.h"
+
+// float Jac_F[7][7] = {0};
+
+float eye_7[7][7] = {0};
+float temp_m_1[7][7] = {0};
+float temp_m_2[7][7] = {0};
+
+void EKF_init(){
+  
+  init_eye_7(eye_7);
+  
+}
+
+void init_eye_7(float MAT[7][7]){
+  for(int i = 0; i<7;i++){
+    MAT[i][i] = 1;
+  }
+}
+
+void EKF_init_P(){
+  
+}
+
+void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, float xdot[7][1], float x[7], float u[8]){
+  
+//    dt = time_stamp(n)-time_stamp(n-1);
+//    omega = [gyro_p(n) gyro_q(n)];
+//    
+//    body_speed(n,:) = (C_b_n(phi(n),theta(n),psi(n))'*[vel_x(n) vel_y(n) vel_z(n)]')';
+//  
+//    U_k = [acc_x_filter(n) acc_y_filter(n) acc_z(n) omega phi(n) theta(n) psi(n)];
+// 
+//    X_int = [X_int; X_int_prev + d_kf_calc_f_nl(dt,X_int_prev,U_k)'*dt];
+  
+  const float D_x = -1/0.5;
+  const float D_y = -1/0.43;
+  
+  const float g = -9.19;
+  
+  //copy x into 1d array
+  for(int i = 0;i < 7; i++){
+    x[i] = x_prev[i][1];
+  }
+  
+  // %xdot
+  xdot[0][0] = (D_x*(u[0]-x[4])*cos(u[6])+( D_y*(u[1]-x[5])*sin(u[5])+x[3]*cos(u[5]))*sin(u[6]) )*cos(u[7])-( D_y*(u[1]-x[5])*cos(u[5])-x[3]*sin(u[5]))*sin(u[7]);
+  //%ydot
+  xdot[1][0] = (D_x*(u[0]-x[4])*cos(u[6])+( D_y*(u[1]-x[5])*sin(u[5])+x[3]*cos(u[5]))*sin(u[6]) )*sin(u[7])+( D_y*(u[1]-x[5])*cos(u[5])-x[3]*sin(u[5]))*cos(u[7]);
+  //%zdot
+  xdot[2][0] = -D_x*(u[0]-x[4])*sin(u[6])+( D_y*(u[1]-x[5])*sin(u[5])+x[3]*cos(u[5]))*cos(u[6]); 
+  //%wdot 6
+  xdot[3][0] = (u[2]-x[6])+g*cos(u[6])*cos(u[5])+(u[4])*D_x*(u[0]-x[4])-(u[3])*D_y*(u[1]-x[5]);
+  //%x10 = lambda_x
+  xdot[4][0] = 0;//%constant
+  //%x11 = lambda_y
+  xdot[5][0] = 0;
+  //%x12 = lambda_z
+  xdot[6][0] = 0;
+
+  //new_state = curr_state + xdot*dt
+  MAT_SUM_c(7,1, new_state, x_prev, xdot,dt);
+  
+}
+
+void EKF_update_state(){
+//         x_kk_1 = X_int(n,:);
+//         %G = d_kf_calc_G_nl(x_kk_1);
+//         G = eye(7);
+//         DFx = d_kf_calc_Fx_nl(Jac_mat_f, x_kk_1, U_k);
+//         sum_norm = sum_norm + norm(DFx^2);
+//         [Phi, Gamma] = c2d(DFx, G,EKF_dt);
+//         Phi = c2d_A(DFx,EKF_dt);
+//         
+//         % P(k+1|k) (prediction covariance matrix) with additive noise model
+//         P_k_1 = Phi*P_k_1_k_1*Phi' + Q;%Gamma*Q*Gamma';
+// 
+//         DHx = d_kf_calc_Hx_nl(Jac_mat_h, x_kk_1, U_k);
+// 
+//         K = P_k_1 * DHx' / (DHx*P_k_1 * DHx' + R_k);
+// 
+//         %z_k = [pos_x(n) pos_y(n) pos_z(n)];
+//          %z_k = [pos_vision_x(detect_count_m) pos_vision_y(detect_count_m) pos_z(n)];% -sonar_alt(n)];
+//         z_k = [pos_vision_x(detect_count_m) pos_vision_y(detect_count_m) -sonar_alt(n)];
+//        
+//         X_opt = x_kk_1' + K * (z_k - X_int(n,1:3))';
+//         X_int(n,:) = X_opt';
+// 
+//         P_k_1_k_1 = (eye(7) - K*DHx) * P_k_1 * (eye(7) - K*DHx)' + K*R_k*K';
+  
+  float phi_s = stateGetNedToBodyEulers_f()->phi;
+  float theta_s = stateGetNedToBodyEulers_f()->theta;
+  float psi_s = stateGetNedToBodyEulers_f()->psi;
+  
+  float p_s = imu.gyro.p;
+  float q_s = imu.gyro.q;
+  
+  EKF_evaluate_jacobian(DFx,phi_s,theta_s,psi_s,q_s,p_s);
+  
+  
+  
+  
+}
+
+void EKF_evaluate_jacobian(float Jac_F[7][7], float phi_s, float theta_s, float psi_s, float q_s, float p_s){
+//   Jacobian F
+// 
+// [ 0, 0, 0, sin(phi_s)*sin(psi_s) + cos(phi_s)*cos(psi_s)*sin(theta_s), 2*cos(psi_s)*cos(theta_s), (100*cos(psi_s)*sin(phi_s)*sin(theta_s))/43 - (100*cos(phi_s)*sin(psi_s))/43,  0]
+// [ 0, 0, 0, cos(phi_s)*sin(psi_s)*sin(theta_s) - cos(psi_s)*sin(phi_s), 2*cos(theta_s)*sin(psi_s), (100*cos(phi_s)*cos(psi_s))/43 + (100*sin(phi_s)*sin(psi_s)*sin(theta_s))/43,  0]
+// [ 0, 0, 0,                                    cos(phi_s)*cos(theta_s),           -2*sin(theta_s),                                             (100*cos(theta_s)*sin(phi_s))/43,  0]
+// [ 0, 0, 0,                                                          0,                     2*q_s,                                                                -(100*p_s)/43, -1]
+// [ 0, 0, 0,                                                          0,                         0,                                                                            0,  0]
+// [ 0, 0, 0,                                                          0,                         0,                                                                            0,  0]
+// [ 0, 0, 0,                                                          0,                         0,                                                                            0,  0]
+//  
+// 
+// Jac_mat_h =
+//  
+// [ 1, 0, 0, 0, 0, 0, 0]
+// [ 0, 1, 0, 0, 0, 0, 0]
+// [ 0, 0, 1, 0, 0, 0, 0]
+  
+  // Jacobian F
+  //Jac_F[0][0] - Jac_F[0][6]
+  // [ 0, 0, 0, sin(phi_s)*sin(psi_s) + cos(phi_s)*cos(psi_s)*sin(theta_s), 2*cos(psi_s)*cos(theta_s), (100*cos(psi_s)*sin(phi_s)*sin(theta_s))/43 - (100*cos(phi_s)*sin(psi_s))/43,  0]
+  Jac_F[0][3] = sin(phi_s)*sin(psi_s) + cos(phi_s)*cos(psi_s)*sin(theta_s);
+  Jac_F[0][4] = 2*cos(psi_s)*cos(theta_s);
+  Jac_F[0][5] = (100*cos(psi_s)*sin(phi_s)*sin(theta_s))/43 - (100*cos(phi_s)*sin(psi_s))/43;
+  
+  //Jac_F[1][0] - Jac_F[1][6]
+  // [ 0, 0, 0, cos(phi_s)*sin(psi_s)*sin(theta_s) - cos(psi_s)*sin(phi_s), 2*cos(theta_s)*sin(psi_s), (100*cos(phi_s)*cos(psi_s))/43 + (100*sin(phi_s)*sin(psi_s)*sin(theta_s))/43,  0]
+  Jac_F[1][3] = cos(phi_s)*sin(psi_s)*sin(theta_s) - cos(psi_s)*sin(phi_s);
+  Jac_F[1][4] = 2*cos(theta_s)*sin(psi_s);
+  Jac_F[1][5] = (100*cos(phi_s)*cos(psi_s))/43 + (100*sin(phi_s)*sin(psi_s)*sin(theta_s))/43;
+  
+  //Jac_F[2][0] - Jac_F[2][6]
+  // [ 0, 0, 0,                                    cos(phi_s)*cos(theta_s),           -2*sin(theta_s),                                             (100*cos(theta_s)*sin(phi_s))/43,  0]
+  Jac_F[2][3] = cos(phi_s)*cos(theta_s);
+  Jac_F[2][4] = -2*sin(theta_s);
+  Jac_F[2][5] = (100*cos(theta_s)*sin(phi_s))/43;
+  
+  //Jac_F[3][0] - Jac_F[3][6]
+  // [ 0, 0, 0,                                                          0,                     2*q_s,                                                                -(100*p_s)/43, -1]
+  Jac_F[3][4] = 2*q_s;
+  Jac_F[3][5] = -(100*p_s)/43;
+  Jac_F[3][6] = -1;
+  
+// [ 0, 0, 0,                                                          0,                         0,                                                                            0,  0]
+// [ 0, 0, 0,                                                          0,                         0,                                                                            0,  0]
+// [ 0, 0, 0,                                                          0,                         0,                                                                            0,  0]
+//  
+// 
+// Jac_mat_h =
+//  
+// [ 1, 0, 0, 0, 0, 0, 0]
+// [ 0, 1, 0, 0, 0, 0, 0]
+// [ 0, 0, 1, 0, 0, 0, 0]
+
+}
+
+//discretizing 7x7 Jacobian using the power series for exp(A). until A^2 (zero from A^3, since upper triangular mat)
+//A_d = I + A + (1/2)*A*A*dt
+void c_2_d(float A_d[7][7], float A[7][7],float dt){
+  
+  //I + A
+  MAT_SUM(7, 7, temp_m_1,eye_7, A);
+  
+  //(1/2)*A*A*c
+  float c = 0.5*dt;
+  MAT_MUL_c(7, 7, 7, temp_m_2, A, A,c);
+  
+  MAT_SUM(7, 7, A_d,temp_m_1, temp_m_2);
+  
+  MAT_PRINT(7, 7,A_d);
+  
+}
+
+
+
+

@@ -35,7 +35,8 @@
     <file name="lib/vision/gate_detection_free.c"/>
     <file name="lib/vision/gate_corner_refine.c"/>
     <file name="lib/vision/qr_code_recognition.c"/>
-    <file name="lib/vision/integral_image.c"/>    
+    <file name="lib/vision/integral_image.c"/>
+    <file name="lib/vision/ekf_race.c"/> 
   </makefile>
 </module>
 
