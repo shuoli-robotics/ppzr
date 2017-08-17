@@ -188,25 +188,25 @@ extern float gate_quality;
 
   
 //
-// C = A+(B*c)
+// C = A+(B*k)
 //
-#define MAT_SUM_c(_i, _j, C, A, B,c) {              \
+#define MAT_SUM_c(_i, _j, C, A, B,k_) {              \
     int l,c;                                    \
     for (l=0; l<_i; l++)                        \
       for (c=0; c<_j; c++)                      \
-        C[l][c] = A[l][c] + B[l][c]*c;            \
+        C[l][c] = A[l][c] + B[l][c]*k_;            \
   }
   
 //
 // C = c*A*B   A:(i,k) B:(k,j) C:(i,j)
 //
-#define MAT_MUL_c(_i, _k, _j, C, A, B,c) {          \
+#define MAT_MUL_c(_i, _k, _j, C, A, B,c_) {          \
     int l,c,m;                                  \
     for (l=0; l<_i; l++)                        \
       for (c=0; c<_j; c++) {                    \
         C[l][c] = 0.;                           \
         for (m=0; m<_k; m++)                    \
-          C[l][c] += c*A[l][m]*B[m][c];           \
+          C[l][c] += c_*A[l][m]*B[m][c];           \
       }                                         \
   }
   

@@ -3,16 +3,61 @@
 #include "subsystems/imu.h"
 #include "state.h"
 #include "modules/computer_vision/snake_gate_detection.h"
+#include "math/pprz_algebra.h"
+#include "math/pprz_algebra_float.h"
+#include "math/pprz_simple_matrix.h"
+
+#include "filters/low_pass_filter.h"
+
+#include "modules/computer_vision/lib/vision/ekf_race.h"
 
 // float Jac_F[7][7] = {0};
 
-float eye_7[7][7] = {0};
-float temp_m_1[7][7] = {0};
-float temp_m_2[7][7] = {0};
+float eye_7[7][7] = {{0}};
+float temp_m_1[7][7] = {{0}};
+float temp_m_2[7][7] = {{0}};
+float temp_m_3[7][7] = {{0}};
+float DFx[7][7] = {{0}};
+float Phi_d[7][7] = {{0}};
+float P_k_1_d[7][7] = {{0}};
+float P_k_1_k_1_d[7][7] = {{0}};
+float Q[7][7] = {{0}};
 
-void EKF_init(){
+float DHx[3][7] = {   
+   { 1, 0, 0, 0, 0, 0, 0} ,
+   { 0, 1, 0, 0, 0, 0, 0} ,
+   { 0, 0, 1, 0, 0, 0, 0}
+};
+
+float R_k_d[3][3] = {   
+   { 0.2, 0, 0, } ,
+   { 0, 0.2, 0, } ,
+   { 0, 0, 0.2, }
+};
+
+float K_d[7][3] = {{0}};
+
+float temp_7_3_1[7][3] = {{0}};
+
+float EKF_inn[3][1] = {{0}};
+
+float temp_7_1_1[7][1] = {{0}};
+
+float temp_3_7_1[3][7] = {{0}};
+
+float temp_3_3_1[3][3] = {{0}};
+
+float temp_3_3_2[3][3] = {{0}};
+
+void EKF_init(void){
   
   init_eye_7(eye_7);
+  
+  float P_k_1_diag[7] = {1,1,1,1,1,1,1};
+  EKF_init_diag(P_k_1_k_1_d,P_k_1_diag);
+  
+  float Q_diag[7] = {0.2,0.2,0.2,0.2,0,0,0};
+  EKF_init_diag(Q,Q_diag);
   
 }
 
@@ -22,8 +67,10 @@ void init_eye_7(float MAT[7][7]){
   }
 }
 
-void EKF_init_P(){
-  
+void EKF_init_diag(float A[7][7], float diag[7]){
+  for(int i = 0; i<7;i++){
+    A[i][i] = diag[i];
+  }
 }
 
 void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, float xdot[7][1], float x[7], float u[8]){
@@ -67,7 +114,7 @@ void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, fl
   
 }
 
-void EKF_update_state(){
+void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], float EKF_delta){
 //         x_kk_1 = X_int(n,:);
 //         %G = d_kf_calc_G_nl(x_kk_1);
 //         G = eye(7);
@@ -96,13 +143,63 @@ void EKF_update_state(){
   float theta_s = stateGetNedToBodyEulers_f()->theta;
   float psi_s = stateGetNedToBodyEulers_f()->psi;
   
-  float p_s = imu.gyro.p;
-  float q_s = imu.gyro.q;
+  float p_s = stateGetBodyRates_f()->p;
+  float q_s = stateGetBodyRates_f()->q;
   
+  //jacobian
   EKF_evaluate_jacobian(DFx,phi_s,theta_s,psi_s,q_s,p_s);
   
+  //discretize the system
+  c_2_d(Phi_d, DFx,EKF_delta);
   
+  //P_k_1 = Phi*P_k_1_k_1*Phi' + Q
   
+  //temp_m_1=P_k_1_k_1*Phi'
+   MAT_MUL_T(7,7,7, temp_m_1, P_k_1_k_1_d, Phi_d);
+  //temp_m_2=Phi*temp_m_1
+   MAT_MUL_T(7,7,7, temp_m_2, Phi_d,temp_m_1);
+  //P_k_1_d=temp_m_2 + Q
+   MAT_SUM(7, 7, P_k_1_d,temp_m_2, Q);
+  
+  //K = P_k_1 * DHx' / (DHx*P_k_1 * DHx' + R_k);
+  //temp_7_3_1=P_k_1 * DHx' 
+  MAT_MUL_T(7,7,3, temp_7_3_1, P_k_1_d, DHx);
+  //temp_3_3_1=DHx*temp_7_3_1
+  MAT_MUL(3,7,3, temp_3_3_1, DHx, temp_7_3_1);
+  //temp_3_3_2=temp_3_3_1 + R_k
+  MAT_SUM(3, 3, temp_3_3_2, temp_3_3_1, R_k_d);
+  //temp_3_3_1=inv(temp_3_3_2)
+  MAT_INV33(temp_3_3_1, temp_3_3_2);
+  //K_d=temp_7_3_1*temp_3_3_1
+  MAT_MUL(7,3,3, K_d, temp_7_3_1, temp_3_3_1);
+  
+  //X_opt = x_kk_1' + K * (z_k - X_int(n,1:3))';
+  //EKF_inn=z_k - X_int(n,1:3)
+  EKF_inn[0][0] =  z_k_d[0] - x_state[0][0];
+  EKF_inn[1][0] =  z_k_d[1] - x_state[1][0];
+  EKF_inn[2][0] =  z_k_d[2] - x_state[2][0];
+  //temp_7_1_1=K_d*EKF_inn
+  MAT_MUL(7,3,1, temp_7_1_1, K_d, EKF_inn);
+  //x_opt=x_state + temp_7_1_1
+  MAT_SUM(7, 1, x_opt, x_state, temp_7_1_1);
+  
+  //P_k_1_k_1 = (eye(7) - K*DHx) * P_k_1 * (eye(7) - K*DHx)' + K*R_k*K';
+  MAT_MUL(7, 3, 7, temp_m_1, K_d,DHx);
+  //MAT_PRINT(7, 7,temp_m_1);
+    
+  MAT_SUB(7, 7, temp_m_2, eye_7, temp_m_1);
+  //MAT_PRINT(7, 7,temp_m_2);
+  //error free until here?
+  MAT_MUL_T(7, 7, 7, temp_m_1, P_k_1_d, temp_m_2);
+  // MAT_PRINT(7, 7,temp_m_1);
+  //temp_4_4_a reuse
+  MAT_MUL(7, 7, 7, temp_m_3, temp_m_2,temp_m_1);
+  // MAT_PRINT(7, 7,temp_m_3);
+  MAT_MUL_T(3, 3, 7, temp_3_7_1, R_k_d, K_d);
+  //  MAT_PRINT(3, 7,temp_3_7_1);
+  MAT_MUL(7, 3, 7, temp_m_1, K_d,temp_3_7_1);
+  // MAT_PRINT(7, 7,temp_m_1);
+  MAT_SUM(7, 7, P_k_1_k_1_d, temp_m_3, temp_m_1);
   
 }
 
@@ -170,8 +267,8 @@ void c_2_d(float A_d[7][7], float A[7][7],float dt){
   MAT_SUM(7, 7, temp_m_1,eye_7, A);
   
   //(1/2)*A*A*c
-  float c = 0.5*dt;
-  MAT_MUL_c(7, 7, 7, temp_m_2, A, A,c);
+  float time_c = 0.5*dt;
+  MAT_MUL_c(7, 7, 7, temp_m_2, A, A,time_c);
   
   MAT_SUM(7, 7, A_d,temp_m_1, temp_m_2);
   
