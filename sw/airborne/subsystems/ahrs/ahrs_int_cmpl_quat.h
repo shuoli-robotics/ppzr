@@ -212,5 +212,17 @@ struct FILTERED_PQR
 		double q;
 		double r;
 };
+
+struct ACCEL_SCALE_BIAS
+{
+
+
+		double k_x;
+		double k_y;
+		double k_z;
+		double b_x;
+		double b_y;
+		double b_z;
+};
 extern struct FILTERED_PQR filtered_gyro_f;
 #endif /* AHRS_INT_CMPL_QUAT_H */

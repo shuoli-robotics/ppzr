@@ -119,8 +119,15 @@ struct AHRS_ACCEL_PQR ahrs_accel_pqr;
 struct AHRS_GPS_PQR ahrs_gps_pqr;
 struct FILTERED_PQR filtered_pqr;
 struct FILTERED_PQR filtered_gyro_f;
-
+struct ACCEL_SCALE_BIAS accel_scale_bias;
 struct Int32Rates filtered_gyro_i;
+
+#define K_X  0.9856
+#define K_Y  0.9681
+#define K_Z  0.9890
+#define B_X 0.2597
+#define B_Y 0.07
+#define B_Z -0.6657
 
 
 double phi_b;
@@ -212,6 +219,13 @@ void ahrs_icq_init(void)
   filtered_gyro_f.q = 0;
   filtered_gyro_f.r = 0;
 
+  accel_scale_bias.k_x = K_X;
+  accel_scale_bias.k_y = K_Y;
+  accel_scale_bias.k_z = K_Z;
+  accel_scale_bias.b_x = B_X;
+  accel_scale_bias.b_y = B_Y;
+  accel_scale_bias.b_z = B_Z;
+
 }
 
 
@@ -225,6 +239,15 @@ bool ahrs_icq_align(struct Int32Rates *lp_gyro, struct Int32Vect3 *lp_accel,
                                    lp_accel, lp_mag);
   ahrs_icq.heading_aligned = true;
 #else
+  /* add by Shuo 2017_8_14 */
+
+  struct FloatVect3 accel_f;
+  ACCELS_FLOAT_OF_BFP(accel_f, *lp_accel);
+  accel_f.x = accel_f.x*accel_scale_bias.k_x+accel_scale_bias.b_x;
+  accel_f.y = accel_f.y*accel_scale_bias.k_y+accel_scale_bias.b_y;
+  accel_f.z = accel_f.z*accel_scale_bias.k_z+accel_scale_bias.b_z;
+  ACCELS_BFP_OF_REAL(*lp_accel,accel_f);
+
   /* Compute an initial orientation from accel and just set heading to zero */
   ahrs_int_get_quat_from_accel(&ahrs_icq.ltp_to_imu_quat, lp_accel);
   ahrs_icq.heading_aligned = false;
@@ -368,18 +391,6 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 		  test_ahrs.desired_psi = 0;
   }
 
-  /*printf("frequency counter is %d\n",test_ahrs.frequency_counter);*/
-  /*printf("temp time 2 is %f\n",time_temp2);*/
-  /*printf("test frequency is  %f\n",test_ahrs.frequency);*/
-
-  // comment this part is you want to use original AHRS------------------------
-  /*test_ahrs.a_x_b = -sin(test_ahrs.desired_theta)*-9.81;*/
-  /*test_ahrs.a_y_b = sin(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*-9.81;*/
-  /*test_ahrs.a_z_b = cos(test_ahrs.desired_phi)*cos(test_ahrs.desired_theta)*-9.81;*/
-
-  /*accel->x = ACCEL_BFP_OF_REAL(test_ahrs.a_x_b);*/
-  /*accel->y = ACCEL_BFP_OF_REAL(test_ahrs.a_y_b);*/
-  /*accel->z = ACCEL_BFP_OF_REAL(test_ahrs.a_z_b);*/
     ACCELS_FLOAT_OF_BFP(accel_AHRS,*accel);
 	// ----------------------------------------------------------------
   // c2 = ltp z-axis in imu-frame

@@ -481,9 +481,11 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 		states_race.attitude_control = TRUE;
-		zigzag_status.drag_coef.x = -0.53;
-		zigzag_status.drag_coef.y = -0.61;
+		zigzag_status.drag_coef.x = -0.55;
+		zigzag_status.drag_coef.y = -0.56;
 		zigzag_status.drag_coef.z = 0;
+		zigzag_status.drag_coef_angular_rate.x = -0.08;
+		zigzag_status.drag_coef_angular_rate.y = 0.1;
         zigzag_status.velocity.x = stateGetSpeedNed_f()->x ;
         zigzag_status.velocity.y = stateGetSpeedNed_f()->y ;
         zigzag_status.velocity.z = stateGetSpeedNed_f()->z ;
@@ -515,9 +517,10 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 
 //  calculate drag in body velocity
 
-	zigzag_status.drag_b.x = zigzag_status.drag_coef.x*zigzag_status.body_velocity.x;
-	zigzag_status.drag_b.y = zigzag_status.drag_coef.y*zigzag_status.body_velocity.y;
-	zigzag_status.drag_b.z = zigzag_status.drag_coef.z*zigzag_status.body_velocity.z;
+	/*zigzag_status.drag_b.x = zigzag_status.drag_coef.x*zigzag_status.body_velocity.x+*/
+			/*zigzag_status.drag_coef_angular_rate.x*;*/
+	/*zigzag_status.drag_b.y = zigzag_status.drag_coef.y*zigzag_status.body_velocity.y;*/
+	/*[>z<]igzag_status.drag_b.z = zigzag_status.drag_coef.z*zigzag_status.body_velocity.z;*/
 
 //  transfer drag from body coordinate to earth coordinate
 
