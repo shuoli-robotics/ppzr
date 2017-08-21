@@ -91,7 +91,7 @@ void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, fl
   
   //copy x into 1d array
   for(int i = 0;i < 7; i++){
-    x[i] = x_prev[i][1];
+    x[i] = x_prev[i][0];
   }
   
   // %xdot
