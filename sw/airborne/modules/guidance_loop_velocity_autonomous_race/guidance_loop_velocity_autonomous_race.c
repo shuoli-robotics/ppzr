@@ -161,7 +161,7 @@ void guidance_loop_pid()
     guidance_h_module_speed_error_x = guidance_module.desired_vx - current_vel_x;
     guidance_h_module_speed_error_y = guidance_module.desired_vy - current_vel_y;
 
-    if (state_lower_level == TURN_CM || state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
+    if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
     {
         guidance_h_module_speed_error_x = 0;
         guidance_h_module_speed_error_y = 0;
@@ -210,19 +210,22 @@ void guidance_loop_set_heading(float heading){
 }
 
 void guidance_loop_set_velocity(float vx_earth, float vy_earth){
+		states_race.attitude_control = FALSE;
     guidance_module.desired_vx = vx_earth;
     guidance_module.desired_vy = vy_earth;
 }
 
 void guidance_loop_set_theta(float desired_theta)
 {
-	guidance_module.cmd.theta = BFP_OF_REAL(desired_theta, INT32_ANGLE_FRAC);
+		states_race.attitude_control = TRUE;
+		guidance_module.cmd.theta = BFP_OF_REAL(desired_theta, INT32_ANGLE_FRAC);
     /*guidance_rp_command.theta = desired_theta;*/
 }
 
 
 void guidance_loop_set_phi(float desired_phi)
 {
-	guidance_module.cmd.phi= BFP_OF_REAL(desired_phi, INT32_ANGLE_FRAC);
+		states_race.attitude_control = TRUE;
+		guidance_module.cmd.phi= BFP_OF_REAL(desired_phi, INT32_ANGLE_FRAC);
     /*guidance_rp_command.phi = desired_phi;*/
 }
