@@ -27,7 +27,17 @@
 #define VERTICAL_LOOP_CONTROL_MODULE_H
 #include "state.h"
 
+#define K_P_Z 0.3
 
+
+#define K_P_V_Z 1
+
+struct vertical_controler_status
+{
+		float k_p_z;
+		float k_p_v_z;
+		float take_off_altitude;
+};
 
 extern void guidance_v_module_init(void);
 extern void guidance_v_module_run(bool in_flight);

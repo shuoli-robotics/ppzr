@@ -38,34 +38,34 @@
 #define CMD_OF_SAT  1500 // 40 deg = 2859.1851
 
 #ifndef PHI_PGAIN
-#define PHI_PGAIN 0.2
+#define PHI_PGAIN 0.08
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_PGAIN)
 
 #ifndef PHI_IGAIN
-#define PHI_IGAIN 0.07
+#define PHI_IGAIN 0.04
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_IGAIN)
 
 #ifndef PHI_DGAIN
-#define PHI_DGAIN 0.6
+#define PHI_DGAIN 0.0
 #endif
 PRINT_CONFIG_VAR(VISION_PHI_DGAIN)
 
 #ifndef THETA_PGAIN
-#define THETA_PGAIN 0.2
+#define THETA_PGAIN 0.08
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
 
 #ifndef THETA_IGAIN
 
-#define THETA_IGAIN 0.07
+#define THETA_IGAIN 0.03
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_IGAIN)
 
 #ifndef THETA_DGAIN
-#define THETA_DGAIN 0.6
+#define THETA_DGAIN 0.0
 #endif
 PRINT_CONFIG_VAR(VISION_THETA_PGAIN)
 
@@ -163,10 +163,10 @@ void guidance_loop_pid()
 
     if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
     {
-        guidance_h_module_speed_error_x = 0;
-        guidance_h_module_speed_error_y = 0;
-        guidance_module.err_vx_int = 0;
-        guidance_module.err_vy_int = 0;
+        /*guidance_h_module_speed_error_x = 0;*/
+        /*guidance_h_module_speed_error_y = 0;*/
+        /*guidance_module.err_vx_int = 0;*/
+        /*guidance_module.err_vy_int = 0;*/
     }
 
     /* Calculate the integrated errors (TODO: bound??) */
@@ -195,6 +195,9 @@ void guidance_loop_pid()
 			return;
     guidance_module.cmd.phi = BFP_OF_REAL(phi_desired_f, INT32_ANGLE_FRAC);
     guidance_module.cmd.theta = BFP_OF_REAL(theta_desired_f, INT32_ANGLE_FRAC);
+
+
+	/*printf("[guidance_loop_velocity_autonomous_race] Now velocity control loop is actived \n");*/
 
     /* Bound the roll and pitch commands */
     BoundAbs(guidance_module.cmd.phi, CMD_OF_SAT);

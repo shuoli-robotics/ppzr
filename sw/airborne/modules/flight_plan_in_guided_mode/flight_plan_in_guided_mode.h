@@ -65,7 +65,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -1.5 
+#define TAKE_OFF_ALTITUDE -3.0 
 #endif
 struct acceleration{
 		double ax;
@@ -183,5 +183,6 @@ extern struct arc_open_loop_status arc_status;
 extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time);
 extern double trim_phi;
 extern double trim_theta;
+extern struct take_off_status tf_status;
 #endif
 

@@ -32,7 +32,8 @@
 #include "subsystems/radio_control.h"
 #include "firmwares/rotorcraft/stabilization.h"
 #include "firmwares/rotorcraft/navigation.h"
-
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+#include "modules/command_level_iros/command_level_iros.h"
 #include "state.h"
 
 #include "math/pprz_algebra_int.h"
@@ -58,7 +59,7 @@
 #else
 #  define GUIDANCE_V_NOMINAL_HOVER_THROTTLE 0.4
 #  ifndef GUIDANCE_V_ADAPT_THROTTLE_ENABLED
-#    define GUIDANCE_V_ADAPT_THROTTLE_ENABLED TRUE
+#    define GUIDANCE_V_ADAPT_THROTTLE_ENABLED TRUE 
 #  endif
 #endif
 PRINT_CONFIG_VAR(GUIDANCE_V_NOMINAL_HOVER_THROTTLE)

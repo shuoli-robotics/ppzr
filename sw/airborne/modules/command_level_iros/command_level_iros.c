@@ -144,34 +144,6 @@ void first_part_logic()
 				state_upper_level =  FOURTH_PART;
 			}
 			break;
-
-		case TAKE_OFF_CLOSE_LOOP_CM:
-			hold_altitude(TAKE_OFF_ALTITUDE);
-			if(states_race.altitude_is_achieved == TRUE)
-			{
-				previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
-				state_lower_level = HOVER_AT_ORIGIN_CM;
-			}
-			break;
-		
-
-        case HOVER_AT_ORIGIN_CM:
-					if (hover_at_origin() == TRUE)
-					{
-							previous_mode = HOVER_AT_ORIGIN_CM;
-							/*state_lower_level = GO_STRAIGHT_CM;*/
-							/*state_upper_level = SECOND_PART;*/
-					}
-            break;
-        case HOVER_CM:
-			hover();
-			if (time_primitive > 2.0)
-					{
-							previous_mode = HOVER_CM;
-							state_lower_level = GO_STRAIGHT_CM;
-							state_upper_level = THIRD_PART;
-					}
-            break;
 		default:
 			break;
 

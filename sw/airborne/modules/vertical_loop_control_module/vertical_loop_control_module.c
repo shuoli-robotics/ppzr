@@ -26,9 +26,19 @@
 #include "modules/vertical_loop_control_module/vertical_loop_control_module.h"
 #include "subsystems/radio_control.h"
 #include "firmwares/rotorcraft/stabilization.h"
+#include "state.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+
+
+
+struct vertical_controler_status vcs;
 void guidance_v_module_init(void)
 {
 
+		vcs.k_p_z = K_P_Z;
+		vcs.k_p_v_z = K_P_V_Z;
+		vcs.take_off_altitude = TAKE_OFF_ALTITUDE;
+		
 }
 
 void guidance_v_module_read_rc(void)
@@ -42,8 +52,8 @@ void guidance_v_module_enter(void)
 
 void guidance_v_module_run(bool in_flight)
 {
-        stabilization_cmd[COMMAND_THRUST] = 5100; //5200
-};
+				stabilization_cmd[COMMAND_THRUST] = 5100; //5200
+}
 
 
 

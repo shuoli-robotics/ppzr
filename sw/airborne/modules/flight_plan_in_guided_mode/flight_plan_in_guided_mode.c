@@ -192,25 +192,11 @@ bool take_off(void)
 		{
 				guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);  // vertical module should be called!
 				guidance_loop_set_velocity(0,0);
-				if (time_primitive > 2.0)
+				if (time_primitive > 2.5)
 				{
 						tf_status.flag_open_loop = FALSE;
-						tf_status.flag_climb_mode = TRUE;
-				}
-				return 0;
-		}
-		else if (tf_status.flag_climb_mode == TRUE)
-		{
-				guidance_v_mode_changed(GUIDANCE_V_MODE_CLIMB);  // vertical module should be called!
-				guidance_loop_set_velocity(0,0);
-				printf("IN CLIMB MODE!!!!!!!!!!!!!!\n");
-				/*guidance_v_set_guided_vz(-1.0);*/
-				if (fabs(stateGetPositionNed_f()->z-tf_status.take_off_altitude)<0.2)
-				{
-						tf_status.flag_climb_mode = FALSE;
 						tf_status.flag_hover_mode = TRUE;
 				}
-				return 0;
 		}
 		else if(tf_status.flag_hover_mode == TRUE)
 		{
@@ -219,14 +205,17 @@ bool take_off(void)
 				tf_status.sum_altitude += stateGetSpeedNed_f()->z;
 				tf_status.altitude_counter ++;
 				tf_status.ave_altitude = tf_status.sum_altitude/tf_status.altitude_counter;
-				printf("????????????????????\n");
 		}
-		if (fabs(stateGetSpeedNed_f()->z-tf_status.ave_altitude)<0.05 && tf_status.altitude_counter > 10)
+		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.05 && tf_status.altitude_counter > 100)
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
 				tf_status.flag_hover_mode = FALSE;
 				return TRUE;
+		}
+		else
+		{
+				return FALSE;
 		}
 }
 

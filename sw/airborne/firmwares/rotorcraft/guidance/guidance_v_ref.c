@@ -27,6 +27,8 @@
 
 #include "firmwares/rotorcraft/guidance/guidance_v_ref.h"
 #include "generated/airframe.h"
+#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
+#include "modules/command_level_iros/command_level_iros.h"
 
 /** reference model vertical accel in meters/s^2 (output)
  *  fixed point representation with #GV_ZDD_REF_FRAC
@@ -95,6 +97,13 @@ void gv_set_ref(int32_t alt, int32_t speed, int32_t accel)
 void gv_update_ref_from_z_sp(int32_t z_sp)
 {
 
+		if (state_lower_level==TAKE_OFF_OPEN_LOOP_CM)
+		{
+				gv_z_ref =BFP_OF_REAL(tf_status.take_off_altitude,GV_Z_REF_FRAC);
+				gv_zd_ref =BFP_OF_REAL(0.0,GV_ZD_REF_FRAC);
+				gv_zdd_ref =BFP_OF_REAL(0.0,GV_ZDD_REF_FRAC);
+				return;
+		}
   gv_z_ref  += gv_zd_ref;
   gv_zd_ref += gv_zdd_ref;
 
