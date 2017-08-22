@@ -211,5 +211,7 @@ extern struct arc_open_loop_status arc_status;
 extern int sample_pointer;
 extern struct arc_open_loop_status arc_status;
 extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time);
+extern double trim_phi;
+extern double trim_theta;
 #endif
 

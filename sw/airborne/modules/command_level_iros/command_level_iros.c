@@ -134,34 +134,36 @@ void first_part_logic()
     switch(state_lower_level)
     {
         case PREPARE_CM:
-				if(prepare_before_take_off(3.0) == TRUE)
+				if(prepare_before_take_off(1.0) == TRUE)
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
             break;
 			
         case TAKE_OFF_OPEN_LOOP_CM:
-            take_off(TAKE_OFF_ALTITUDE);
-            if(states_race.altitude_is_achieved == TRUE)
-            {
-                previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
-                state_lower_level =  TAKE_OFF_CLOSE_LOOP_CM;
-            }
-            break;
 
-        case TAKE_OFF_CLOSE_LOOP_CM:
-            hold_altitude(TAKE_OFF_ALTITUDE);
-            if(states_race.altitude_is_achieved == TRUE)
-            {
-                previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
-                state_lower_level = HOVER_AT_ORIGIN_CM;
-            }
-            break;
+/*            take_off(TAKE_OFF_ALTITUDE);*/
+            /*if(states_race.altitude_is_achieved == TRUE)*/
+            /*{*/
+                /*previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;*/
+                /*state_lower_level =  TAKE_OFF_CLOSE_LOOP_CM;*/
+            /*}*/
+            /*break;*/
+
+        /*case TAKE_OFF_CLOSE_LOOP_CM:*/
+            /*hold_altitude(TAKE_OFF_ALTITUDE);*/
+            /*if(states_race.altitude_is_achieved == TRUE)*/
+            /*{*/
+                /*previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;*/
+                /*state_lower_level = HOVER_AT_ORIGIN_CM;*/
+            /*}*/
+            /*break;*/
 
         case HOVER_AT_ORIGIN_CM:
 					if (hover_at_origin() == TRUE)
 					{
 							previous_mode = HOVER_AT_ORIGIN_CM;
-							state_lower_level = GO_STRAIGHT_CM;
-							state_upper_level = SECOND_PART;
+							/*state_lower_level = GO_STRAIGHT_CM;*/
+							state_lower_level = ATTITUDE_CONTROL_CM;
+							/*state_upper_level = SECOND_PART;*/
 					}
             break;
         case HOVER_CM:
@@ -173,6 +175,10 @@ void first_part_logic()
 							state_upper_level = THIRD_PART;
 					}
             break;
+		case ATTITUDE_CONTROL_CM:
+			set_attitude(trim_theta,trim_phi);
+			printf("Now it is attitude controller working!!!!!\n");
+			break;
 
     }
 }

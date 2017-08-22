@@ -283,8 +283,10 @@ void set_attitude(float desired_theta,float desired_phi)
 		states_race.attitude_control = TRUE;
     }
 	guidance_loop_set_theta(desired_theta);
+	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 	guidance_loop_set_phi(desired_phi); 
 	guidance_loop_set_heading(psi0);
+	printf("It is in attitude control mode!!!!!!!!!!!\n");
 }
 
 
@@ -431,6 +433,11 @@ void drone_model(struct arc_open_loop_status* sta)
 }
 
 
+double sum_phi;
+double sum_theta;
+int trim_att_counter;
+double trim_phi;
+double trim_theta;
 bool hover_at_origin()
 {
     if(primitive_in_use != HOVER_AT_ORIGIN)
@@ -445,15 +452,28 @@ bool hover_at_origin()
 		guidance_h_set_guided_pos(0.0,0.0);
 		guidance_h_set_guided_heading(0.0);
 		guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+		sum_phi = 0;
+		sum_theta = 0;
+		trim_att_counter = 0;
     }
  float current_x = stateGetPositionNed_f()->x;
  float current_y = stateGetPositionNed_f()->y;
- if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 10)
+ if (time_primitive >10.0)
+ {
+		 sum_phi += stateGetNedToBodyEulers_f()->phi;
+		 sum_theta += stateGetNedToBodyEulers_f()->theta;
+		 trim_att_counter ++;
+		 trim_phi = sum_phi /trim_att_counter;
+		 trim_theta = sum_theta /trim_att_counter;
+ }
+ if (sqrt(current_x*current_x + current_y*current_y)<0.2&&time_primitive > 20)
  {
 		 return 1;
  }
  else
  {
+		 printf("Trim phi = %f,\n",trim_phi/3.14*180);
+		 printf("Trim theta= %f,\n",trim_theta/3.14*180);
 		 return 0;
  }
 }
@@ -549,17 +569,17 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
     float_vect3_integrate_fi(&zigzag_status.position,&zigzag_status.d_position,1.0/20.0);
     float_vect3_integrate_fi(&zigzag_status.velocity,&zigzag_status.d_velocity,1.0/20.0);
 
-	// calculte angule command
+	// calculte angle command
 	guidance_loop_set_theta(desired_theta);
 	if (zigzag_status.position.y < desired_y/2.0)
 	{
-	guidance_loop_set_phi(max_roll); 
-	printf("predicted position y == %f\n",zigzag_status.position.y);
+			guidance_loop_set_phi(max_roll); 
+			printf("predicted position y == %f\n",zigzag_status.position.y);
 	}
 	else
 	{
-	guidance_loop_set_phi(-max_roll); 
-	printf("predicted position y == %f\n",zigzag_status.position.y);
+			guidance_loop_set_phi(-max_roll); 
+			printf("predicted position y == %f\n",zigzag_status.position.y);
 	}
 	guidance_loop_set_heading(zigzag_status.psi_cmd);
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
