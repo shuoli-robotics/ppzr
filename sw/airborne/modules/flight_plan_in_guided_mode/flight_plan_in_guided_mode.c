@@ -201,7 +201,7 @@ bool go_straight(float theta,float distance,double ref_y){
 	v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
 	
 	float turn_trigger;
-	if(1){//use_optitrack){
+	if(0){//use_optitrack){
 	  turn_trigger = stateGetPositionNed_f()->x;
 	}else{
 	  turn_trigger = kf_pos_x;

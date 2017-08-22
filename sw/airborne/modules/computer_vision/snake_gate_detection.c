@@ -573,15 +573,16 @@ void snake_gate_periodic(void)
 //   debug_2 = u_k[3][0];
 //   debug_3 = u_k[4][0];
   
-  debug_1 = X_int[0][0];
-  debug_2 = X_int[1][0];
-  debug_3 = X_int[2][0];
+   debug_1 = X_int[0][0];
+   debug_2 = X_int[1][0];
+   debug_3 = X_int[2][0];
   
   
   //if measurement available -> do KF measurement update 
 
   //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
-  if((vision_sample || hist_sample) && arc_status.flag_in_arc == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
+   //(vision_sample || hist_sample)
+  if(( vision_sample || hist_sample) && arc_status.flag_in_arc == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
     gettimeofday(&stop, 0);
@@ -606,6 +607,9 @@ void snake_gate_periodic(void)
 	local_x = ls_pos_x;
 	local_y = ls_pos_y;
       }
+      
+//       debug_1 = local_x;
+//       debug_2 = local_y;
       
       float z_k_d[3];
       z_k_d[0] = local_x;
@@ -1147,7 +1151,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
   float hist_peek_value = detect_gate_sides(histogram,&side_1, &side_2);
   
-  printf("side_1[%d] side_2[%d]\n",side_1,side_2);
+  //printf("side_1[%d] side_2[%d]\n",side_1,side_2);
   
   //transform to angles in image frame, ignoring tilt angle of 20 deg
   float undist_x, undist_y;
@@ -1383,6 +1387,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   } else {
 
       //no detection
+      vision_sample = 0;
     
       last_frame_detection = 0;
      
@@ -2070,5 +2075,7 @@ void snake_gate_detection_init(void)
   init_butterworth_2_low_pass_int(&filter_x, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   init_butterworth_2_low_pass_int(&filter_y, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   init_butterworth_2_low_pass_int(&filter_z, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
+  
+  EKF_init();
   
 }
