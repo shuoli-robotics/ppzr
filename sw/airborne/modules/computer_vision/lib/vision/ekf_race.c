@@ -73,7 +73,7 @@ void EKF_init_diag(float A[7][7], float diag[7]){
   }
 }
 
-void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, float xdot[7][1], float x[7], float u[8]){
+void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, float u_k[8][1]){
   
 //    dt = time_stamp(n)-time_stamp(n-1);
 //    omega = [gyro_p(n) gyro_q(n)];
@@ -83,15 +83,24 @@ void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, fl
 //    U_k = [acc_x_filter(n) acc_y_filter(n) acc_z(n) omega phi(n) theta(n) psi(n)];
 // 
 //    X_int = [X_int; X_int_prev + d_kf_calc_f_nl(dt,X_int_prev,U_k)'*dt];
-  
+
   const float D_x = -1/0.5;
   const float D_y = -1/0.43;
   
-  const float g = -9.19;
+  const float g = 9.19;
+  
+  float x[7];
+  float u[8];
+  float xdot[7][1];
   
   //copy x into 1d array
   for(int i = 0;i < 7; i++){
     x[i] = x_prev[i][0];
+  }
+  
+  //copy x into 1d array
+  for(int i = 0;i < 8; i++){
+    u[i] = u_k[i][0];
   }
   
   // %xdot

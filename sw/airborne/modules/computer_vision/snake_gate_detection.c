@@ -49,6 +49,7 @@
 
 #include "filters/low_pass_filter.h"
 
+#include "modules/computer_vision/lib/vision/ekf_race.h"
 
 
 #define PI 3.1415926
@@ -70,7 +71,7 @@
 
 #define AHRS_PROPAGATE_FREQUENCY 512
 
-#define HFF_LOWPASS_CUTOFF_FREQUENCY 14
+#define HFF_LOWPASS_CUTOFF_FREQUENCY 20 //maybe also try 15
 
 
 struct video_listener *listener = NULL;
@@ -106,8 +107,8 @@ int sz = 0;
 int szx1 = 0;
 int szx2 = 0;
 
-int x = 0;
-int y = 0;
+// int x = 0;
+// int y = 0;
 
 
 // Result
@@ -144,25 +145,25 @@ float y_dist = 0;
 float z_dist = 0;
 
 //state filter
-float body_v_x = 0;
-float body_v_y = 0;
-
-float body_filter_x = 0;
-float body_filter_y = 0;
-
-float predicted_x_gate = 0;
-float predicted_y_gate = 0;
-float predicted_z_gate = 0;
-
-float current_x_gate = 0;
-float current_y_gate = 0;
-float current_z_gate = 0;
-
-float delta_z_gate   = 0;
-
-float previous_x_gate = 0;
-float previous_y_gate = 0;
-float previous_z_gate = 0;
+// float body_v_x = 0;
+// float body_v_y = 0;
+// 
+// float body_filter_x = 0;
+// float body_filter_y = 0;
+// 
+// float predicted_x_gate = 0;
+// float predicted_y_gate = 0;
+// float predicted_z_gate = 0;
+// 
+// float current_x_gate = 0;
+// float current_y_gate = 0;
+// float current_z_gate = 0;
+// 
+// float delta_z_gate   = 0;
+// 
+// float previous_x_gate = 0;
+// float previous_y_gate = 0;
+// float previous_z_gate = 0;
 
 int last_frame_detection = 0;
 int repeat_gate = 0;
@@ -223,12 +224,12 @@ float opt_body_v_x = 0;
 float opt_body_v_y = 0;
 
 //p3p final results
-float p3p_result_x = 0;
-float p3p_result_y = 0;
-float p3p_result_z = 0;
-float p3p_result_phi = 0;
-float p3p_result_theta = 0;
-float p3p_result_psi = 0;
+// float p3p_result_x = 0;
+// float p3p_result_y = 0;
+// float p3p_result_z = 0;
+// float p3p_result_phi = 0;
+// float p3p_result_theta = 0;
+// float p3p_result_psi = 0;
 float snake_res_x = 0;
 float snake_res_y = 0;
 float snake_res_z = 0;
@@ -273,12 +274,7 @@ float Psi[4][2] = {
    {0,   dt_}
 };
 
-float X_int[4][1] = {  
-   {0} ,   /*  initializers for row indexed by 0 */
-   {0} ,   /*  initializers for row indexed by 1 */
-   {0} ,  /*  initializers for row indexed by 2 */
-   {0}
-};
+float X_int[7][1] = {{0}};
 
 float X_opt[4][1] = {  
    {0} ,   /*  initializers for row indexed by 0 */
@@ -334,10 +330,7 @@ float H_k[2][4] = {
    {0, 1, 0, 0}  
 };
 
-float u_k[2][1] = {  
-   {0} ,  
-   {0}  
-};
+float u_k[8][1] = {{0}};
 
 /* low pass filter variables */
 Butterworth2LowPass_int filter_x;
@@ -348,8 +341,8 @@ int vision_sample = 0;
 
 //KF timing
 
-float KF_dt = 0;
-float KF_m_dt = 0;
+float EKF_dt = 0;
+float EKF_m_dt = 0;
 double time_prev = 0;
 double time_prev_m = 0;
 
@@ -396,11 +389,13 @@ int hist_sample = 0;
 float x_pos_hist = 0;
 float y_pos_hist = 0;
 
+bool prev_arc_status = FALSE;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
-  pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_sz, &hor_angle, &vert_angle, &x_dist, &y_dist,
+  pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_y, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
-                                &current_x_gate, &debug_1, &debug_2, &debug_3, &debug_4,
+                                &debug_5, &debug_1, &debug_2, &debug_3, &debug_4,
                                 &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
                                 &debug_5);//psi_gate); //
 }
@@ -490,41 +485,13 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
   dest[3] = source[3];  // Y
 }
 
-void calculate_gate_position(int x_pix, int y_pix, int sz_pix, struct image_t *img, struct gate_img gate)
-{
-  float hor_calib = 0.075;
-  //calculate angles here  
-  /*
-  vert_angle = (-(((float)x_pix * 1.0) - ((float)(img->w) / 2.0)) * radians_per_pix_w) -
-               (stateGetNedToBodyEulers_f()->theta);
-  hor_angle = ((((float)y_pix * 1.0) - ((float)(img->h) / 2.0)) * radians_per_pix_h) + hor_calib;
-  */
-  vert_angle = (-(((float)y_pix * 1.0) - ((float)(img->w) / 2.0)) * radians_per_pix_h) -
-               (stateGetNedToBodyEulers_f()->theta);
-  hor_angle = ((((float)x_pix * 1.0) - ((float)(img->h) / 2.0)) * radians_per_pix_w) + hor_calib;
-
-  pix_x = x_pix;
-  pix_y = y_pix;
-  pix_sz = gate.sz;
-  current_quality = gate.gate_q;
-
-  if (gate_size == 0) {
-    gate_size = 1;
-  }
-
-  float gate_size_m = tan(((float)gate_size / 2.0) * radians_per_pix_w) * 3.0;
-  y_dist = gate_size_m / tan((pix_sz / 2) * radians_per_pix_w);
-  x_dist = y_dist * sin(hor_angle);
-  z_dist = y_dist * sin(vert_angle);
-
-}
 
 //state filter in periodic loop
 void snake_gate_periodic(void)
 {
   gettimeofday(&stop, 0);
   double time_now = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
-  KF_dt = time_now - time_prev;
+  EKF_dt = time_now - time_prev;
   time_prev = time_now;
   
   if((time_now-last_detection_time)>0.3){
@@ -533,52 +500,60 @@ void snake_gate_periodic(void)
     vision_sample == 1;
   }
   
-  struct Int32Vect3 acc_meas_body;
-  struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
-  int32_rmat_transp_vmult(&acc_meas_body, body_to_imu_rmat, &imu.accel);
+//   struct Int32Vect3 acc_meas_body;
+//   struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
+//   int32_rmat_transp_vmult(&acc_meas_body, body_to_imu_rmat, &imu.accel);
   
-//   struct Int32Vect3 acc_body_filtered;
-//   acc_body_filtered.x = update_butterworth_2_low_pass_int(&filter_x, acc_meas_body.x);
-//   acc_body_filtered.y = update_butterworth_2_low_pass_int(&filter_y, acc_meas_body.y);
-//   acc_body_filtered.z = update_butterworth_2_low_pass_int(&filter_z, acc_meas_body.z);
+  struct Int32Vect3 acc_body_filtered;
+  acc_body_filtered.x = update_butterworth_2_low_pass_int(&filter_x, imu.accel.x);
+  acc_body_filtered.y = update_butterworth_2_low_pass_int(&filter_y, imu.accel.y);
+  acc_body_filtered.z = update_butterworth_2_low_pass_int(&filter_z, imu.accel.z);
   
-  struct Int32Vect3 filtered_accel_ltp;
-  struct Int32RMat *ltp_to_body_rmat = stateGetNedToBodyRMat_i();
-  int32_rmat_transp_vmult(&filtered_accel_ltp, ltp_to_body_rmat, &acc_meas_body);
-  u_k[0][0] = ACCEL_FLOAT_OF_BFP(filtered_accel_ltp.x);
-  u_k[1][0] = ACCEL_FLOAT_OF_BFP(filtered_accel_ltp.y);
+//   struct Int32Vect3 filtered_accel_ltp;
+//   struct Int32RMat *ltp_to_body_rmat = stateGetNedToBodyRMat_i();
+//   int32_rmat_transp_vmult(&filtered_accel_ltp, ltp_to_body_rmat, &acc_meas_body);
   
-  //MAT_PRINT(2,1,u_k);
+  //    U_k = [acc_x_filter(n) acc_y_filter(n) acc_z(n) omega phi(n) theta(n) psi(n)];
   
+  u_k[0][0] = ACCEL_FLOAT_OF_BFP(acc_body_filtered.x);
+  u_k[1][0] = ACCEL_FLOAT_OF_BFP(acc_body_filtered.y);
+  u_k[2][0] = ACCEL_FLOAT_OF_BFP(acc_body_filtered.z);
+  u_k[3][0] = RATE_FLOAT_OF_BFP(imu.gyro.p);
+  u_k[4][0] = RATE_FLOAT_OF_BFP(imu.gyro.q);
+  u_k[5][0] = stateGetNedToBodyEulers_f()->phi;
+  u_k[6][0] = stateGetNedToBodyEulers_f()->theta;
+  u_k[7][0] = stateGetNedToBodyEulers_f()->psi;
   
-  //update dt 
-  Phi[0][2] = KF_dt;
-  Phi[1][3] = KF_dt;
+  if(prev_arc_status == TRUE && arc_status.flag_in_arc == FALSE){
+    X_int[0][0] = 0;
+    X_int[1][0] = 0;
+    //also reset gate position
+  }
+  prev_arc_status = arc_status.flag_in_arc;
   
-  Psi[2][0] = KF_dt;
-  Psi[3][1] = KF_dt;
-  
-  //X_int = Phi*X_int_prev' + Psi*u_k(1:2)'
-  
-  // C = A*B   A:(i,k) B:(k,j) C:(i,j)
-  //MAT_MUL(_i, _k, _j, C, A, B)
-  MAT_MUL(4, 4, 1, X_temp_1, Phi, X_int);
-  MAT_MUL(4, 2, 1, X_temp_2, Psi, u_k);
-  
-  // C = A+B
-  //MAT_SUM(_i, _j, C, A, B)
-  MAT_SUM(4, 1, X_int, X_temp_1, X_temp_2);
-  
-  //bounding pos and speed
+  if(arc_status.flag_in_arc == FALSE){
+      EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
+  }
+
+  //bounding pos, speed and biases
   if(X_int[0][0] > 6)X_int[0][0] = 6;//xmax
   if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
   if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
+  if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
+  if(X_int[2][0] < -4)X_int[2][0] = -4;//xmin
   
-  if(X_int[2][0] > 3)X_int[2][0] = 3;//xmax
-  if(X_int[2][0] < -3)X_int[2][0] = -3;//xmin
-  if(X_int[3][0] > 3)X_int[3][0] = 3;//ymax
-  if(X_int[3][0] < -3)X_int[3][0] = -3;//ymin
+  //speed
+  if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
+  if(X_int[3][0] < -1.5)X_int[3][0] = -1.5;//ymin
+  
+  //acc biases
+  if(X_int[4][0] > 1)X_int[4][0] = 1;//ymax
+  if(X_int[4][0] < -1)X_int[4][0] = -1;//ymin
+  if(X_int[5][0] > 1)X_int[5][0] = 1;//ymax
+  if(X_int[5][0] < -1)X_int[5][0] = -1;//ymin
+  if(X_int[6][0] > 1)X_int[6][0] = 1;//ymax
+  if(X_int[6][0] < -1)X_int[6][0] = -1;//ymin
   
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
@@ -586,125 +561,39 @@ void snake_gate_periodic(void)
   kf_vel_y = X_int[3][0];
   
   
-   debug_1 = X_int[2][0];
+ //  debug_1 = X_int[2][0];
   
   
 //   debug_2 = X_int[1][0];
   
-  debug_3 = kf_pos_x;
-  debug_4 = kf_pos_y;
-  
-//   if(arc_status.flag_in_arc == TRUE){
-//     debug_1 = arc_status.x;
-//     debug_2 = arc_status.y;
-//   }
+//   debug_3 = kf_pos_x;
+//   debug_4 = kf_pos_y;
   
 //   debug_1 = u_k[0][0];
-//   debug_2 = u_k[1][0];
+//   debug_2 = u_k[3][0];
+//   debug_3 = u_k[4][0];
+  
+  debug_1 = X_int[0][0];
+  debug_2 = X_int[1][0];
+  debug_3 = X_int[2][0];
+  
   
   //if measurement available -> do KF measurement update 
-  //fix super long if statement??
+
   //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
-  if((vision_sample == 1 || arc_status.flag_in_arc == TRUE || hist_sample)&& !isnan(ls_pos_x) && !isnan(ls_pos_y))// && ekf_debug_cnt < 3)
+  if((vision_sample || hist_sample) && arc_status.flag_in_arc == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
-    //ekf_debug_cnt+=1;
-//      if(0)%in_turn == 1)
-//            X_int(n,1) = arc_pred(n,1);
-//            X_int(n,2) = arc_pred(n,2);
-//         end
-//         
-//         Phi = [1 0 EKF_dt 0;
-//        0 1 0  EKF_dt;
-//        0 0 1  0;
-//        0 0 0  1];
-//         
-//         x_kk_1 = X_int(n,:);
-//         
-//         % P(k+1|k) (prediction covariance matrix)
-//         P_k_1 = Phi*P_k_1_k_1*Phi' + Gamma*Q*Gamma';
-// 
-//         K = P_k_1 * H_k' / (H_k*P_k_1 * H_k' + R_k);
-// 
-//         %z_k = [pos_x(n) pos_y(n) pos_z(n)];
-//         z_k = [pos_x_ls(n) pos_y_ls(n)];
-//        
-//         X_opt = x_kk_1' + K * (z_k - X_int(n,1:2))';
-//         X_int(n,:) = X_opt';
-// 
-//         P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
     
     gettimeofday(&stop, 0);
     double time_m = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
-    KF_m_dt = time_m - time_prev_m;
+    EKF_m_dt = time_m - time_prev_m;
     time_prev_m = time_m;
     
     //MAT_PRINT(2, 2,temp_2_2_b);
     
-    if(KF_m_dt>5.0)KF_m_dt=5.0;
+    if(EKF_m_dt>5.0)EKF_m_dt=5.0;
     //update dt 
-    Phi[0][2] = KF_m_dt;
-    Phi[1][3] = KF_m_dt;
-    
-//     MAT_PRINT(4, 4,P_k_1_k_1);
-//     MAT_PRINT(4, 4,Phi);
-//     
-//     MAT_PRINT(4, 2,Gamma);
-//     MAT_PRINT(2, 2,Q_mat);
-    
-    
-    //P_k_1 = Phi*P_k_1_k_1*Phi' + Gamma*Q*Gamma';
-    
-    // C = A*B'   A:(i,k) B:(j,k) C:(i,j)
-    //MAT_MUL_T(_i, _k, _j, C, A, B) 
-    MAT_MUL_T(2, 2, 4, temp_2_4, Q_mat, Gamma);
-    
-    // C = A*B   A:(i,k) B:(k,j) C:(i,j)
-    //MAT_MUL(_i, _k, _j, C, A, B)
-    MAT_MUL(4, 2, 4, temp_4_4_a, Gamma, temp_2_4);
-    //MAT_PRINT(4, 4,temp_4_4_a);
-    
-    MAT_MUL_T(4, 4, 4, temp_4_4_b, P_k_1_k_1, Phi);
-    //MAT_PRINT(4, 4,temp_4_4_b);
-    MAT_MUL(4, 4, 4, temp_4_4_c, Phi, temp_4_4_b);
-    //MAT_PRINT(4, 4,temp_4_4_c);
-    MAT_SUM(4, 4, P_k_1, temp_4_4_a, temp_4_4_c);
-    
-    //MAT_PRINT(4, 4,P_k_1);
-    
-    //MAT_PRINT(2, 4,H_k);
-    //K = P_k_1 * H_k' / (H_k*P_k_1 * H_k' + R_k);
-    MAT_MUL_T(4, 4, 2, temp_4_2_a, P_k_1, H_k);
-   // MAT_PRINT(4, 2,temp_4_2_a);
-    MAT_MUL(2, 4, 2, temp_2_2_a, H_k, temp_4_2_a);
-   // MAT_PRINT(2, 2,temp_2_2_a);
-    MAT_SUM(2, 2, temp_2_2_b, temp_2_2_a, R_k);
-    
-    //MAT_PRINT(2, 2,temp_2_2_b);
-    
-    //calc 2x2 inverse
-    float det_2_2 = 1/(temp_2_2_b[0][0]*temp_2_2_b[1][1]-temp_2_2_b[1][0]*temp_2_2_b[0][1]);
-    printf("det_2_2%f\n",det_2_2);//check for nan!
-    
-    inv_2_2[0][0] = temp_2_2_b[1][1]*det_2_2;
-    inv_2_2[0][1] = -temp_2_2_b[0][1]*det_2_2;
-    inv_2_2[1][0] = -temp_2_2_b[1][0]*det_2_2;
-    inv_2_2[1][1] = temp_2_2_b[0][0]*det_2_2;
-    
-    //MAT_PRINT(2, 2,inv_2_2);
-    
-    MAT_MUL(4, 2, 2, K_k, temp_4_2_a, inv_2_2);
-    
-    //MAT_PRINT(4, 2,K_k);
-    
-    //X_opt = x_kk_1' + K * (z_k - X_int(n,1:2))';
-    if(arc_status.flag_in_arc == TRUE){
-      inn_vec[0][0] = arc_status.x-X_int[0][0];
-      inn_vec[1][0] = arc_status.y-X_int[1][0];
-      //debug_3 = arc_status.y;
-    }else{
-      //xy-position in global frame, depending on which part of the track.(later from Shuo module)
-      float trans_x;
-      float trans_y;
+   
       //xy-position in local gate frame(ls, or histogram)
       float local_x = 0;
       float local_y = 0;
@@ -718,93 +607,17 @@ void snake_gate_periodic(void)
 	local_y = ls_pos_y;
       }
       
-      //transform to global frame, depending on heading(later depending on which part of the track)
-      if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){
-	trans_x = 3.5-local_x;//was 3.0
-	trans_y = 3.0 -local_y;//was 3.0 +0.2;//correction factor??
-      }else{
-	trans_x = local_x;
-	trans_y = local_y;
-      }
+      float z_k_d[3];
+      z_k_d[0] = local_x;
+      z_k_d[1] = local_y;
+      z_k_d[2] = stateGetPositionNed_f()->z;
       
+      EKF_update_state(X_int,X_int,z_k_d,EKF_m_dt);
       
-      
-      if(0){//hist_sample){
-	debug_3 = trans_x;
-	debug_4 = trans_y;
-      }
-      inn_vec[0][0] = trans_x-X_int[0][0];
-      inn_vec[1][0] = trans_y-X_int[1][0];
-      //debug_3 = ls_pos_y;
-    }
-    
-    printf("ls_pos_x:%f\n",ls_pos_x);
-    printf("X_int[0][0]:%f\n",X_int[0][0]);
-   
-    printf("ls_pos_y:%f\n",ls_pos_y);
-    printf("X_int[1][0]:%f\n",X_int[1][0]);
-    
-    
-    MAT_MUL(4, 2, 1, temp_4_1, K_k, inn_vec);
-    MAT_SUM(4, 1, X_int, X_int, temp_4_1);
-    
-    
-//      debug_3 = kf_pos_x;
-//      debug_4 = kf_pos_y;
-    
-    
-    //P_k_1_k_1 = (eye(4) - K*H_k) * P_k_1 * (eye(4) - K*H_k)' + K*R_k*K';
-    MAT_MUL(4, 2, 4, temp_4_4_a, K_k,H_k);
-    //MAT_PRINT(4, 4,temp_4_4_a);
-    
-    MAT_SUB(4, 4, temp_4_4_b, eye_4, temp_4_4_a);
-    //MAT_PRINT(4, 4,temp_4_4_b);
-    //error free until here?
-    MAT_MUL_T(4, 4, 4, temp_4_4_c, P_k_1, temp_4_4_b);
-    // MAT_PRINT(4, 4,temp_4_4_c);
-    //temp_4_4_a reuse
-    MAT_MUL(4, 4, 4, temp_4_4_a, temp_4_4_b,temp_4_4_c);
-    // MAT_PRINT(4, 4,temp_4_4_a);
-    MAT_MUL_T(2, 2, 4, temp_2_4, R_k, K_k);
-   //  MAT_PRINT(2, 4,temp_2_4);
-    //temp_4_4_b reuse
-    MAT_MUL(4, 2, 4, temp_4_4_b, K_k,temp_2_4);
-    // MAT_PRINT(4, 4,temp_4_4_b);
-    MAT_SUM(4, 4, P_k_1_k_1, temp_4_4_a, temp_4_4_b);
-    // MAT_PRINT(4, 4,P_k_1_k_1);
     vision_sample = 0;
   }
   
-  
-}/*
-  //SAFETY  gate_detected
-  if (y_dist > 0.6 && y_dist < 4) { // && gate_gen == 1)
-    states_race.gate_detected = 1;
-    counter_gate_detected = 0;
-    time_gate_detected = 0;
-  } else {
-    states_race.gate_detected = 0;
-    counter_gate_detected = 0;
-    time_gate_detected = 0;
-  }
-
-  //SAFETY ready_pass_trough
-  if (states_race.gate_detected == 1 && fabs(x_dist - INITIAL_X) < X_POS_MARGIN && fabs(y_dist - INITIAL_Y) < Y_POS_MARGIN
-      && fabs(z_dist - 0) < Z_POS_MARGIN && fabs(opt_body_v_x) < Y_SPEED_MARGIN
-      && fabs(opt_body_v_x) < Y_SPEED_MARGIN) {
-    safe_pass_counter += 1;
-  } else {
-    safe_pass_counter = 0;
-    states_race.ready_pass_through = 0;
-  }
-
-  if (safe_pass_counter > 2) {
-    safe_pass_counter = 0;
-    states_race.ready_pass_through = 1;
-  }
-
- 
-}*/
+}
 
 //qsort comp function for sorting 
 int cmpfunc (const void * a, const void * b)
@@ -982,23 +795,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 {
   int filter = 0;
   int gate_graphics = 0;
-  int gen_alg = 1;
-  uint16_t i;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;
   float quality;
-  struct point_t from, to;
+
   best_quality = 0;
   best_gate.gate_q = 0;
-  //test
-  //pix_x = img->w;
-  //pix_y = img->h;
 
-  p3p_result_x = 0;
-  p3p_result_y = 0;
-  p3p_result_z = 0;
-  p3p_result_phi = 0;
-  p3p_result_theta = 0;
-  p3p_result_psi = 0;
   snake_res_x = 0;
   snake_res_y = 0;
   snake_res_z = 0;
@@ -1012,7 +814,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //color picker
   //check_color_center(img,&y_center_picker,&cb_center,&cr_center);
 
-  for (i = 0; i < n_samples; i++) {
+  for (int i = 0; i < n_samples; i++) {
     // get a random coordinate:
     x = rand() % img->h;
     y = rand() % img->w;
@@ -1101,8 +903,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   // variables used for fitting:
   //float x_center, y_center, radius,
-  float fitness, angle_1, angle_2, s_left, s_right;
-  int clock_arms = 1;
+  //float fitness, angle_1, angle_2, s_left, s_right;
+  //int clock_arms = 1;
   // prepare the Region of Interest (ROI), which is larger than the gate:
   float size_factor = 1.5;//2;//1.25;
   
@@ -1152,8 +954,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.x = (int) x_center;
             temp_check_gate.y = (int) y_center;
             temp_check_gate.sz = (int) radius;
-            temp_check_gate.sz_left = (int) s_left;
-            temp_check_gate.sz_right = (int) s_right;
+            
 	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
 	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
 	    
@@ -1162,7 +963,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	    
 	    if(temp_check_gate.n_sides > 3 && temp_check_gate.gate_q > best_gate.gate_q)
 	    {
-	    best_fitness = fitness;
+	   
 	    //best_quality = .gate_q(first maybe zero
             // store the information in the gate:
             best_gate.x = temp_check_gate.x;
@@ -1209,8 +1010,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
             temp_check_gate.x = (int) x_center;
             temp_check_gate.y = (int) y_center;
             temp_check_gate.sz = (int) radius;
-            temp_check_gate.sz_left = (int) s_left;
-            temp_check_gate.sz_right = (int) s_right;
 	    
 	    memcpy(&(temp_check_gate.x_corners[0]),points_x,sizeof(int)*4);
 	    memcpy(&(temp_check_gate.y_corners[0]),points_y,sizeof(int)*4);
@@ -1309,7 +1108,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   y_dist = 0;
   z_dist = 0;
   if(best_gate.gate_q > (min_gate_quality*2)){
-  calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
   //draw_gate_color(img, best_gate, blue_color);
   snake_res_x = x_dist;
   snake_res_y = y_dist;
@@ -1365,7 +1163,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
   float b = (tanf(side_angle_2)*tanf(side_angle_1))/((tanf(side_angle_1)-tanf(side_angle_2))*tanf(side_angle_1)); //tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
   y_pos_hist = 0.5+b;
-  float a = 1-b;
+  //float a = 1-b;
   x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   
   float max_dist_h = 1.5;
@@ -1427,100 +1225,20 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     gate_quality = best_gate.gate_q;
     
-    //image_yuv422_set_color(img,img,gates[n_gates-1].x,gates[n_gates-1].y);
-
-    //calculate_gate_position(gates[n_gates-1].x,gates[n_gates-1].y,gates[n_gates-1].sz,img,gates[n_gates-1]);
-    //was here
-    //calculate_gate_position(best_gate.x, best_gate.y, best_gate.sz, img, best_gate);
-    
-
         gate_gen = 1;//0;
         states_race.gate_detected = 1;
-        
-//draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
-	
-	//vector and matrix declarations
-	  struct FloatVect3 gate_point_0,gate_point_1,gate_point_2,
-	  p3p_pos_sol_0,p3p_pos_sol_1,p3p_pos_sol_2,p3p_pos_sol_3,p3p_pos_test;
-	  struct FloatMat33 R_mat_0,R_mat_1,R_mat_2,R_mat_3, R_test;
-	  struct FloatEulers R_eulers;
-	  
-	  struct FloatVect3 p3p_pos_sol[4];
-	  struct FloatVect3 gate_shift_points[4];
-	  struct FloatVect3 gate_shift_vec[4];
-	  struct FloatMat33 R_mat[4];
-	  //ransac 
-	  int ransac_error[4];
-	  float ransac_rep_error[4];
-	  struct FloatVect3 ransac_pos[4];
-	  struct FloatMat33 ransac_R_mat[4];
-	  
-	  /*float gate_dist_x = 2.5;*///was4.2 then 3.5??maybe lens distortion??
-	  
+        	  
 	    
 	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
 	  VECT3_ASSIGN(gate_points[1], gate_dist_x,0.5000, -1.9000);
 	  VECT3_ASSIGN(gate_points[2], gate_dist_x,0.5000, -0.9000);
 	  VECT3_ASSIGN(gate_points[3], gate_dist_x,-0.5000, -0.9000);
 	  
-	/*  
-	  VECT3_ASSIGN(gate_points[0], 4.2000,0.3000, -1.9000);
-	  VECT3_ASSIGN(gate_points[1], 4.2000,1.3000, -1.9000);
-	  VECT3_ASSIGN(gate_points[2], 4.2000,1.3000, -0.9000);
-	  VECT3_ASSIGN(gate_points[3], 4.2000,0.3000, -0.9000);*/
-	
-	
-	//DEBUG----------------------------------------------------------------
-	
-	  VECT3_ASSIGN(p3p_pos_test, 2.295645,0.877159, -1.031926);
-	  
-	  MAT33_ELMT(R_test, 0, 0) = 0.999867;//(row,column)
-	  MAT33_ELMT(R_test, 0, 1) =  -0.015745;
-	  MAT33_ELMT(R_test, 0, 2) = -0.004201;
-
-	  MAT33_ELMT(R_test, 1, 0) = 0.015464;//(row,column)
-	  MAT33_ELMT(R_test, 1, 1) = 0.998070;
-	  MAT33_ELMT(R_test, 1, 2) = -0.060151;
-
-	  MAT33_ELMT(R_test, 2, 0) = 0.005140;//(row,column)
-	  MAT33_ELMT(R_test, 2, 1) = 0.060078;
-	  MAT33_ELMT(R_test, 2, 2) = 0.998180;
-// 	
-// 	  MAT33_ELMT(R_test, 0, 0) = 1;//(row,column)
-// 	  MAT33_ELMT(R_test, 0, 1) = 0;
-// 	  MAT33_ELMT(R_test, 0, 2) = 0;
-// 
-// 	  MAT33_ELMT(R_test, 1, 0) = 0;//(row,column)
-// 	  MAT33_ELMT(R_test, 1, 1) = 1;
-// 	  MAT33_ELMT(R_test, 1, 2) = 0;
-// 
-// 	  MAT33_ELMT(R_test, 2, 0) = 0;//(row,column)
-// 	  MAT33_ELMT(R_test, 2, 1) = 0;
-// 	  MAT33_ELMT(R_test, 2, 2) = 1;
-	  
-	int x_bp_corners[4];
-	int y_bp_corners[4];
-	float x_f_corners[4];
-	float y_f_corners[4];
-	float x_gate_corners[4];
-	float y_gate_corners[4];
-	
-	for(int i = 0;i<4;i++)
-	  {
-	    float x_bp;
-	    float y_bp;
-	    back_proj_points(&gate_points[i],&p3p_pos_test,&R_test,&x_bp,&y_bp);
-	    x_f_corners[i] = x_bp;
-	    y_f_corners[i] = y_bp;
-// 	    debug_1 = x_bp;
-// 	    debug_2 = y_bp;
-	  }
-	
-	//DEBUG---------------------------------------------------------------
 	
 	//Undistort fisheye points
 	float k_fisheye = 1.085;
-	float reprojection_error[4];
+	float x_gate_corners[4];
+	float y_gate_corners[4];
 		
 	struct FloatRMat R,R_20,R_trans,Q_mat,I_mat, temp_mat, temp_mat_2;
 	struct FloatEulers attitude, cam_body;
@@ -1559,25 +1277,11 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	p_vec.z = 0;
 	
 	
-// 	attitude.phi =    0.0873;//stateGetNedToBodyEulers_f()->phi;//positive ccw
-// 	attitude.theta = 0.3491;//-(stateGetNedToBodyEulers_f()->theta-(20*(3.14/180)));//negative downward
-// 	attitude.psi = 0.1745;//stateGetNedToBodyEulers_f()->psi;
+
 	attitude.phi =    stateGetNedToBodyEulers_f()->phi;//positive ccw
 	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
 	
-// 	float temp_psi = stateGetNedToBodyEulers_f()->psi;
-// 	//debug_5 = temp_psi;
-// 	if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
-// 	  if(temp_psi<0){
-// 		  attitude.psi = temp_psi+3.14;
-// 	  }
-// 	  else{
-// 		  attitude.psi = temp_psi-3.14;
-// 	  }
-// 	}
-// 	else{
-// 	  attitude.psi = stateGetNedToBodyEulers_f()->psi;
-// 	}
+
 	
 	attitude.psi = local_psi;
 	
@@ -1586,10 +1290,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	float_rmat_of_eulers_321(&R,&attitude);
 	
 	
-	//debug_3 = (180/3.14)*attitude.theta;
-	
-	float x_trail[4] = {-55.0531, 0.4769, 5.4429, -56.9734};
-	float y_trail[4] = {48.1444, 44.2227, 105.7145, 113.9445};
 	
 	for(int i = 0;i<4;i++)
 	{
@@ -1629,20 +1329,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	 
 	  double vec_norm = sqrt(VECT3_NORM2(n_vec));
 	  VECT3_SDIV(n_vec, n_vec, vec_norm);
-// 	  printf("n_vec norm:\n");
-// 	  print_vector(n_vec);
 	  VECT3_VECT3_TRANS_MUL(temp_mat, n_vec,n_vec);
-// 	  printf("n_vec_squared:\n");
-// 	  print_matrix(temp_mat);
 	  MAT33_MAT33_DIFF(temp_mat,I_mat,temp_mat); 
-// 	  printf("n_vec_squared - I:\n");
-// 	  print_matrix(temp_mat);
 	  MAT33_COPY(temp_mat_2,Q_mat);
-// 	  printf("temp_mat_2:\n");
-// 	  print_matrix(temp_mat_2);
 	  MAT33_MAT33_SUM(Q_mat,temp_mat_2,temp_mat);
-// 	  printf("Q_mat_sum:%d:\n",i);
-// 	  print_matrix(Q_mat);
 	  MAT33_VECT3_MUL(temp_vec, temp_mat, gate_points[i]);
 	  VECT3_SUM(p_vec,p_vec,temp_vec);
 	  
@@ -1654,39 +1344,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 //	  or q = Rp
 //        hence p = R_inv*q
 	  
-	  //Q_mat = Q_mat + I_mat - n_vec*n_vec'
-	  //MAT33_VECT3_TRANSP_MUL(temp1,N,C);
-	  
-	  
-	  //gate_points[i];
-	  
-	   //debug_1 = undist_x;
- 	  //debug_2 = undist_y;
-	  
-// 	  draw_cross(img,(int)x_f_corners[i],(int)y_f_corners[i],green_color);
-// 	  vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&gate_vectors[i]);
-	  
-	 // //vec_from_point_ned(x_f_corners[i]-157,y_f_corners[i]-32, f_fisheye,&vec_temp1);
-// 	  
-// 	  printf("vec_from_point:\n");
-// 	  print_vec(vec_temp1);
-// 	  
-// 	  VECT3_DIFF(vec_temp1,gate_points[i],p3p_pos_sol_0);
-// 	  double norm = sqrt(VECT3_NORM2(vec_temp1));
-// 	  VECT3_SDIV(gate_vectors[i], vec_temp1, norm);
-// 	  
-// 	  printf("gate_vectors[%d]:\n",i);
-// 	  print_vec(gate_vectors[i]);
-	  
-	  
-// 	  debug_1 = gate_vectors[i].x;
-// 	  debug_2 = gate_vectors[i].y;
-// 	  debug_3 = gate_vectors[i].z;
 	  
 	}
 	
-// 	  printf("Q_mat:\n");
-// 	  print_matrix(Q_mat);
+
 	
 	MAT33_INV(temp_mat,Q_mat);
 	
@@ -1723,10 +1384,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
       //no detection
     
-//       ls_pos_x = 0;
-//       ls_pos_y = 0;
-//       ls_pos_z = 0;
-    
       last_frame_detection = 0;
      
       states_race.gate_detected = 0;
@@ -1734,18 +1391,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       gate_gen = 1;
     
   }
-  
-//   debug_1 = ls_pos_x;
-//   debug_2 = ls_pos_y;
- // debug_3 = ls_pos_z;
-  
-  	//principal point
-	//draw_cross(img,158,12,blue_color);
-	
+  	
 	//better principal point?
 	draw_cross(img,158,32,green_color);
-	
-	
 	
   return img; // snake_gate_detection did not make a new image
 }
@@ -2113,7 +1761,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
   n_points = 0;
   n_colored_points = 0;
   int np, nc;
-    int bottom;
+    
   // how much of the side should be visible to count as a detected side?
   float min_ratio_side = 0.30;
   (*n_sides) = 0;
@@ -2183,7 +1831,7 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
   n_points = 0;
   n_colored_points = 0;
   int np, nc;
-    int bottom;
+  
   // how much of the side should be visible to count as a detected side?
   float min_ratio_side = 0.30;
   (*n_sides) = 0;
@@ -2295,90 +1943,6 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
   }
 }
 
-
-extern int check_back_side_QR_code(struct image_t* im, struct gate_img gate)
-{
-  // check a square at the top left of the gate:
-  int n_points, n_colored_points;
-  int min_x, max_x, min_y, max_y;
-  n_points = 0;
-  n_colored_points = 0;
-  float size_square = 0.5; // quarter of a gate  
-  struct gate_img bs_square;  
-  float threshold_color_ratio = 0.5;
-
-  if (gate.sz_left == gate.sz_right) {
-
-    // square gate:
-    min_x = gate.x - (1.0f + size_square) * gate.sz;
-    max_x = gate.x - gate.sz;
-    min_y = gate.y + gate.sz;
-    max_y = gate.y + (1.0f - size_square) * gate.sz;
-    
-    // draw it:
-    bs_square.x = (min_x + max_x) / 2;
-    bs_square.y = (min_y + max_y) / 2;
-    bs_square.sz = (max_x - min_x) / 2;
-    bs_square.sz_left = bs_square.sz;
-    bs_square.sz_right = bs_square.sz;
-    //draw_gate(im, bs_square);
-
-    // go over the back side square and see if it is orange enough:
-    for(y = min_y; y < max_y; y++)
-    {
-      for(x = min_x; x < max_x; x++)
-      {
-        n_points++;
-        n_colored_points += check_color(im, x, y); 
-      }
-    }
-    
-    if((float) n_colored_points / (float) n_points > threshold_color_ratio)
-    {
-      return 1;
-    }
-    else
-    {
-      return 0;
-    }
-  }
-  else
-  {
-    // polygon gate:
-    
-    min_x = gate.x - (1.0f + size_square) * gate.sz;
-    max_x = gate.x - gate.sz;
-    min_y = gate.y + gate.sz_left;
-    max_y = gate.y + (1.0f - size_square) * gate.sz_left;
-    
-     // draw it:
-    bs_square.x = (min_x + max_x) / 2;
-    bs_square.y = (min_y + max_y) / 2;
-    bs_square.sz = (max_x - min_x) / 2;
-    bs_square.sz_left = bs_square.sz_left;
-    bs_square.sz_right = bs_square.sz_right;
-    //draw_gate(im, bs_square);
-    
-    for(y = min_y; y < max_y; y++)
-    {
-      for(x = min_x; x < max_x; x++)
-      {
-        n_points++;
-        n_colored_points += check_color(im, x, y); 
-      }
-    }
-    
-    if((float) n_colored_points / (float) n_points > threshold_color_ratio)
-    {
-      return 1;
-    }
-    else
-    {
-      return 0;
-    }
-  }  
-    
-}
 
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int *n_points, int *n_colored_points)
 {

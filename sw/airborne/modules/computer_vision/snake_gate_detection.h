@@ -53,8 +53,8 @@ extern void draw_gate(struct image_t *im, struct gate_img gate);
 extern void draw_gate_polygon(struct image_t *im, int *x_points, int *y_points, uint8_t* color);
 extern void draw_gate_color(struct image_t *im, struct gate_img gate, uint8_t* color);
 extern void check_gate(struct image_t *im, struct gate_img gate, float* quality, int* sides);
-extern int check_back_side_QR_code(struct image_t* im, struct gate_img best_gate);
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int* n_points, int* n_colored_points);
+void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, int *n_sides);
 
 void vec_from_point(float point_x, float point_y, int f, struct FloatVect3 *vec);
 void vec_from_point_2(float point_x, float point_y, int f, struct FloatVect3 *vec);
@@ -63,6 +63,18 @@ void undistort_fisheye_point(int point_x, int point_y, float *undistorted_x, flo
 void back_proj_points(struct FloatVect3 *gate_point, struct FloatVect3 *cam_pos, struct FloatMat33 *R_mat, float *x_res, float *y_res);
 float euclidean_distance(float x_i, float x_bp, float y_i, float y_bp);
 int find_minimum(float *error);
+
+void smooth_hist(int *smooth, int *raw_hist, int window);
+int find_max_hist(int *hist);
+int find_hist_peeks(float *hist,int *peeks);
+int find_hist_peeks_flat(int *hist,int *peeks);
+void print_hist(struct image_t *img,int *hist);
+void print_sides(struct image_t *im, int side_1, int side_2);
+float detect_gate_sides(int *hist_raw, int *side_1, int *side_2);
+
+void print_matrix(struct FloatMat33 mat);
+void print_vector(struct FloatVect3 vec);
+void draw_cross(struct image_t *im,int x, int y, uint8_t* color);
 
 extern void snake_gate_periodic(void);
 
