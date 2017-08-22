@@ -57,16 +57,14 @@ void third_part_logic(void);
 void fourth_part_logic(void);
 void fifth_part_logic(void);
 
-//bool replay_flag;
 bool flag_init_geo;
-enum states_lower_level state_lower_level = WAIT_FOR_DETECTION_CM;
-enum states_upper_level state_upper_level = SECOND_PART;
+enum states_lower_level state_lower_level ;
+enum states_upper_level state_upper_level ;
 
 
 
 //temp fix for data set recording
 int init_pos_filter = 0;
-
 
 void command_init(){
     previous_mode = autopilot_mode;
@@ -138,23 +136,24 @@ void first_part_logic()
                 state_lower_level = TAKE_OFF_OPEN_LOOP_CM;
             break;
 			
-        case TAKE_OFF_OPEN_LOOP_CM:
-            take_off(TAKE_OFF_ALTITUDE);
-            if(states_race.altitude_is_achieved == TRUE)
-            {
-                previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
-                state_lower_level =  TAKE_OFF_CLOSE_LOOP_CM;
-            }
-            break;
+		case TAKE_OFF_OPEN_LOOP_CM:
+			take_off(TAKE_OFF_ALTITUDE);
+			if(states_race.altitude_is_achieved == TRUE)
+			{
+				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
+				state_lower_level =  TAKE_OFF_CLOSE_LOOP_CM;
+			}
+			break;
 
-        case TAKE_OFF_CLOSE_LOOP_CM:
-            hold_altitude(TAKE_OFF_ALTITUDE);
-            if(states_race.altitude_is_achieved == TRUE)
-            {
-                previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
-                state_lower_level = HOVER_AT_ORIGIN_CM;
-            }
-            break;
+		case TAKE_OFF_CLOSE_LOOP_CM:
+			hold_altitude(TAKE_OFF_ALTITUDE);
+			if(states_race.altitude_is_achieved == TRUE)
+			{
+				previous_lower_level = TAKE_OFF_CLOSE_LOOP_CM;
+				state_lower_level = HOVER_AT_ORIGIN_CM;
+			}
+			break;
+		
 
         case HOVER_AT_ORIGIN_CM:
 					if (hover_at_origin() == TRUE)
@@ -173,6 +172,8 @@ void first_part_logic()
 							state_upper_level = THIRD_PART;
 					}
             break;
+		default:
+			break;
 
     }
 }
@@ -194,14 +195,14 @@ void second_part_logic()
 					}
 					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)
 					{
-							previous_mode = GO_THROUGH_CM;
-							state_lower_level = APPROACH_GATE_CM;
+							previous_mode = GO_STRAIGHT_CM;
+							state_lower_level = ARC_CM;
 					}
 					break;
-			case APPROACH_GATE_CM:
+			case ARC_CM:
 				if(	arc_open_loop(1.5,-5.0/180*3.14,180.0/180*PI) == TRUE)
 				{
-							previous_mode = APPROACH_GATE_CM;
+							previous_mode = GO_STRAIGHT_CM;
 							state_lower_level = GO_STRAIGHT_CM;
 							arc_passed ++;
 							if (arc_passed == 2)
@@ -222,15 +223,13 @@ void second_part_logic()
 				break;
 			case LAND_CM:
 					break;
+			default:
+					break;
 	}
 }
 
 void third_part_logic()
 {
-		if(zigzag_open_loop(3.0,-10.0/180*3.14,10.0/180*3.14,10.0/180*PI,1.5))
-		{
-				land();
-		}
 }
 
 

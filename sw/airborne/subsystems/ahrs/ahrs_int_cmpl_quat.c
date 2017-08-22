@@ -343,7 +343,7 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     return;
   }
 
-  struct Int32Vect3 testAccel;
+  /*struct Int32Vect3 testAccel;*/
 
   /*accel = &testAccel;*/
 
@@ -537,7 +537,6 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
 		counter_temp2 = 0;
 		time_temp2 = 0;
 		test_ahrs.frequency_counter++;
-		printf("!!!!------------_!!!!!!!!!!-------------\n");
   }
   else if (test_ahrs.signal_state == TRUE && fabs(time_temp2-test_ahrs.frequency_time)<0.1)
   {

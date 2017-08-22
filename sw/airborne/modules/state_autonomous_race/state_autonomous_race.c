@@ -43,13 +43,7 @@ void debug_information(void);
 /*void display_matrix(double a[][3],int n);*/
 
 void state_autonomous_race_init() {
-    states_race.gate_counter = 0;
-    states_race.ready_pass_through = FALSE;
-    states_race.turning = FALSE;
     states_race.altitude_is_achieved = FALSE;
-    states_race.land_is_finished =FALSE;
-    states_race.gate_counter_in_second_part = 0;
-    states_race.gate_counter_in_third_part = 0;
 	states_race.attitude_control = FALSE;
 }
 
@@ -60,9 +54,6 @@ void display_states()
 
     /*display_upper_state();*/
     /*display_lower_state();*/
-	printf("signal state = %d\n",test_ahrs.signal_state);
-	printf("frequency_counter = %d\n",test_ahrs.frequency_counter);
-	printf("signal frequency = %f\n",test_ahrs.frequency);
     printf("\n");
     printf("\n");
     printf("\n");
@@ -74,66 +65,30 @@ void display_states()
 
 void display_lower_state()
 {
-    switch(state_lower_level){
-        case WAIT_FOR_DETECTION_CM:
-            printf("It is in WAIT_FOR_DETECTION\n");
-            break;
-        case ADJUST_POSITION_CM:
-            printf("It is in ADJUST_POSITION\n");
-            break;
-        case GO_THROUGH_CM:
-            printf("It is in GO_THROUGH\n");
-            break;
-        case HOVER_CM:
-            printf("It is in HOVER\n");
-            break;
-        case TURN_CM:
-            printf("It is in TURN\n");
-            break;
-        case SEARCH_GATE_CM:
-            printf("It is in SEARCH_GATE\n");
-            break;
-        case TAKE_OFF_OPEN_LOOP_CM:
-            printf("It is in TAKE_OFF_OPEN_LOOP\n");
-            break;
-        case TAKE_OFF_CLOSE_LOOP_CM:
-            printf("It is in TAKE_OFF_CLOSE_LOOP\n");
-            break;
-        case LAND_CM:
-            printf("It is in LAND\n");
-            break;
-        case GO_STRAIGHT_CM:
-            printf("It is in GO_STRAIGHT\n");
-            break;
-        case ADJUST_HEIGHT_CM:
-            printf("It is in ADJUST_HEIGHT\n");
-            break;
-        case PREPARE_CM:
-            printf("It is in PREPARE\n");
-            break;
-        /*case REPLAY_CM:*/
-            /*printf("It is in REPLAY\n");*/
+/*    switch(state_lower_level){*/
+        /*case HOVER_CM:*/
+            /*printf("It is in HOVER\n");*/
             /*break;*/
-        case APPROACH_GATE_CM:
-            printf("It is in APPROACH_GATE\n");
-            break;
-        case FLIGHT_TEST_PHI1_CM:
-            printf("It is in FLIGHT_TEST_PHI1\n");
-            break;
-        case FLIGHT_TEST_PHI2_CM:
-            printf("It is in FLIGHT_TEST_PHI2\n");
-            break;
-        case FLIGHT_TEST_THETA1_CM:
-            printf("It is in FLIGHT_TEST_THETA\n");
-            break;
-		case FLIGHT_TEST_THETA2_CM:
-            printf("It is in FLIGHT_TEST_THETA2\n");
-            break;
-        default:
-            printf("It is in nothing\n");
-            break;
+        /*case TAKE_OFF_OPEN_LOOP_CM:*/
+            /*printf("It is in TAKE_OFF_OPEN_LOOP\n");*/
+            /*break;*/
+        /*case TAKE_OFF_CLOSE_LOOP_CM:*/
+            /*printf("It is in TAKE_OFF_CLOSE_LOOP\n");*/
+            /*break;*/
+        /*case LAND_CM:*/
+            /*printf("It is in LAND\n");*/
+            /*break;*/
+        /*case GO_STRAIGHT_CM:*/
+            /*printf("It is in GO_STRAIGHT\n");*/
+            /*break;*/
+        /*case PREPARE_CM:*/
+            /*printf("It is in PREPARE\n");*/
+            /*break;*/
+        /*default:*/
+            /*printf("It is in nothing\n");*/
+            /*break;*/
 
-    }
+    /*}*/
 }
 
 void display_upper_state()

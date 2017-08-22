@@ -34,16 +34,7 @@
 #include "modules/command_level_iros/command_level_iros.h"
 
 struct state_autonomous_race{
-    int gate_counter;
-    bool ready_pass_through;
-    bool turning;
     bool altitude_is_achieved;  // for taking off
-    bool land_is_finished;      // for landing
-    int   gate_counter_in_second_part;
-    float distance_before_gate;
-    float time_to_go_straight;
-    bool gate_detected;
-    int gate_counter_in_third_part;
 	bool attitude_control;
 };
 

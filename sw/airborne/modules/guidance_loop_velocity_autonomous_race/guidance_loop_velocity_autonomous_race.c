@@ -161,7 +161,7 @@ void guidance_loop_pid()
     guidance_h_module_speed_error_x = guidance_module.desired_vx - current_vel_x;
     guidance_h_module_speed_error_y = guidance_module.desired_vy - current_vel_y;
 
-    if (state_lower_level == TURN_CM || state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
+    if (state_lower_level == TAKE_OFF_OPEN_LOOP_CM)
     {
         guidance_h_module_speed_error_x = 0;
         guidance_h_module_speed_error_y = 0;

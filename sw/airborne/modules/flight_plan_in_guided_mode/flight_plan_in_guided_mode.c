@@ -77,9 +77,6 @@ void flight_plan_in_guided_mode_init() {
 }
 
 
-void display_information()
-{
-}
 
 bool prepare_before_take_off(double prepare_time)
 {
@@ -167,28 +164,6 @@ bool go_straight(float theta,float distance,double ref_y){
 }
 
 
-void circle(float radius, float planned_time){
-}
-
-void arc(float radius, float planned_time, float desired_angle_change){
-}
-
-void set_velocity_test(float vx_earth_t,float vy_earth_t){
-}
-
-void go_left_right(float velocity){
-}
-
-void go_up_down(float altitude){
-}
-
-void adjust_position(float derta_altitude){
-}
-
-
-void search_gate()
-{
-}
 
 void take_off(float desired_altitude)
 {
@@ -207,7 +182,8 @@ void take_off(float desired_altitude)
 
 		if (time_primitive>2)
 		{
-				states_race.altitude_is_achieved = 1;
+				guidance_v_mode_changed(GUIDANCE_V_MODE_RC_CLIMB);  // vertical module should be called!
+				guidance_v_set_guided_vz(-1.0);
 		}
 }
 
@@ -216,15 +192,8 @@ void land()
         guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 		guidance_v_set_guided_z(0.0);
         guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
-		printf("AAAAAAAAAAAAAAAA!!!!!!!!!!!!!!!!\n");
 }
 
-void adjust_heading(float delta_heading) {
-}
-
-void left_right_back(float velocity_in_body_x,float velocity_in_body_y)
-{
-}
 
 
 
@@ -252,20 +221,6 @@ void hold_altitude(float desired_altitude)
 
 }
 
-void change_heading_absolute(float psi)
-{
-}
-
-
-void set_theta(float desired_theta)
-{
-}
-
-
-
-void set_phi(float desired_phi)
-{
-}
 
 
 
@@ -530,18 +485,18 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 
 	struct FloatVect3 thrust_b; 
 	struct FloatVect3 thrust_e; 
-	struct FloatVect3 g;
+	struct FloatVect3 gravity;
 	thrust_b.x = 0;
 	thrust_b.y = 0;
 	thrust_b.z = -9.8/cos(zigzag_status.eulers.phi)/cos(zigzag_status.eulers.theta);
 
-	g.x = 0;
-	g.y = 0;
-	g.z = 9.8;
+	gravity.x = 0;
+	gravity.y = 0;
+	gravity.z = 9.8;
 
     float_rmat_transp_vmult(&thrust_e,&zigzag_status.R_E_B,&thrust_b);
 
-	float_vect_sum(&zigzag_status.d_velocity.x,&g.x,&thrust_e.x,3);
+	float_vect_sum(&zigzag_status.d_velocity.x,&gravity.x,&thrust_e.x,3);
 	float_vect_add(&zigzag_status.d_velocity.x,&zigzag_status.drag_e.x,3);
 	float_vect_copy(&zigzag_status.d_position.x,&zigzag_status.velocity.x,3);
 
