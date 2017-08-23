@@ -62,6 +62,11 @@ enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
 
+float gate_initial_position_y[] = {3.0 2.0};
+float turn_point[] = {4.0 3.0};
+float arc_radius[] = {1.5};
+
+struct race_states race_state;
 
 //temp fix for data set recording
 int init_pos_filter = 0;
@@ -70,6 +75,7 @@ void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
     init_heading = stateGetNedToBodyEulers_f()->psi;
+	race_state.p_g
 }
 
 

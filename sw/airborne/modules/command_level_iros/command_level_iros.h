@@ -92,6 +92,16 @@ enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART
 extern enum states_lower_level state_lower_level;
 extern enum states_upper_level state_upper_level;
 
+struct race_states
+{
+
+		float * p_GatePosY; 
+		float * p_ArcRad //
+		bool flag_in_open_loop;
+		int gate_number;
+		float * p_TurnPoint;
+}
+
 
 extern double theta_bias;
 extern double phi_bias;
