@@ -104,7 +104,7 @@ void command_run() {
 		race_state.flag_in_open_loop = TRUE;
 		/*race_state.p_TurnPoint = turn_point;*/
 		race_state.gate_counter = 0;
-		race_state.current_initial_y =  gate_initial_position_y[race_state.gate_counter];
+		race_state.current_initial_x =  gate_initial_position_y[race_state.gate_counter];
 		race_state.current_initial_heading= gate_initial_heading[race_state.gate_counter] ;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
@@ -114,7 +114,7 @@ void command_run() {
 
 	if (race_state.flag_in_open_loop == TRUE)
 	{
-		race_state.current_initial_y =  gate_initial_position_y[race_state.gate_counter];
+		race_state.current_initial_x =  gate_initial_position_y[race_state.gate_counter];
 		race_state.current_initial_heading= gate_initial_heading[race_state.gate_counter] ;
 	}
 
