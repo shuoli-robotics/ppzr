@@ -102,7 +102,7 @@ struct race_states
 		//float * p_TurnPoint;
 		//float * p_GateHeading;
 		//float * p_DeltaArcAng;
-		float current_initial_y;
+		float current_initial_x;
 		float current_initial_heading;
 };
 

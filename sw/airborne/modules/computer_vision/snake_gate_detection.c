@@ -363,6 +363,8 @@ bool prev_arc_status = FALSE;
 
 uint8_t dummy = 0;
 
+float gate_heading = 0;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_y, &hor_angle, &vert_angle, &x_dist, &y_dist,
@@ -495,16 +497,17 @@ void snake_gate_periodic(void)
   u_k[4][0] = RATE_FLOAT_OF_BFP(imu.gyro.q);
   u_k[5][0] = stateGetNedToBodyEulers_f()->phi;
   u_k[6][0] = stateGetNedToBodyEulers_f()->theta;
-  u_k[7][0] = stateGetNedToBodyEulers_f()->psi;
+  u_k[7][0] = stateGetNedToBodyEulers_f()->psi - gate_heading;
   
-  if(prev_arc_status == TRUE && arc_status.flag_in_arc == FALSE){
+  if(prev_arc_status == TRUE && race_state.flag_in_open_loop == FALSE){
     X_int[0][0] = 0;
     X_int[1][0] = 0;
     //also reset gate position
+    gate_heading = race_state.current_initial_heading;
   }
-  prev_arc_status = arc_status.flag_in_arc;
+  prev_arc_status = race_state.flag_in_open_loop;
   
-  if(arc_status.flag_in_arc == FALSE){
+  if(race_state.flag_in_open_loop == FALSE){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
   }
 
@@ -557,8 +560,10 @@ void snake_gate_periodic(void)
 
   //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
    //(vision_sample || hist_sample)
-   hist_sample = 0;
-  if(( vision_sample || hist_sample) && arc_status.flag_in_arc == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
+    if(X_int[0][0] < 1.8){
+      hist_sample = 0;
+    }
+  if(( vision_sample || hist_sample) && race_state.flag_in_open_loop == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
     gettimeofday(&stop, 0);
@@ -1110,17 +1115,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //Global psi to local psi based on heading. Later this will be based on what segment of the track the drone is
   //TODO check if the switch between track segments, doesn't affect the KF during arc part, probably not, since RMAT is calculated by pprz
 	//debug_5 = local_psi;
-  if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
-    if(stateGetNedToBodyEulers_f()->psi<0){
-	    local_psi = stateGetNedToBodyEulers_f()->psi+3.14;
-    }
-    else{
-	    local_psi = stateGetNedToBodyEulers_f()->psi-3.14;
-    }
-  }
-  else{
-    local_psi = stateGetNedToBodyEulers_f()->psi;
-  }
+//   if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
+//     if(stateGetNedToBodyEulers_f()->psi<0){
+// 	    local_psi = stateGetNedToBodyEulers_f()->psi+3.14;
+//     }
+//     else{
+// 	    local_psi = stateGetNedToBodyEulers_f()->psi-3.14;
+//     }
+//   }
+//   else{
+    local_psi = stateGetNedToBodyEulers_f()->psi - gate_heading;
+ // }
   
   
   int side_1;

@@ -101,7 +101,7 @@ void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, fl
   const float D_x = -1/0.5;
   const float D_y = -1/0.43;
   
-  const float g = 9.19;
+  const float g = 9.81;
   
   float x[7];
   float u[8];
