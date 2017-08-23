@@ -76,6 +76,9 @@ void print_matrix(struct FloatMat33 mat);
 void print_vector(struct FloatVect3 vec);
 void draw_cross(struct image_t *im,int x, int y, uint8_t* color);
 
+void check_color_center(struct image_t *im, uint8_t *y_c, uint8_t *cb_c, uint8_t *cr_c);
+uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, int x, int y);
+
 extern void snake_gate_periodic(void);
 
 extern uint8_t color_lum_min;

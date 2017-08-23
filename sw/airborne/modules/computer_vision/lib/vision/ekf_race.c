@@ -57,7 +57,8 @@ void EKF_init(void){
   EKF_init_diag(P_k_1_k_1_d,P_k_1_diag);
   
   //check  process noise of biases---------------------------------
-  float Q_diag[7] = {0.2,0.2,0.2,0.2,0,0,0};
+  //float Q_diag[7] = {0.2,0.2,0.2,0.2,0,0,0};
+  float Q_diag[7] = {0.2,0.2,0.2,0.2,0.01,0.01,0.01};
   EKF_init_diag(Q,Q_diag);
   
   //Trail solution matlab

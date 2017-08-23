@@ -51,23 +51,7 @@
 
 #include "modules/computer_vision/lib/vision/ekf_race.h"
 
-
-#define PI 3.1415926
-
-//initial position after gate pass
-#define INITIAL_X 0
-#define INITIAL_Y 2
-#define INITIAL_Z -1.5
-
-//initial position and speed safety margins
-
-#define X_POS_MARGIN 0.20//m
-#define Y_POS_MARGIN 0.5//m
-#define Z_POS_MARGIN 0.2//m
-#define X_SPEED_MARGIN 0.15//m/s
-#define Y_SPEED_MARGIN 0.2//m/s
-
-#define GOOD_FIT 1.0
+//#define PI 3.1415926
 
 #define AHRS_PROPAGATE_FREQUENCY 512
 
@@ -112,7 +96,6 @@ int szx2 = 0;
 
 
 // Result
-int color_count = 0;
 #define MAX_GATES 50
 struct gate_img gates[MAX_GATES];
 struct gate_img best_gate;
@@ -135,8 +118,8 @@ uint8_t cr_center  = 0;
 #define radians_per_pix_h 0.0065625 //1.05rad / 160
 
 //pixel distance conversion
-int pix_x = 0;
-int pix_y = 0;
+int16_t pix_x = 0;
+int16_t pix_y = 0;
 int pix_sz = 0;
 float hor_angle = 0;
 float vert_angle = 0;
@@ -391,12 +374,14 @@ float y_pos_hist = 0;
 
 bool prev_arc_status = FALSE;
 
+uint8_t dummy = 0;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_y, &hor_angle, &vert_angle, &x_dist, &y_dist,
                                 &z_dist,
                                 &debug_5, &debug_1, &debug_2, &debug_3, &debug_4,
-                                &y_center_picker, &cb_center, &QR_class, &sz, &states_race.ready_pass_through, &temp_check_gate.x_corners[1],
+                                &y_center_picker, &cb_center, &dummy, &dummy, &dummy, &dummy,
                                 &debug_5);//psi_gate); //
 }
 
@@ -483,6 +468,7 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
   dest[1] = source[1];  // Y
   dest[2] = 255;//60;        // V//was 255
   dest[3] = source[3];  // Y
+  return 1;
 }
 
 
@@ -552,8 +538,8 @@ void snake_gate_periodic(void)
   if(X_int[4][0] < -1)X_int[4][0] = -1;//ymin
   if(X_int[5][0] > 1)X_int[5][0] = 1;//ymax
   if(X_int[5][0] < -1)X_int[5][0] = -1;//ymin
-  if(X_int[6][0] > 1)X_int[6][0] = 1;//ymax
-  if(X_int[6][0] < -1)X_int[6][0] = -1;//ymin
+  if(X_int[6][0] > 2)X_int[6][0] = 2;//ymax
+  if(X_int[6][0] < -2)X_int[6][0] = -2;//ymin
   
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
@@ -575,13 +561,16 @@ void snake_gate_periodic(void)
   
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
-   debug_3 = X_int[2][0];
+    debug_5 = X_int[2][0];
+   //debug_5 = u_k[2][0];
+   //debug_5 = X_int[6][0];//bias z
   
   
   //if measurement available -> do KF measurement update 
 
   //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
    //(vision_sample || hist_sample)
+   hist_sample = 0;
   if(( vision_sample || hist_sample) && arc_status.flag_in_arc == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
@@ -603,13 +592,14 @@ void snake_gate_periodic(void)
       if(hist_sample){
 	local_x = gate_dist_x - x_pos_hist;
 	local_y = y_pos_hist;
+	hist_sample = 0;
       }else{
 	local_x = ls_pos_x;
 	local_y = ls_pos_y;
       }
       
-//       debug_1 = local_x;
-//       debug_2 = local_y;
+      debug_3 = local_x;
+      debug_4 = local_y;
       
       float z_k_d[3];
       z_k_d[0] = local_x;
@@ -775,7 +765,7 @@ float detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
     
     //avarage peek height
     float peek_value = (hist_peeks[index[313]] + hist_peeks[index[314]])/2;
-    debug_5 = peek_value;
+    //debug_5 = peek_value;
   
 //     for(int i = 0;i<315;i++){
 //     printf("hist_peeks[%d]:%d\n",i,hist_peeks[i]);
@@ -1097,7 +1087,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
     //color filtered version of image for overlay and debugging
   if (filter) {
-    int color_count = image_yuv422_colorfilt(img, img,
+    int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
                       color_cr_min, color_cr_max
