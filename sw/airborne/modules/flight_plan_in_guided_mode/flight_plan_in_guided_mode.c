@@ -53,7 +53,7 @@
 
 #define KP_Y 0.35//40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.08  ///0.04//0.10//was0.15// 0.2
+#define KD_Y 0.2  ///0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 //most turns until now
@@ -264,7 +264,7 @@ bool take_off(void)
 				printf("average altitide is %f\n",tf_status.ave_altitude);
 				printf("sum altitide is %f\n",tf_status.sum_altitude );
 		}
-		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.05 && tf_status.altitude_counter > 500)
+		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter > 200)
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;

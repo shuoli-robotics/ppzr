@@ -62,11 +62,11 @@ enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
 
-float gate_initial_position_y[] = {3.0,2.0};
-float turn_point[] = {4.0,3.0};
-float arc_radius[] = {1.5};
-float delta_arc_angle[] = {90.0/180*3.14};
-float gate_initial_heading[] = {0, 90.0/180*3.13};
+float gate_initial_position_y[] = {3.5,2.5};
+float turn_point[] = {3.8,3.0};
+float arc_radius[] = {0.8};
+float delta_arc_angle[] = {135.0/180*3.14};
+float gate_initial_heading[] = {0, 135.0/180*3.14};
 
 struct race_states race_state;
 
@@ -215,7 +215,7 @@ void third_part_logic()
 
 			case GO_STRAIGHT_CM:
 					if (go_through_gate(-5.0/180*PI))
-					{
+					{ printf("3rd part!-----------------------------\n");
 							state_lower_level =  ARC_CM;
 							race_state.flag_in_open_loop = TRUE;
 					}

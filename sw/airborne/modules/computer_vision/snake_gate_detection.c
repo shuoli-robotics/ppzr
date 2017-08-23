@@ -503,6 +503,7 @@ void snake_gate_periodic(void)
     X_int[0][0] = 0;
     X_int[1][0] = 0;
     //also reset gate position
+    gate_heading = race_state.current_initial_heading;
   }
   prev_arc_status = race_state.flag_in_open_loop;
   
@@ -559,7 +560,9 @@ void snake_gate_periodic(void)
 
   //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
    //(vision_sample || hist_sample)
-   hist_sample = 0;
+    if(X_int[0][0] < 1.8){
+      hist_sample = 0;
+    }
   if(( vision_sample || hist_sample) && race_state.flag_in_open_loop == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
@@ -1112,17 +1115,17 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //Global psi to local psi based on heading. Later this will be based on what segment of the track the drone is
   //TODO check if the switch between track segments, doesn't affect the KF during arc part, probably not, since RMAT is calculated by pprz
 	//debug_5 = local_psi;
-  if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
-    if(stateGetNedToBodyEulers_f()->psi<0){
-	    local_psi = stateGetNedToBodyEulers_f()->psi+3.14;
-    }
-    else{
-	    local_psi = stateGetNedToBodyEulers_f()->psi-3.14;
-    }
-  }
-  else{
-    local_psi = stateGetNedToBodyEulers_f()->psi;
-  }
+//   if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
+//     if(stateGetNedToBodyEulers_f()->psi<0){
+// 	    local_psi = stateGetNedToBodyEulers_f()->psi+3.14;
+//     }
+//     else{
+// 	    local_psi = stateGetNedToBodyEulers_f()->psi-3.14;
+//     }
+//   }
+//   else{
+    local_psi = stateGetNedToBodyEulers_f()->psi - gate_heading;
+ // }
   
   
   int side_1;
