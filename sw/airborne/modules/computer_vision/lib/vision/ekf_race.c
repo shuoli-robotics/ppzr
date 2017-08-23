@@ -314,7 +314,7 @@ void c_2_d(float A_d[7][7], float A[7][7],float dt){
   
   MAT_SUM(7, 7, A_d,temp_m_1, temp_m_2);
   
-  MAT_PRINT(7, 7,A_d);
+  //MAT_PRINT(7, 7,A_d);
   
 }
 
