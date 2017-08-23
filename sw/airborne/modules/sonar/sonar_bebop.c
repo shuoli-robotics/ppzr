@@ -172,21 +172,13 @@ float sonar_filter_gate(float distance_sonar){
 	float distance;
 	current_distance = distance_sonar;
 	diff_pre_cur = current_distance - previous_distance;
-	if (diff_pre_cur < -0.3) {
+	if (diff_pre_cur < -0.4) {
 		z0 = previous_distance;
 		through_gate_green_light = 1;
-		counter_temp2 = 0;
-		time_temp2 = 0;
+		counter_temp3 = 0;
+		time_temp3 = 0;
 	}
-
-	if (diff_pre_cur < -0.6 && conunt_gate_green_light == 0){
-		conunt_gate_green_light = 1;
-	}
-	if (diff_pre_cur > 0.6 && conunt_gate_green_light == 1)
-	{
-		conunt_gate_green_light = 0;
-	}
-	if (diff_pre_cur > 0.3 || time_temp2 > 1.5){
+	if (diff_pre_cur > 0.4 || time_temp3 > 1.0){
 
 		through_gate_green_light = 0;
 	}
