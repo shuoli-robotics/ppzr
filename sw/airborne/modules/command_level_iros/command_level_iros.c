@@ -220,6 +220,8 @@ void third_part_logic()
 							race_state.flag_in_open_loop = TRUE;
 					}
 					break;
+			default:
+					break;
 	}
 }
 
