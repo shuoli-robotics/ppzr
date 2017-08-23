@@ -160,7 +160,6 @@ int uncertainty_gate = 0;
 //int gate_detected = 0;
 //init_pos_filter = 0;
 int safe_pass_counter = 0;
-int gate_gen = 0;
 
 float gate_quality = 0;
 
@@ -201,16 +200,6 @@ float debug_3 = 3.3;
 float debug_4 = 4.4;
 float debug_5 = 5.5;
 
-
-//optic flow dummy
-
-//p3p final results
-// float p3p_result_x = 0;
-// float p3p_result_y = 0;
-// float p3p_result_z = 0;
-// float p3p_result_phi = 0;
-// float p3p_result_theta = 0;
-// float p3p_result_psi = 0;
 float snake_res_x = 0;
 float snake_res_y = 0;
 float snake_res_z = 0;
@@ -1216,8 +1205,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
 
     gate_quality = best_gate.gate_q;
-    
-        gate_gen = 1;//0;
         	  
 	    
 	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
@@ -1379,7 +1366,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       last_frame_detection = 0;
      
       current_quality = 0;
-      gate_gen = 1;
     
   }
   	
