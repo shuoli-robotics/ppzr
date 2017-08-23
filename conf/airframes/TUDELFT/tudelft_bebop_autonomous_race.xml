@@ -37,11 +37,13 @@
     <module name="ahrs" type="int_cmpl_quat">
 
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
+
       <configure name="USE_GPS" value="TRUE"/>
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
       <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="TRUE"/>
+
     </module>
-    <module name="ins" type="gps_passthrough"/><!--extended-->
+    <module name="ins" type="extended"/>
   </firmware>
 
   <modules main_freq="512">
@@ -50,7 +52,7 @@
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
     <module name="logger_file">
-      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
+      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000/track_p3p"/>
     </module>
     <module name="guidance_loop_velocity_autonomous_race"/>
     <module name="state_autonomous_race"/>
@@ -66,14 +68,25 @@
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
     </module-->
 
-    <!--module name="cv_snake_gate_detection">
+    <module name="cv_snake_gate_detection">
       <define name="SGD_CAMERA" value="front_camera"/>
-    </module-->
+    </module>
 
     <!--module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="1"/>
        <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
     </module-->
+
+    <module name="cv_opticflow">
+       <define name="OPTICFLOW_METHOD" value="0"/>
+       <define name="OPTICFLOW_CAMERA" value="bottom_camera"/>
+       <!--(already commented)define name="CAMERA_ROTATED_180" value="1"/-->
+      <!--(already commented)define name="OPTICFLOW_DEROTATION" value="0"/-->
+      <define name="OPTICFLOW_FX" value="347.22222222"/> <!--// 2.5 / (3.6 * 2.0) * 1000 -->
+      <define name="OPTICFLOW_FY" value="347.22222222"/> <!--// 2.5 / (3.6 * 2.0) * 1000 -->
+      <define name="OPTICFLOW_FOV_W" value="0.665499265"/> <!--// 2 * arctan(240 / (2*347.22222222)) -->
+      <define name="OPTICFLOW_FOV_H" value="0.665499265"/> <!--// 2 * arctan(240 / (2*347.22222222)) -->
+    </module>
 
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
@@ -159,20 +172,26 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
+
     <!--define name="G1_P" value="0.0277"/>
     <define name="G1_Q" value="0.0244"/>
     <define name="G1_R" value="0.0007"/>
     <define name="G2_R" value="0.10502"/-->
 
-    <define name="G1_P" value="0.03762"/>
+    <!--define name="G1_P" value="0.03762"/>
     <define name="G1_Q" value="0.031149"/>
     <define name="G1_R" value="0.00094"/>
-    <define name="G2_R" value="0.081811"/>
+    <define name="G2_R" value="0.081811"/-->
+
+    <define name="G1_P" value="0.04762"/>
+    <define name="G1_Q" value="0.041149"/>
+    <define name="G1_R" value="0.00194"/>
+    <define name="G2_R" value="0.151811"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="600.0"/>
-    <define name="REF_ERR_Q" value="600.0"/>
-    <define name="REF_ERR_R" value="600.0"/>
+    <define name="REF_ERR_P" value="400.0"/><!--600-->
+    <define name="REF_ERR_Q" value="400.0"/>
+    <define name="REF_ERR_R" value="400.0"/>
     <define name="REF_RATE_P" value="28.0"/>
     <define name="REF_RATE_Q" value="28.0"/>
     <define name="REF_RATE_R" value="28.0"/>

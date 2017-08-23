@@ -27,12 +27,16 @@
   </header>
 
   <init fun="snake_gate_detection_init()"/>
-  <periodic fun="snake_gate_periodic()" freq="20" autorun="TRUE"/>
+  <periodic fun="snake_gate_periodic()" freq="512" autorun="TRUE"/>
   <makefile target="ap">
     <file name="snake_gate_detection.c"/>
-    <file name="lib/vision/gate_detection.c"/>
+    <!--file name="lib/vision/gate_detection.c"/-->
+    <file name="lib/vision/calc_p3p.c"/>
+    <file name="lib/vision/gate_detection_free.c"/>
+    <file name="lib/vision/gate_corner_refine.c"/>
     <file name="lib/vision/qr_code_recognition.c"/>
-    <file name="lib/vision/integral_image.c"/>    
+    <file name="lib/vision/integral_image.c"/>
+    <file name="lib/vision/ekf_race.c"/> 
   </makefile>
 </module>
 

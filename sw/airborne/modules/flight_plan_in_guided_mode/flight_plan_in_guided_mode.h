@@ -57,7 +57,7 @@
 
 
 #ifndef PREPARE_TIME
-#define PREPARE_TIME 3
+#define PREPARE_TIME 1
 #endif
 
 #ifndef SAMPLE_NUM 
@@ -65,7 +65,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -3.0 
+#define TAKE_OFF_ALTITUDE -1.5 
 #endif
 struct acceleration{
 		double ax;
@@ -179,10 +179,12 @@ extern bool arc_open_loop(double radius,double theta,float delta_psi);
 extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
 extern int sample_pointer;
+
 extern struct arc_open_loop_status arc_status;
 extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time);
 extern double trim_phi;
 extern double trim_theta;
 extern struct take_off_status tf_status;
+
 #endif
 

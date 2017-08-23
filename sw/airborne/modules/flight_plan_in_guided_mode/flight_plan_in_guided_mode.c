@@ -41,12 +41,30 @@
 #include "subsystems/imu.h"
 #include "math/pprz_algebra_float.h"
 
+// #define KP_Y 0.55//0.4 
+// #define KI_Y 0.0
+// #define KD_Y 0.0//0.3
+// #define MAX_PHI  20.0/180*3.14
 
+//Optitrack
+// #define KP_Y 0.4 
+// #define KI_Y 0.0
+// #define KD_Y 0.2
 
-#define KP_Y 0.4 
+#define KP_Y 0.35//40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.3
-#define MAX_PHI  30.0/180*3.14
+#define KD_Y 0.06  ///0.04//0.10//was0.15// 0.2
+#define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
+
+//most turns until now
+//P 0.4
+//D 0.07
+//Still suspected d gain noise, add smooth or lowpass
+
+//With low pass
+//close to optitrack performance, except for unknown glitch
+//P 0.4
+//D 0.04
 
 
 float psi0;//
@@ -69,6 +87,9 @@ float init_heading;
 float previous_error_y = 0;
 float sum_y_error = 0;
 double g = 9.81;
+
+//avarage current and previous derivative term 
+float prev_D_term = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
@@ -136,12 +157,34 @@ bool go_straight(float theta,float distance,double ref_y){
 		}
     }
 
-	float current_y = stateGetPositionNed_f()->y;
+	float current_y;
 	float sign = 1;
-	if(ref_y > 1.5)sign = -1;
+	int use_optitrack = 0;//else use vision
+	if(ref_y > 1.5){
+	 sign = -1;
+	 if(use_optitrack){
+	   current_y = stateGetPositionNed_f()->y;
+	 }else{
+	   current_y = kf_pos_y;
+	 }
+	}
+	else{
+	  if(use_optitrack){
+	    current_y = stateGetPositionNed_f()->y;//x_dist;//raw vision
+	  }else{
+	  //current_y = ls_pos_y;
+	    current_y = kf_pos_y;
+	  }
+	}
 	float error_y = (ref_y - current_y)*sign;
-	sum_y_error += error_y/20.0;
-	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20.0 + KI_Y*sum_y_error;
+	sum_y_error += error_y/100.0;
+	float D_term = error_y-previous_error_y;
+// 	float cuttoff = 0.01;
+// 	if(D_term > cuttoff)D_term = cuttoff;
+// 	if(D_term < -cuttoff)D_term = -cuttoff;
+	float phi = KP_Y * error_y+ KD_Y *((D_term+prev_D_term)/2)*100.0 + KI_Y*sum_y_error;
+	prev_D_term = D_term;
+// 	float phi = KP_Y * error_y+ KD_Y *(error_y-previous_error_y)*20.0 + KI_Y*sum_y_error;
 	if(phi > MAX_PHI)phi = MAX_PHI;
 	if(phi < -MAX_PHI)phi = -MAX_PHI;
 	guidance_loop_set_theta(theta);
@@ -149,11 +192,24 @@ bool go_straight(float theta,float distance,double ref_y){
 	/*guidance_loop_set_heading(psi0);*/
 	previous_error_y = error_y;
 	//if (time_primitive > 1.0)
-	if(ref_y < 1.5 && stateGetPositionNed_f()->x > 3)   
+	
+	//update body speed for use in ahrs_int_cmpl_quat.c
+	float v_x_e = stateGetSpeedNed_f()->x;
+	float v_y_e = stateGetSpeedNed_f()->y;
+	v_x_f = cos(psi)*v_x_e +sin(psi)*v_y_e;
+	
+	float turn_trigger;
+	if(0){//use_optitrack){
+	  turn_trigger = stateGetPositionNed_f()->x;
+	}else{
+	  turn_trigger = kf_pos_x;
+	}
+	
+	if(ref_y < 1.5 && turn_trigger > 3.5)   
 	{
 			return TRUE;
 	}
-	else if(ref_y > 1.5 && stateGetPositionNed_f()->x < 0)   
+	else if(ref_y > 1.5 && turn_trigger < 0)   
 	{
 			return TRUE;
 	}
@@ -302,8 +358,26 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 		arc_status.phi_cmd = stateGetNedToBodyEulers_f()->phi;
 		arc_status.theta_cmd = desired_theta;
         arc_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
-		arc_status.v_x_f = cos(arc_status.psi_cmd)*stateGetSpeedNed_f()->x + sin(arc_status.psi_cmd)*stateGetSpeedNed_f()->y; 
-		arc_status.v_y_f = -sin(arc_status.psi_cmd)*stateGetSpeedNed_f()->x + cos(arc_status.psi_cmd)*stateGetSpeedNed_f()->y; 
+		
+		int optitrack_speed = 0;
+		float v_ned_x;
+		float v_ned_y;
+		float cruise_speed = 1.8;//1.3;//2.0;
+		if(optitrack_speed){
+		  v_ned_x = stateGetSpeedNed_f()->x;
+		  v_ned_y = stateGetSpeedNed_f()->y;
+		}else{
+		  if(stateGetPositionNed_f()->y > 1.5){
+		    v_ned_x = -cruise_speed;
+		  }else{
+		    v_ned_x = cruise_speed;
+		  }
+		  v_ned_y = 0;
+		}
+	
+	
+		arc_status.v_x_f = cos(arc_status.psi_cmd)*v_ned_x + sin(arc_status.psi_cmd)*v_ned_y; 
+		arc_status.v_y_f = -sin(arc_status.psi_cmd)*v_ned_x + cos(arc_status.psi_cmd)*v_ned_y; 
 		arc_status.v_z_f = stateGetSpeedNed_f()->z;
         counter_primitive = 0;
         time_primitive = 0;
@@ -329,6 +403,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 		/*arc_status.drag_coef_body_y_2 = 0;*/
 		/*arc_status.drag_coef_body_z_2 = 0;*/
     }
+
 // calculate command needed
 // transfer velocity from earth coordinate to body and body fixed coordinate
 	double phi = arc_status.phi_cmd;
@@ -364,7 +439,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 
 //  calculate command
 	double d_psi = arc_status.v_x_f/radius;
-	arc_status.psi_cmd += d_psi/20.0;
+	arc_status.psi_cmd += d_psi/100.0;
 	arc_status.theta_cmd = desired_theta;
 	arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
 			(9.8+arc_status.drag_z_f));
@@ -373,12 +448,12 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	// euler method to predict
 	drone_model(&arc_status);
 
-	arc_status.x += arc_status.dx/20.0;
-	arc_status.y += arc_status.dy/20.0;
-	arc_status.z += arc_status.dz/20.0;
-	arc_status.v_x_f += arc_status.dv_x_f/20.0;
-	arc_status.v_y_f += arc_status.dv_y_f/20.0;
-	arc_status.v_z_f += arc_status.dv_z_f/20.0;
+	arc_status.x += arc_status.dx/100.0;
+	arc_status.y += arc_status.dy/100.0;
+	arc_status.z += arc_status.dz/100.0;
+	arc_status.v_x_f += arc_status.dv_x_f/100.0;
+	arc_status.v_y_f += arc_status.dv_y_f/100.0;
+	arc_status.v_z_f += arc_status.dv_z_f/100.0;
 
 
 /*printf("v_x_f is %f\n",arc_status.v_x_f);*/
@@ -387,6 +462,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	guidance_loop_set_theta(arc_status.theta_cmd);
 	guidance_loop_set_phi(arc_status.phi_cmd); 
 	guidance_loop_set_heading(arc_status.psi_cmd);
+
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 
 

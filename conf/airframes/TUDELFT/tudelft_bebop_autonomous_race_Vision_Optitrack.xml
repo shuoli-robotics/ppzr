@@ -35,9 +35,9 @@
     <module name="stabilization" type="int_quat"/>
     <module name="ahrs" type="int_cmpl_quat">
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
-      <define name="AHRS_USE_GPS_HEADING" value="FALSE"/><!--FALSE-->
+      <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--FALSE-->
     </module>
-    <module name="ins" type="extended"/>
+    <module name="ins" type="gps_passthrough"/>
   </firmware>
 
   <modules main_freq="512">
@@ -258,11 +258,11 @@
     <define name="PGAIN" value="200"/>
     <define name="DGAIN" value="100"/>
     <define name="IGAIN" value="30"/>
-    <define name="REF_MAX_SPEED" value="0.5"/>
+    <define name="REF_MAX_SPEED" value="1.0"/>
   </section>
 
   <section name="NAVIGATION" prefix="NAV_">
-    <define name="CLIMB_VSPEED" value="2.5"/>
+    <define name="CLIMB_VSPEED" value="1.0"/>
     <define name="DESCEND_VSPEED" value="-1.0"/>
   </section>
 
@@ -273,11 +273,10 @@
   </section>
 
   <section name="AUTOPILOT">
-    <define name="MODE_STARTUP" value="AP_MODE_RATE_DIRECT"/>
+    <define name="MODE_STARTUP" value="AP_MODE_NAV"/>
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
-    <!--define name="MODE_MANUAL" value="AP_MODE_RATE_DIRECT"/-->
     <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
-    <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
+    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
     <!--define name="NO_RC_THRUST_LIMIT" value = "FALSE"/-->
   </section>
 

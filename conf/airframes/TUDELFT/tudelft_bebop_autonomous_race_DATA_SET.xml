@@ -49,7 +49,7 @@
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
     <module name="logger_file">
-      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000/Data_set_16"/>
+      <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000/Left_2m"/>
    </module>
     <module name="state_autonomous_race"/>
     <module name="vertical_loop_control_module"/>
@@ -106,7 +106,7 @@
 
     <module name="video_capture">
        <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
-       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Calibration"/>
+       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Left_2m"/>
     </module>
 
 

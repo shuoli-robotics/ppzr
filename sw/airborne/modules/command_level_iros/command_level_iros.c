@@ -165,7 +165,8 @@ void second_part_logic()
 					{
 							reference_y = 3;
 					}
-					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)
+					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)//wass -7deg then -5
+
 					{
 							previous_mode = GO_STRAIGHT_CM;
 							state_lower_level = ARC_CM;
