@@ -169,7 +169,7 @@ void first_part_logic()
 			{
 				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
 				state_lower_level =  GO_STRAIGHT_CM;
-				state_upper_level =  FIRST_PART;
+				state_upper_level =  SECOND_PART;
 			}
 			break;
 		default:
