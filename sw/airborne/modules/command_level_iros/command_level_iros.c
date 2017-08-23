@@ -62,9 +62,10 @@ enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
 
-float gate_initial_position_y[] = {3.0 2.0};
-float turn_point[] = {4.0 3.0};
+float gate_initial_position_y[] = {3.0,2.0};
+float turn_point[] = {4.0,3.0};
 float arc_radius[] = {1.5};
+float delta_arc_angle = {90.0/180*3.14};
 
 struct race_states race_state;
 
@@ -75,7 +76,11 @@ void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
     init_heading = stateGetNedToBodyEulers_f()->psi;
-	race_state.p_g
+    race_state.p_GatePosY = gate_initial_position_y;
+	race_state.p_ArcRad = arc_radius;
+	race_state.flag_in_open_loop = TRUE;
+	race_state.p_TurnPoint = turn_point;
+	race_state.gate_counter = 0;
 }
 
 
@@ -93,10 +98,27 @@ void command_run() {
 		flag_init_geo = FALSE;
 		arc_passed = 0;
 		arc_counter = 0;
+		race_state.p_GatePosY = gate_initial_position_y;
+		race_state.p_ArcRad = arc_radius;
+		race_state.flag_in_open_loop = TRUE;
+		race_state.p_TurnPoint = turn_point;
+		race_state.gate_counter = 0;
+		race_state.current_initial_y =  *(race_state.p_GatePosY+race_state.gate_counter);
+		race_state.current_initial_heading=  *(race_state.p_GateHeading+race_state.gate_counter);
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
     }
+
+
+	if (race_state.flag_in_open_loop == TRUE)
+	{
+
+			race_state.current_initial_y = *(race_state.p_GatePosY+race_state.gate_counter);
+			race_state.current_initial_heading = *(race_state.p_GateHeading+race_state.gate_counter);
+	}
+
+
 
     if(state_upper_level  == FIRST_PART)
     {
@@ -146,8 +168,8 @@ void first_part_logic()
 			if(take_off())
 			{
 				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
-				state_lower_level =  LAND_CM;
-				state_upper_level =  FOURTH_PART;
+				state_lower_level =  GO_STRAIGHT_CM;
+				state_upper_level =  FIRST_PART;
 			}
 			break;
 		default:
@@ -160,48 +182,27 @@ void first_part_logic()
 
 void second_part_logic()
 {
+					float delta_psi = *(race_state.p_DeltaArcAng+race_state.gate_counter);
 	switch(state_lower_level)
 	{
 			case GO_STRAIGHT_CM:
-					if (arc_counter == 0)
-					{
-							reference_y = 0;
-					}
-					else 
-					{
-							reference_y = 3;
-					}
-					if(go_straight(-5.0/180*PI,2.0,reference_y) == TRUE)//wass -7deg then -5
 
+					if (go_through_gate(-5.0/180*PI))
 					{
-							previous_mode = GO_STRAIGHT_CM;
-							state_lower_level = ARC_CM;
+							state_lower_level =  ARC_CM;
+							race_state.flag_in_open_loop = TRUE;
 					}
 					break;
 			case ARC_CM:
-				if(	arc_open_loop(1.5,-5.0/180*3.14,180.0/180*PI) == TRUE)
+				if(	arc_open_loop(1.5,-5.0/180*3.14,delta_psi) )
 				{
-							previous_mode = GO_STRAIGHT_CM;
+							previous_mode = ARC_CM;
+							race_state.flag_in_open_loop = FALSE;
+							race_state.gate_counter++;
 							state_lower_level = GO_STRAIGHT_CM;
-							arc_passed ++;
-							if (arc_passed == 2)
-							{
-
-									state_upper_level = THIRD_PART;
-									state_lower_level = ZIGZAG_CM;
-							}
-							if (arc_counter ==0)
-							{
-									arc_counter =1;
-							}
-							else
-							{
-									arc_counter = 0;
-							}
+							state_upper_level = THIRD_PART;
 				}
 				break;
-			case LAND_CM:
-					break;
 			default:
 					break;
 	}
@@ -209,6 +210,17 @@ void second_part_logic()
 
 void third_part_logic()
 {
+	switch(state_lower_level)
+	{
+
+			case GO_STRAIGHT_CM:
+					if (go_through_gate(-5.0/180*PI))
+					{
+							state_lower_level =  ARC_CM;
+							race_state.flag_in_open_loop = TRUE;
+					}
+					break;
+	}
 }
 
 

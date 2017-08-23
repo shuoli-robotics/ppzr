@@ -54,6 +54,7 @@
 #define HOVER_AT_ORIGIN          22 
 #define PREPARE_BEFORE_TAKE_OFF  23 
 #define ZIGZAG_OPEN_LOOP         24
+#define GO_THROUGH_GATE          25
 
 
 #ifndef PREPARE_TIME
@@ -178,6 +179,7 @@ extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acc
 extern bool arc_open_loop(double radius,double theta,float delta_psi);
 extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
+extern bool go_through_gate(float theta);
 extern int sample_pointer;
 
 extern struct arc_open_loop_status arc_status;

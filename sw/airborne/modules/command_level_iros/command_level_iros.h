@@ -96,11 +96,15 @@ struct race_states
 {
 
 		float * p_GatePosY; 
-		float * p_ArcRad //
+		float * p_ArcRad ;//
 		bool flag_in_open_loop;
-		int gate_number;
+		int gate_counter;
 		float * p_TurnPoint;
-}
+		float * p_GateHeading;
+		float * p_DeltaArcAng;
+		float current_initial_y;
+		float current_initial_heading;
+};
 
 
 extern double theta_bias;
@@ -111,5 +115,6 @@ extern double phi_hover;
 extern struct acceleration accel_bias;
 extern struct acceleration accel_hover;
 extern int arc_counter;
+extern struct race_states race_state;
 #endif
 

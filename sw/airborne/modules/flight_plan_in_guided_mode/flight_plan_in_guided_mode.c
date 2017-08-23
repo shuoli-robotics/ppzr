@@ -658,3 +658,42 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 			return 0;
 	}
 }
+
+float previous_error_y;
+bool go_through_gate(float theta)
+{
+		if(primitive_in_use != GO_THROUGH_GATE)
+		{
+
+				primitive_in_use = GO_THROUGH_GATE;
+				psi0 = stateGetNedToBodyEulers_f()->psi;
+				z0 = stateGetPositionNed_f()->z;
+				counter_primitive = 0;
+				time_primitive = 0;
+				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+				guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+				race_state.flag_in_open_loop == FALSE;
+				previous_error_y = 0.0;
+		}
+       		
+		float error_y = -kf_pos_y;
+		float desired_phi = KP_Y*error_y+(error_y-previous_error_y)*512;
+		previous_error_y = error_y;
+		if(desired_phi > MAX_PHI)
+				desired_phi = MAX_PHI;
+		else if (desired_phi < -MAX_PHI)
+				desired_phi = -MAX_PHI;
+
+		guidance_loop_set_theta(theta);
+		guidance_loop_set_phi(desired_phi); 
+		guidance_loop_set_heading(psi0);
+		guidance_v_set_guided_z(z0);
+		if (fabs(kf_pos_x - *(race_state.p_TurnPoint+race_state.gate_counter)<0.2))
+		{
+				return TRUE;
+		}
+		else
+		{
+				return FALSE;
+		}
+}
