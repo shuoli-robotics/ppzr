@@ -137,7 +137,7 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
 
     sonar_bebop.distance = peek_distance / 1000.0;
       distance_before_filter = sonar_bebop.distance;
-      /*distance_after_filter = sonar_filter_gate(distance_before_filter);*/
+	  distance_after_filter = sonar_filter_gate(distance_before_filter);
 
 #else // SITL
     sonar_bebop.distance = stateGetPositionEnu_f()->z;
@@ -150,7 +150,7 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
     if(peek_distance > 0)
     {
       // Send ABI message
-      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_before_filter);
+      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_after_filter);
 
 #ifdef SENSOR_SYNC_SEND_SONAR
       // Send Telemetry report
@@ -168,40 +168,39 @@ static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev
 
 }
 
-/*float s[>onar_filter_gate(float distance_sonar){<]*/
-    /*float distance;*/
-    /*current_distance = distance_sonar;*/
-    /*diff_pre_cur = current_distance - previous_distance;*/
-    /*if (diff_pre_cur < -0.3) {*/
-        /*z0 = previous_distance;*/
-        /*through_gate_green_light = 1;*/
-        /*counter_temp2 = 0;*/
-        /*time_temp2 = 0;*/
-    /*}*/
+float sonar_filter_gate(float distance_sonar){
+	float distance;
+	current_distance = distance_sonar;
+	diff_pre_cur = current_distance - previous_distance;
+	if (diff_pre_cur < -0.3) {
+		z0 = previous_distance;
+		through_gate_green_light = 1;
+		counter_temp2 = 0;
+		time_temp2 = 0;
+	}
 
-    /*if (diff_pre_cur < -0.6 && conunt_gate_green_light == 0){*/
-        /*conunt_gate_green_light = 1;*/
-    /*}*/
-    /*if (diff_pre_cur > 0.6 && conunt_gate_green_light == 1)*/
-    /*{*/
-        /*states_race.gate_counter++;*/
-        /*conunt_gate_green_light = 0;*/
-    /*}*/
-    /*if (diff_pre_cur > 0.3 || time_temp2 > 1.5){*/
+	if (diff_pre_cur < -0.6 && conunt_gate_green_light == 0){
+		conunt_gate_green_light = 1;
+	}
+	if (diff_pre_cur > 0.6 && conunt_gate_green_light == 1)
+	{
+		conunt_gate_green_light = 0;
+	}
+	if (diff_pre_cur > 0.3 || time_temp2 > 1.5){
 
-        /*through_gate_green_light = 0;*/
-    /*}*/
+		through_gate_green_light = 0;
+	}
 
-    /*if (through_gate_green_light == 1)*/
-    /*{*/
-        /*distance = z0;*/
-    /*}*/
-    /*else*/
-    /*{*/
-        /*distance = distance_sonar;*/
-    /*}*/
-    /*previous_distance = current_distance;*/
-    /*if (distance > 3)*/
-        /*distance = 3;*/
-    /*return distance;*/
-/*}*/
+	if (through_gate_green_light == 1)
+	{
+		distance = z0;
+	}
+	else
+	{
+		distance = distance_sonar;
+	}
+	previous_distance = current_distance;
+	if (distance > 3)
+		distance = 3;
+	return distance;
+}

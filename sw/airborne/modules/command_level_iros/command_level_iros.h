@@ -95,13 +95,13 @@ extern enum states_upper_level state_upper_level;
 struct race_states
 {
 
-		float * p_GatePosY; 
-		float * p_ArcRad ;//
+		//float * p_GatePosY; 
+		//float * p_ArcRad ;//
 		bool flag_in_open_loop;
 		int gate_counter;
-		float * p_TurnPoint;
-		float * p_GateHeading;
-		float * p_DeltaArcAng;
+		//float * p_TurnPoint;
+		//float * p_GateHeading;
+		//float * p_DeltaArcAng;
 		float current_initial_y;
 		float current_initial_heading;
 };
@@ -116,5 +116,10 @@ extern struct acceleration accel_bias;
 extern struct acceleration accel_hover;
 extern int arc_counter;
 extern struct race_states race_state;
+extern float gate_initial_position_y[];
+extern float turn_point[];
+extern float arc_radius[];
+extern float delta_arc_angle[];
+extern float gate_initial_heading[];
 #endif
 

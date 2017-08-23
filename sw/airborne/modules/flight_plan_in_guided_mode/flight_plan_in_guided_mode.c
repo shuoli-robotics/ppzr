@@ -53,7 +53,7 @@
 
 #define KP_Y 0.35//40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.06  ///0.04//0.10//was0.15// 0.2
+#define KD_Y 0.08  ///0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 //most turns until now
@@ -252,22 +252,23 @@ bool take_off(void)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
+						guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
 				}
 		}
 		else if(tf_status.flag_hover_mode == TRUE)
 		{
-				guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
 				guidance_v_set_guided_z(tf_status.take_off_altitude);
-				tf_status.sum_altitude += stateGetSpeedNed_f()->z;
+				tf_status.sum_altitude += stateGetPositionNed_f()->z;
 				tf_status.altitude_counter ++;
 				tf_status.ave_altitude = tf_status.sum_altitude/tf_status.altitude_counter;
+				printf("average altitide is %f\n",tf_status.ave_altitude);
+				printf("sum altitide is %f\n",tf_status.sum_altitude );
 		}
-		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.05 && tf_status.altitude_counter > 100)
+		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.05 && tf_status.altitude_counter > 500)
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
 				tf_status.flag_hover_mode = FALSE;
-				printf("average altitide is %f\n",tf_status.ave_altitude);
 				printf("exit take off !!!!!\n");
 				return TRUE;
 		}
@@ -661,7 +662,8 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 	}
 }
 
-float previous_error_y;
+float previous_error_y ;
+float previous_D_term;
 bool go_through_gate(float theta)
 {
 		if(primitive_in_use != GO_THROUGH_GATE)
@@ -674,13 +676,16 @@ bool go_through_gate(float theta)
 				time_primitive = 0;
 				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
-				race_state.flag_in_open_loop == FALSE;
+				race_state.flag_in_open_loop = FALSE;
+				prev_D_term = 0.0;
 				previous_error_y = 0.0;
 		}
        		
 		float error_y = -kf_pos_y;
-		float desired_phi = KP_Y*error_y+(error_y-previous_error_y)*512;
+		float D_term = error_y-previous_error_y;
+		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100;
 		previous_error_y = error_y;
+		previous_D_term = D_term;
 		if(desired_phi > MAX_PHI)
 				desired_phi = MAX_PHI;
 		else if (desired_phi < -MAX_PHI)
@@ -690,7 +695,7 @@ bool go_through_gate(float theta)
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
 		guidance_v_set_guided_z(z0);
-		if (fabs(kf_pos_x - *(race_state.p_TurnPoint+race_state.gate_counter)<0.2))
+		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
 		{
 				return TRUE;
 		}
