@@ -139,7 +139,6 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
       distance_before_filter = sonar_bebop.distance;
       /*distance_after_filter = sonar_filter_gate(distance_before_filter);*/
 
-
 #else // SITL
     sonar_bebop.distance = stateGetPositionEnu_f()->z;
     Bound(sonar_bebop.distance, 0.1f, 7.0f);
@@ -151,7 +150,7 @@ static void *sonar_bebop_read(void *data __attribute__((unused)))
     if(peek_distance > 0)
     {
       // Send ABI message
-      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_after_filter);
+      AbiSendMsgAGL(AGL_SONAR_ADC_ID, distance_before_filter);
 
 #ifdef SENSOR_SYNC_SEND_SONAR
       // Send Telemetry report

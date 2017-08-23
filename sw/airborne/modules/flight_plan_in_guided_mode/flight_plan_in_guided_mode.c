@@ -267,6 +267,8 @@ bool take_off(void)
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
 				tf_status.flag_hover_mode = FALSE;
+				printf("average altitide is %f\n",tf_status.ave_altitude);
+				printf("exit take off !!!!!\n");
 				return TRUE;
 		}
 		else

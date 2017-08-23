@@ -65,7 +65,8 @@ enum states_upper_level state_upper_level ;
 float gate_initial_position_y[] = {3.0,2.0};
 float turn_point[] = {4.0,3.0};
 float arc_radius[] = {1.5};
-float delta_arc_angle = {90.0/180*3.14};
+float delta_arc_angle[] = {90.0/180*3.14};
+float gate_initial_heading[] = {0, 90.0/180*3.13};
 
 struct race_states race_state;
 
@@ -76,10 +77,10 @@ void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
     init_heading = stateGetNedToBodyEulers_f()->psi;
-    race_state.p_GatePosY = gate_initial_position_y;
-	race_state.p_ArcRad = arc_radius;
+    /*race_state.p_GatePosY = gate_initial_position_y;*/
+	/*race_state.p_ArcRad = arc_radius;*/
 	race_state.flag_in_open_loop = TRUE;
-	race_state.p_TurnPoint = turn_point;
+	/*race_state.p_TurnPoint = turn_point;*/
 	race_state.gate_counter = 0;
 }
 
@@ -98,13 +99,13 @@ void command_run() {
 		flag_init_geo = FALSE;
 		arc_passed = 0;
 		arc_counter = 0;
-		race_state.p_GatePosY = gate_initial_position_y;
-		race_state.p_ArcRad = arc_radius;
+		/*race_state.p_GatePosY = gate_initial_position_y;*/
+		/*race_state.p_ArcRad = arc_radius;*/
 		race_state.flag_in_open_loop = TRUE;
-		race_state.p_TurnPoint = turn_point;
+		/*race_state.p_TurnPoint = turn_point;*/
 		race_state.gate_counter = 0;
-		race_state.current_initial_y =  *(race_state.p_GatePosY+race_state.gate_counter);
-		race_state.current_initial_heading=  *(race_state.p_GateHeading+race_state.gate_counter);
+		race_state.current_initial_y =  gate_initial_position_y[race_state.gate_counter];
+		race_state.current_initial_heading= gate_initial_heading[race_state.gate_counter] ;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
         return;
@@ -113,9 +114,8 @@ void command_run() {
 
 	if (race_state.flag_in_open_loop == TRUE)
 	{
-
-			race_state.current_initial_y = *(race_state.p_GatePosY+race_state.gate_counter);
-			race_state.current_initial_heading = *(race_state.p_GateHeading+race_state.gate_counter);
+		race_state.current_initial_y =  gate_initial_position_y[race_state.gate_counter];
+		race_state.current_initial_heading= gate_initial_heading[race_state.gate_counter] ;
 	}
 
 
@@ -182,7 +182,7 @@ void first_part_logic()
 
 void second_part_logic()
 {
-					float delta_psi = *(race_state.p_DeltaArcAng+race_state.gate_counter);
+					float delta_psi = delta_arc_angle[race_state.gate_counter];
 	switch(state_lower_level)
 	{
 			case GO_STRAIGHT_CM:
