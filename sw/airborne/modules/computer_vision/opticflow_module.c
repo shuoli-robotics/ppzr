@@ -154,7 +154,7 @@ struct image_t *opticflow_module_calc(struct image_t *img)
   // Copy the state
   struct pose_t pose = get_rotation_at_timestamp(img->pprz_ts);
   struct opticflow_state_t temp_state;
-  temp_state.agl = opticflow_state.agl;
+  temp_state.agl = -stateGetPositionNed_f()->z;// opticflow_state.agl;//agl not working, why???
   temp_state.rates = pose.rates;
 
   // Do the optical flow calculation
