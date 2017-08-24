@@ -48,6 +48,7 @@ struct race_states
 		float current_initial_x;
 		float current_initial_heading;
 		float current_arc_radius;
+		float current_delta_psi;
 };
 
 
