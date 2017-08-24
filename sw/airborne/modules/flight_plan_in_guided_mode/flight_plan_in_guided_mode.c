@@ -257,15 +257,15 @@ bool take_off(void)
 		}
 		else if(tf_status.flag_hover_mode == TRUE)
 		{
-				guidance_v_set_guided_z(tf_status.take_off_altitude);
+				guidance_v_set_guided_z(-1.5);
 				tf_status.sum_altitude += stateGetPositionNed_f()->z;
 				race_state.flag_in_open_loop = FALSE;
 				tf_status.altitude_counter ++;
 				tf_status.ave_altitude = tf_status.sum_altitude/tf_status.altitude_counter;
 
-				printf("average altitide is %f\n",tf_status.ave_altitude);
-				printf("sum altitide is %f\n",tf_status.sum_altitude );
-				printf("altitude counter is %d\n",tf_status.altitude_counter);
+				//printf("average altitide is %f\n",tf_status.ave_altitude);
+				//printf("sum altitide is %f\n",tf_status.sum_altitude );
+				//printf("altitude counter is %d\n",tf_status.altitude_counter);
 		}
 		/*if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter > 1000 )*/
 		if (tf_status.altitude_counter > 1000 )
@@ -684,7 +684,10 @@ bool go_through_gate(float theta)
 		guidance_loop_set_theta(theta);
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
-		guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+		guidance_v_set_guided_z(-1.5);
+		printf("altitude is ____________________%f\n",stateGetPositionNed_f()->z);
+		printf("gate counter is ____________________%d\n",race_state.gate_counter);
+		
 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
 		{
 				return TRUE;
