@@ -365,6 +365,10 @@ uint8_t dummy = 0;
 
 float gate_heading = 0;
 
+int run_ekf = 0;
+
+double last_open_loop_time = 0;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_y, &hor_angle, &vert_angle, &x_dist, &y_dist,
@@ -499,15 +503,23 @@ void snake_gate_periodic(void)
   u_k[6][0] = stateGetNedToBodyEulers_f()->theta;
   u_k[7][0] = stateGetNedToBodyEulers_f()->psi - gate_heading;
   
+  
   if(prev_arc_status == TRUE && race_state.flag_in_open_loop == FALSE){
+    last_open_loop_time = time_now;
+  }
+  prev_arc_status = race_state.flag_in_open_loop;
+  
+  if(race_state.flag_in_open_loop == FALSE)run_ekf = 0;
+  
+  if(time_now - last_open_loop_time > 0.4){
     X_int[0][0] = 0;
     X_int[1][0] = 0;
     //also reset gate position
     gate_heading = race_state.current_initial_heading;
+    run_ekf = 1;
   }
-  prev_arc_status = race_state.flag_in_open_loop;
   
-  if(race_state.flag_in_open_loop == FALSE){
+  if(run_ekf){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
   }
 
@@ -563,7 +575,7 @@ void snake_gate_periodic(void)
     if(X_int[0][0] < 1.8){
       hist_sample = 0;
     }
-  if(( vision_sample || hist_sample) && race_state.flag_in_open_loop == FALSE && !isnan(ls_pos_x) && !isnan(ls_pos_y))
+  if(( vision_sample || hist_sample) && run_ekf && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
     gettimeofday(&stop, 0);
