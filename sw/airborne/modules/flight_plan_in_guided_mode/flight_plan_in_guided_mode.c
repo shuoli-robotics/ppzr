@@ -265,7 +265,8 @@ bool take_off(void)
 				printf("sum altitide is %f\n",tf_status.sum_altitude );
 				printf("altitude counter is %d\n",tf_status.altitude_counter);
 		}
-		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter > 1000 )
+		/*if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter > 1000 )*/
+		if (tf_status.altitude_counter > 1000 )
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
