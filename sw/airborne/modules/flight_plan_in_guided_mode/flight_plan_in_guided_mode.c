@@ -397,7 +397,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 		/*arc_status.drag_coef_body_x_2 = -0;*/
 		/*arc_status.drag_coef_body_y_2 = 0;*/
 		/*arc_status.drag_coef_body_z_2 = 0;*/
-		race_state.gate_counter++;
+							race_state.gate_counter++;
     }
 
 // calculate command needed
