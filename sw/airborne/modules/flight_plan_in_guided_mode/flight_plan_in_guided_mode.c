@@ -263,8 +263,9 @@ bool take_off(void)
 				tf_status.ave_altitude = tf_status.sum_altitude/tf_status.altitude_counter;
 				printf("average altitide is %f\n",tf_status.ave_altitude);
 				printf("sum altitide is %f\n",tf_status.sum_altitude );
+				printf("altitude counter is %d\n",tf_status.altitude_counter);
 		}
-		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 )
+		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter > 1000 )
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
@@ -362,26 +363,12 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 		arc_status.theta_cmd = desired_theta;
         arc_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
 		
-		int optitrack_speed = 0;
-		float v_ned_x;
-		float v_ned_y;
 		float cruise_speed = 1.8;//1.3;//2.0;
-		if(optitrack_speed){
-		  v_ned_x = stateGetSpeedNed_f()->x;
-		  v_ned_y = stateGetSpeedNed_f()->y;
-		}else{
-		  if(stateGetPositionNed_f()->y > 1.5){
-		    v_ned_x = -cruise_speed;
-		  }else{
-		    v_ned_x = cruise_speed;
-		  }
-		  v_ned_y = 0;
-		}
 	
 	
-		arc_status.v_x_f = cos(arc_status.psi_cmd)*v_ned_x + sin(arc_status.psi_cmd)*v_ned_y; 
-		arc_status.v_y_f = -sin(arc_status.psi_cmd)*v_ned_x + cos(arc_status.psi_cmd)*v_ned_y; 
-		arc_status.v_z_f = stateGetSpeedNed_f()->z;
+		arc_status.v_x_f = cruise_speed; 
+		arc_status.v_y_f = 0; 
+		arc_status.v_z_f = 0;
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
@@ -694,7 +681,7 @@ bool go_through_gate(float theta)
 		guidance_loop_set_theta(theta);
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
-		guidance_v_set_guided_z(z0);
+		guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
 		{
 				return TRUE;
