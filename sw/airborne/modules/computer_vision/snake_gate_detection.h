@@ -228,14 +228,20 @@ extern float gate_quality;
   
 #define MAT_PRINT(_i, _j,A) {           \
     int l,c;                            \
+    printf("float ");			\
     printf(#A);				\
-    printf("\n");			\
+    printf(" = {\n");			\
     for (l=0; l<_i; l++){               \
+      printf("{");			\
       for (c=0; c<_j; c++){             \
-	  printf("%f,",A[l][c]);        \
+	  if(c<(_j-1)){printf("%f,",A[l][c]);} \
+	   else{printf("%f",A[l][c]);} \
         }				\
-        printf("\n"); 			\
+        if(l<(_i-1)){			\
+        printf("} ,\n");}		\
+        else{printf("}\n");}            \
      }					\
+     printf("}\n");			\
   }
 
 #endif /* SNAKE_GATE_DETECTION_CV_PLUGIN_H */

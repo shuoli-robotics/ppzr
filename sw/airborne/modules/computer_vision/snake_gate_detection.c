@@ -2055,4 +2055,6 @@ void snake_gate_detection_init(void)
   
   EKF_init();
   
+  MAT_PRINT(4,4,eye_4);
+  
 }

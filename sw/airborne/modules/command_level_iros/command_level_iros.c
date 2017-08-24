@@ -64,7 +64,7 @@ enum states_upper_level state_upper_level ;
 
 float gate_initial_position_y[] = {3.5,2.5};
 float turn_point[] = {3.8,3.0};
-float arc_radius[] = {0.8};
+float arc_radius[] = {1.2};
 float delta_arc_angle[] = {135.0/180*3.14};
 float gate_initial_heading[] = {0, 135.0/180*3.14};
 

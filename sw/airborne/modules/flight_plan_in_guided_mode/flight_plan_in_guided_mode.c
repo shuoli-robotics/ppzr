@@ -259,12 +259,13 @@ bool take_off(void)
 		{
 				guidance_v_set_guided_z(tf_status.take_off_altitude);
 				tf_status.sum_altitude += stateGetPositionNed_f()->z;
+				race_state.flag_in_open_loop = FALSE;
 				tf_status.altitude_counter ++;
 				tf_status.ave_altitude = tf_status.sum_altitude/tf_status.altitude_counter;
-				printf("average altitide is %f\n",tf_status.ave_altitude);
-				printf("sum altitide is %f\n",tf_status.sum_altitude );
+// 				printf("average altitide is %f\n",tf_status.ave_altitude);
+// 				printf("sum altitide is %f\n",tf_status.sum_altitude );
 		}
-		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 )
+		if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter >700)
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
