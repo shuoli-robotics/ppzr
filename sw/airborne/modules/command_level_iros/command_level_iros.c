@@ -187,6 +187,7 @@ void second_part_logic()
 					{
 							state_lower_level =  ARC_CM;
 							race_state.flag_in_open_loop = TRUE;
+							race_state.gate_counter++;
 					}
 					break;
 			case ARC_CM:
@@ -194,7 +195,6 @@ void second_part_logic()
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
-							race_state.gate_counter++;
 							state_lower_level = GO_STRAIGHT_CM;
 							state_upper_level = THIRD_PART;
 				}
