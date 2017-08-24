@@ -53,7 +53,7 @@
 
 #define KP_Y 0.35//40 //was 0.4
 #define KI_Y 0.0
-#define KD_Y 0.2  ///0.04//0.10//was0.15// 0.2
+#define KD_Y 0.3  //0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 //most turns until now
