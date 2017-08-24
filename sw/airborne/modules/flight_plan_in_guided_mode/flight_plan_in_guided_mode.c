@@ -254,11 +254,13 @@ bool take_off(void)
 						tf_status.flag_hover_mode = TRUE;
 						guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
 				}
+				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 		}
 		else if(tf_status.flag_hover_mode == TRUE)
 		{
-				guidance_v_set_guided_z(-1.5);
+				guidance_v_set_guided_z(tf_status.take_off_altitude) ;
 				tf_status.sum_altitude += stateGetPositionNed_f()->z;
+				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 				race_state.flag_in_open_loop = FALSE;
 				tf_status.altitude_counter ++;
 				tf_status.ave_altitude = tf_status.sum_altitude/tf_status.altitude_counter;
@@ -684,9 +686,9 @@ bool go_through_gate(float theta)
 		guidance_loop_set_theta(theta);
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
-		guidance_v_set_guided_z(-1.5);
-		printf("altitude is ____________________%f\n",stateGetPositionNed_f()->z);
-		printf("gate counter is ____________________%d\n",race_state.gate_counter);
+		guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+// 		printf("altitude is ____________________%f\n",stateGetPositionNed_f()->z);
+// 		printf("gate counter is ____________________%d\n",race_state.gate_counter);
 		
 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
 		{

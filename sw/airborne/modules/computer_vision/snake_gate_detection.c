@@ -504,23 +504,24 @@ void snake_gate_periodic(void)
   u_k[7][0] = stateGetNedToBodyEulers_f()->psi - gate_heading;
   
   
-  if(prev_arc_status == TRUE && race_state.flag_in_open_loop == FALSE){
+  if(race_state.flag_in_open_loop == TRUE){
     last_open_loop_time = time_now;
+    run_ekf = 0;
   }
-  prev_arc_status = race_state.flag_in_open_loop;
+  //prev_arc_status = race_state.flag_in_open_loop;
   
-  if(race_state.flag_in_open_loop == FALSE)run_ekf = 0;
-  
-  if(time_now - last_open_loop_time > 0.4){
+  if(time_now - last_open_loop_time > 0.4 && run_ekf == 0){
     X_int[0][0] = 0;
     X_int[1][0] = 0;
     //also reset gate position
     gate_heading = race_state.current_initial_heading;
     run_ekf = 1;
+    printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   }
   
   if(run_ekf){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
+      printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
   //bounding pos, speed and biases
