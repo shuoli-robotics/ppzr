@@ -501,7 +501,7 @@ void snake_gate_periodic(void)
   u_k[4][0] = RATE_FLOAT_OF_BFP(imu.gyro.q);
   u_k[5][0] = stateGetNedToBodyEulers_f()->phi;
   u_k[6][0] = stateGetNedToBodyEulers_f()->theta;
-  u_k[7][0] = stateGetNedToBodyEulers_f()->psi - gate_heading;
+  u_k[7][0] = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading; Quick fix !!!!!!!!!!!!!!!!!!!!!!
   
   
   if(race_state.flag_in_open_loop == TRUE){
@@ -521,7 +521,7 @@ void snake_gate_periodic(void)
   
   if(run_ekf){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
-      printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
+    //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
   //bounding pos, speed and biases
@@ -1125,20 +1125,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   
  // draw_gate_color(img, best_gate, blue_color);
   
-  //Global psi to local psi based on heading. Later this will be based on what segment of the track the drone is
-  //TODO check if the switch between track segments, doesn't affect the KF during arc part, probably not, since RMAT is calculated by pprz
-	//debug_5 = local_psi;
-//   if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6){//stateGetPositionNed_f()->y>1.5){
-//     if(stateGetNedToBodyEulers_f()->psi<0){
-// 	    local_psi = stateGetNedToBodyEulers_f()->psi+3.14;
-//     }
-//     else{
-// 	    local_psi = stateGetNedToBodyEulers_f()->psi-3.14;
-//     }
-//   }
-//   else{
-    local_psi = stateGetNedToBodyEulers_f()->psi - gate_heading;
- // }
+//change to gate based heading 
+    local_psi = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading;--------------------------------------------------------------
+
   
   
   int side_1;

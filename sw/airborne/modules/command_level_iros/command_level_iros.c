@@ -191,7 +191,7 @@ void second_part_logic()
 					}
 					break;
 			case ARC_CM:
-				if(	arc_open_loop(race_state.current_arc_radius,5.0/180*3.14,race_state.current_delta_psi) )
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_delta_psi) )
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
