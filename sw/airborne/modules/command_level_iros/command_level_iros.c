@@ -197,7 +197,6 @@ void second_part_logic()
 							race_state.flag_in_open_loop = FALSE;
 							state_lower_level = GO_STRAIGHT_CM;
 							state_upper_level = THIRD_PART;
-							race_state.gate_counter++;
 				}
 				break;
 			default:
