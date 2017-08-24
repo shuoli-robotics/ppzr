@@ -47,6 +47,7 @@ struct race_states
 		int gate_counter;
 		float current_initial_x;
 		float current_initial_heading;
+		float current_arc_radius;
 };
 
 
