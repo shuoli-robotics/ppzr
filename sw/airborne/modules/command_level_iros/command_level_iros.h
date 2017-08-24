@@ -27,58 +27,6 @@
 #ifndef COMMAND_LEVEL_IROS_H
 #define COMMAND_LEVEL_IROS_H
 
-#ifndef CONSTANT_VELOCITY_STRAIGHT
-#define CONSTANT_VELOCITY_STRAIGHT 2.5
-#endif
-
-#ifndef NUMBER_OF_GATES
-#define NUMBER_OF_GATES 6               //second part
-#endif
-
-#ifndef ANGLE_AFTER_HALF_GATE
-#define ANGLE_AFTER_HALF_GATE 105.0     //degree
-#endif
-
-#ifndef VELOCITY_IN_FIRST_PART
-#define VELOCITY_IN_FIRST_PART 0.5
-#endif
-
-
-
-
-#ifndef HOVER_TIME
-#define HOVER_TIME 6
-#endif
-
-#ifndef NUMBER_OF_ZIGZAG
-#define NUMBER_OF_ZIGZAG 5
-#endif
-
-#ifndef STRAIGHT_TIME
-#define STRAIGHT_TIME 10.6                     //10.6 for battery 10
-#endif
-
-#ifndef TAKE_OFF_ALTITUDE
-#define TAKE_OFF_ALTITUDE -1.4
-#endif
-
-#ifndef APPROACH_TIME
-#define APPROACH_TIME 3.5
-#endif
-
-
-#ifndef THETA_TIME 
-#define THETA_TIME 10 
-#endif
-
-
-#ifndef PHI_TIME 
-#define PHI_TIME 3  
-#endif
-
-#ifndef HEIGHT_FIRST_PART
-#define HEIGHT_FIRST_PART -2.5 
-#endif
 
 extern void command_run(void);  // 20HZ
 extern void command_init(void);
@@ -95,13 +43,8 @@ extern enum states_upper_level state_upper_level;
 struct race_states
 {
 
-		//float * p_GatePosY; 
-		//float * p_ArcRad ;//
 		bool flag_in_open_loop;
 		int gate_counter;
-		//float * p_TurnPoint;
-		//float * p_GateHeading;
-		//float * p_DeltaArcAng;
 		float current_initial_x;
 		float current_initial_heading;
 };
@@ -121,5 +64,7 @@ extern float turn_point[];
 extern float arc_radius[];
 extern float delta_arc_angle[];
 extern float gate_initial_heading[];
+extern float gate_altitude[] ;
+extern float open_loop_altitude[];
 #endif
 

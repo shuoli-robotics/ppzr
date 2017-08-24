@@ -67,6 +67,8 @@ float turn_point[] = {3.8,3.0};
 float arc_radius[] = {1.2};
 float delta_arc_angle[] = {135.0/180*3.14};
 float gate_initial_heading[] = {0, 135.0/180*3.14};
+float gate_altitude[] = {-1.5 -1.5};
+float open_loop_altitude[] = {-1.5 -1.5};
 
 struct race_states race_state;
 
@@ -77,10 +79,7 @@ void command_init(){
     previous_mode = autopilot_mode;
     current_mode = autopilot_mode;
     init_heading = stateGetNedToBodyEulers_f()->psi;
-    /*race_state.p_GatePosY = gate_initial_position_y;*/
-	/*race_state.p_ArcRad = arc_radius;*/
 	race_state.flag_in_open_loop = TRUE;
-	/*race_state.p_TurnPoint = turn_point;*/
 	race_state.gate_counter = 0;
 }
 
@@ -99,10 +98,7 @@ void command_run() {
 		flag_init_geo = FALSE;
 		arc_passed = 0;
 		arc_counter = 0;
-		/*race_state.p_GatePosY = gate_initial_position_y;*/
-		/*race_state.p_ArcRad = arc_radius;*/
 		race_state.flag_in_open_loop = TRUE;
-		/*race_state.p_TurnPoint = turn_point;*/
 		race_state.gate_counter = 0;
 		race_state.current_initial_x =  gate_initial_position_y[race_state.gate_counter];
 		race_state.current_initial_heading= gate_initial_heading[race_state.gate_counter] ;
