@@ -69,7 +69,7 @@ float delta_arc_angle[] = {145.0/180*3.14};
 float gate_initial_heading[] = {0, 145.0/180*3.14};
 float gate_altitude[] = {-1.5,-1.5,-1.5};
 float open_loop_altitude[] = {-1.5,-1.5,-1.5};
-int   flag_right[] = {0,0};
+int   flag_right[] = {1,0};
 
 struct race_states race_state;
 
