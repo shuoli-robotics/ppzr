@@ -347,7 +347,7 @@ void calculate_attitude_average(double * p_theta,double *p_phi,struct accelerati
 }
 
 struct arc_open_loop_status arc_status;
-void drone_model(struct arc_open_loop_status * sta);
+void drone_model(struct arc_open_loop_status * sta,double radius);
 
 
 
@@ -446,15 +446,15 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	{
 			arc_status.d_psi = arc_status.v_x_f/radius;
 			arc_status.d_psi = -arc_status.d_psi;
-			arc_status.psi_cmd += d_psi/100.0;
+			arc_status.psi_cmd += arc_status.d_psi/100.0;
 			arc_status.theta_cmd = desired_theta;
-			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_radius.d_psi-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.d_psi-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
 							(9.8+arc_status.drag_z_f));
 	}
 	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
 	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
 	// euler method to predict
-	drone_model(&arc_status);
+	drone_model(&arc_status,radius);
 
 	arc_status.x += arc_status.dx/100.0;
 	arc_status.y += arc_status.dy/100.0;
