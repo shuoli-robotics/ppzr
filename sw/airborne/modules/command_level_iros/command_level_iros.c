@@ -187,7 +187,7 @@ void second_part_logic()
 							state_lower_level =  ARC_CM;
 							race_state.flag_in_open_loop = TRUE;
 							race_state.current_arc_radius = arc_radius[race_state.gate_counter];
-					       race_state.current_delta_psi= delta_arc_angle[race_state.gate_counter];
+							race_state.current_delta_psi= delta_arc_angle[race_state.gate_counter];
 					}
 					break;
 			case ARC_CM:
