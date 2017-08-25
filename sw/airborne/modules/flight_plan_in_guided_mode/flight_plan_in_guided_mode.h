@@ -176,7 +176,7 @@ struct take_off_status
  extern void land(void);
 extern void set_attitude(float desired_theta,float desired_phi);
 extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
-extern bool arc_open_loop(double radius,double theta,float delta_psi);
+extern bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_right);
 extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
 extern bool go_through_gate(float theta);

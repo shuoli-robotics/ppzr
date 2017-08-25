@@ -352,7 +352,7 @@ void drone_model(struct arc_open_loop_status * sta);
 
 
 
-bool arc_open_loop(double radius,double desired_theta,float delta_psi)
+bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_right)
 {
     if(primitive_in_use != ARC_OPEN_LOOP)
     { 
@@ -434,11 +434,24 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 
 
 //  calculate command
-	double d_psi = arc_status.v_x_f/radius;
-	arc_status.psi_cmd += d_psi/100.0;
-	arc_status.theta_cmd = desired_theta;
-	arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
-			(9.8+arc_status.drag_z_f));
+    if (flag_right == TRUE)
+	{
+			double d_psi = arc_status.v_x_f/radius;
+			arc_status.psi_cmd += d_psi/100.0;
+			arc_status.theta_cmd = desired_theta;
+			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+							(9.8+arc_status.drag_z_f));
+	}
+	else
+	{
+			double d_psi = arc_status.v_x_f/radius;
+			d_psi = -d_psi;
+			arc_status.psi_cmd += d_psi/100.0;
+			arc_status.theta_cmd = desired_theta;
+			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+							(9.8+arc_status.drag_z_f));
+			arc_status.phi_cmd = -arc_status.phi_cmd;
+	}
 	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
 	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
 	// euler method to predict
@@ -462,7 +475,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi)
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 
 
-	if (arc_status.psi_cmd >(psi0+delta_psi))
+	if (stateGetNedToBodyEulers_f()->psi > (psi0+delta_psi))
 	{
 			arc_status.flag_in_arc = FALSE;
 			return 1;

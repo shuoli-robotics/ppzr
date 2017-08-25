@@ -62,13 +62,14 @@ enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
 
-float gate_initial_position_y[] = {3.5,2.5};
-float turn_point[] = {3.8,3.0};
-float arc_radius[] = {1.2};
+float gate_initial_position_y[] = {3.5,2.5,2.5};
+float turn_point[] = {3.8,3.0,3.5};
+float arc_radius[] = {1.2,1.0};
 float delta_arc_angle[] = {165.0/180*3.14};
 float gate_initial_heading[] = {0, 165.0/180*3.14};
-float gate_altitude[] = {-1.5,-1.5};
-float open_loop_altitude[] = {-1.5,-1.5};
+float gate_altitude[] = {-1.5,-1.5,-1.5};
+float open_loop_altitude[] = {-1.5,-1.5,-1.5};
+int   flag_right[] = {1,0};
 
 struct race_states race_state;
 
@@ -118,7 +119,6 @@ void command_run() {
 
     if(state_upper_level  == FIRST_PART)
     {
-
         first_part_logic();
     }
 
@@ -188,15 +188,16 @@ void second_part_logic()
 							race_state.flag_in_open_loop = TRUE;
 							race_state.current_arc_radius = arc_radius[race_state.gate_counter];
 							race_state.current_delta_psi= delta_arc_angle[race_state.gate_counter];
+							race_state.current_flag_right = flag_right[race_state.gate_counter];
 					}
 					break;
 			case ARC_CM:
-				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_delta_psi) )
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_delta_psi,race_state.current_flag_right))
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
 							state_lower_level = GO_STRAIGHT_CM;
-							state_upper_level = THIRD_PART;
+							/*state_upper_level = THIRD_PART;*/
 				}
 				break;
 			default:
