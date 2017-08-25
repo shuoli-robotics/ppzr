@@ -465,6 +465,19 @@ uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, i
   return 1;
 }
 
+void initialize_EKF(){
+    X_int[0][0] = 0;
+    X_int[1][0] = 0;
+    X_int[2][0] = stateGetPositionNed_f()->z;
+    //also reset gate position
+    gate_heading = race_state.current_initial_heading;
+    gate_distance = race_state.current_initial_x;
+    run_ekf = 1;
+    printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("gate distance:%f\n",gate_distance);
+    printf("gate heading:%f\n",gate_heading);
+    MAT_PRINT(7, 7,P_k_1_k_1_d);
+}
 
 //state filter in periodic loop
 void snake_gate_periodic(void)
@@ -508,23 +521,24 @@ void snake_gate_periodic(void)
   if(race_state.flag_in_open_loop == TRUE){
     last_open_loop_time = time_now;
     run_ekf = 0;
+    //printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
   }
   //prev_arc_status = race_state.flag_in_open_loop;
   
-  if(time_now - last_open_loop_time > 0.4 && run_ekf == 0){
-    X_int[0][0] = 0;
-    X_int[1][0] = 0;
-    X_int[2][0] = stateGetPositionNed_f()->z;
-    //also reset gate position
-    gate_heading = race_state.current_initial_heading;
-    gate_distance = race_state.current_initial_x;
-    run_ekf = 1;
-    printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("gate distance:%f\n",gate_distance);
-    printf("gate heading:%f\n",gate_heading);
-    MAT_PRINT(7, 7,P_k_1_k_1_d);
-  }
-  
+//   if(time_now - last_open_loop_time > 0.4 && run_ekf == 0){
+//     X_int[0][0] = 0;
+//     X_int[1][0] = 0;
+//     X_int[2][0] = stateGetPositionNed_f()->z;
+//     //also reset gate position
+//     gate_heading = race_state.current_initial_heading;
+//     gate_distance = race_state.current_initial_x;
+//     run_ekf = 1;
+//     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+//     printf("gate distance:%f\n",gate_distance);
+//     printf("gate heading:%f\n",gate_heading);
+//     MAT_PRINT(7, 7,P_k_1_k_1_d);
+//   }
+//   
   if(run_ekf){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);

@@ -153,6 +153,8 @@ extern float kf_vel_y;
 //quality check of best gate
 extern float gate_quality;
 
+extern void initialize_EKF(void);
+
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */
 #define VECT3_VECT3_TRANS_MUL(_mat, _v_a,_v_b) {    \

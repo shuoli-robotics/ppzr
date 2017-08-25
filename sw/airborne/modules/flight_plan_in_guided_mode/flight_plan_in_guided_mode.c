@@ -242,6 +242,7 @@ bool take_off(void)
 				tf_status.altitude_counter = 0;
 				tf_status.sum_altitude = 0.0;
 				tf_status.ave_altitude = 0.0;
+				race_state.flag_in_open_loop = TRUE;
 		}
 
 		if (tf_status.flag_open_loop == TRUE )
@@ -253,6 +254,9 @@ bool take_off(void)
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
 						guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
+						initialize_EKF();
+						race_state.flag_in_open_loop = FALSE;
+				  
 				}
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 		}
@@ -405,9 +409,9 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	double phi = arc_status.phi_cmd;
     double theta = arc_status.theta_cmd;
     double psi = arc_status.psi_cmd;
-    printf(" Psi is %f\n",arc_status.psi_cmd/3.14*180);
-     printf(" Phi is %f\n",arc_status.phi_cmd/3.14*180);
-    printf(" v_x_f is %f\n",arc_status.v_x_f);
+//     printf(" Psi is %f\n",arc_status.psi_cmd/3.14*180);
+//      printf(" Phi is %f\n",arc_status.phi_cmd/3.14*180);
+//     printf(" v_x_f is %f\n",arc_status.v_x_f);
 	// calculate body velocity
 	arc_status.v_x_b = cos(theta)*arc_status.v_x_f-
 			sin(theta)*arc_status.v_z_f;
@@ -476,12 +480,13 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 
-
-	if (stateGetNedToBodyEulers_f()->psi > (psi0+delta_psi))
+        printf("delta psi is %f !!!!!!!!!!!!!\n",fabs(stateGetNedToBodyEulers_f()->psi - (psi0+delta_psi)));
+	if (fabs(stateGetNedToBodyEulers_f()->psi - (psi0+delta_psi)) < 3.0/180*3.14)
 	{
-	  printf("Stopped turning!!!!!!!!!!!!!!!!!!!!!!=================\n");
+	                printf("MMMMMMMMMMMMMMMMMMMM\n");
 			arc_status.flag_in_arc = FALSE;
-			return 0;
+			initialize_EKF();
+			return 1;
 	}
 	else
 	{
