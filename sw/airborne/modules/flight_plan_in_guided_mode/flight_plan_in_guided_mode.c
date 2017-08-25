@@ -405,6 +405,9 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	double phi = arc_status.phi_cmd;
     double theta = arc_status.theta_cmd;
     double psi = arc_status.psi_cmd;
+    printf(" Psi is %f\n",arc_status.psi_cmd/3.14*180);
+     printf(" Phi is %f\n",arc_status.phi_cmd/3.14*180);
+    printf(" v_x_f is %f\n",arc_status.v_x_f);
 	// calculate body velocity
 	arc_status.v_x_b = cos(theta)*arc_status.v_x_f-
 			sin(theta)*arc_status.v_z_f;
@@ -448,9 +451,9 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 			d_psi = -d_psi;
 			arc_status.psi_cmd += d_psi/100.0;
 			arc_status.theta_cmd = desired_theta;
-			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+			arc_status.phi_cmd= atan((arc_status.v_x_f*d_psi-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
 							(9.8+arc_status.drag_z_f));
-			arc_status.phi_cmd = -arc_status.phi_cmd;
+			//arc_status.phi_cmd = -arc_status.phi_cmd;
 	}
 	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
 	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
@@ -476,8 +479,9 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 
 	if (stateGetNedToBodyEulers_f()->psi > (psi0+delta_psi))
 	{
+	  printf("Stopped turning!!!!!!!!!!!!!!!!!!!!!!=================\n");
 			arc_status.flag_in_arc = FALSE;
-			return 1;
+			return 0;
 	}
 	else
 	{
