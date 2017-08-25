@@ -106,6 +106,7 @@ struct arc_open_loop_status{
 		double dv_y_f;
 		double dv_z_f;
 
+		double d_psi;
 		double drag_coef_body_x_1;
 		double drag_coef_body_y_1;
 		double drag_coef_body_z_1;

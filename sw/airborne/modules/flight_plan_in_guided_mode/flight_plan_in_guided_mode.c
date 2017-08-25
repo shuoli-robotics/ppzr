@@ -444,13 +444,12 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	}
 	else
 	{
-			double d_psi = arc_status.v_x_f/radius;
-			d_psi = -d_psi;
+			arc_status.d_psi = arc_status.v_x_f/radius;
+			arc_status.d_psi = -arc_status.d_psi;
 			arc_status.psi_cmd += d_psi/100.0;
 			arc_status.theta_cmd = desired_theta;
-			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_status.v_x_f/radius-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
+			arc_status.phi_cmd= atan((arc_status.v_x_f*arc_radius.d_psi-arc_status.drag_y_f)*cos(arc_status.theta_cmd)/
 							(9.8+arc_status.drag_z_f));
-			arc_status.phi_cmd = -arc_status.phi_cmd;
 	}
 	/*arc_status.phi_cmd = -atan(-arc_status.v_x_f*d_psi*cos(arc_status.theta_cmd)/9.8);*/
 	arc_status.thrust_cmd= (-9.8-arc_status.drag_z_f)/cos(arc_status.phi_cmd)/cos(arc_status.theta_cmd);
@@ -485,7 +484,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	}
 }
 
-void drone_model(struct arc_open_loop_status* sta)
+void drone_model(struct arc_open_loop_status* sta,double radius)
 {
 		double phi = sta->phi_cmd;
 		double theta = sta->theta_cmd;
@@ -497,9 +496,9 @@ void drone_model(struct arc_open_loop_status* sta)
 		
 		double T = arc_status.thrust_cmd;
 		/*double T = -9.8/cos(theta)/cos(phi);*/
-		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_x_f*sta->v_y_f/1.5;
+		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_x_f*sta->d_psi;
 		/*sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f;*/
-		sta->dv_y_f = -sin(phi)*T+sta->drag_y_f-sta->v_x_f*sta->v_x_f/1.5; 	
+		sta->dv_y_f = -sin(phi)*T+sta->drag_y_f-sta->v_x_f*sta->d_psi; 	
 		sta->dv_z_f = 9.8+cos(phi)*cos(theta)*T+sta->drag_z_f; 	
 }
 
