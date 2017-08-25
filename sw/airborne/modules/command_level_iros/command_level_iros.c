@@ -65,8 +65,8 @@ enum states_upper_level state_upper_level ;
 float gate_initial_position_y[] = {3.5,2.5};
 float turn_point[] = {3.8,3.0};
 float arc_radius[] = {1.2};
-float delta_arc_angle[] = {135.0/180*3.14};
-float gate_initial_heading[] = {0, 135.0/180*3.14};
+float delta_arc_angle[] = {165.0/180*3.14};
+float gate_initial_heading[] = {0, 165.0/180*3.14};
 float gate_altitude[] = {-1.5,-1.5};
 float open_loop_altitude[] = {-1.5,-1.5};
 
@@ -191,7 +191,7 @@ void second_part_logic()
 					}
 					break;
 			case ARC_CM:
-				if(	arc_open_loop(race_state.current_arc_radius,5.0/180*3.14,race_state.current_delta_psi) )
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_delta_psi) )
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
