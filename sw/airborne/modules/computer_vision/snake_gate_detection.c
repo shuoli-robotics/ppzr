@@ -364,6 +364,7 @@ bool prev_arc_status = FALSE;
 uint8_t dummy = 0;
 
 float gate_heading = 0;
+float gate_distance = 3.5;
 
 int run_ekf = 0;
 
@@ -513,10 +514,15 @@ void snake_gate_periodic(void)
   if(time_now - last_open_loop_time > 0.4 && run_ekf == 0){
     X_int[0][0] = 0;
     X_int[1][0] = 0;
+    X_int[2][0] = stateGetPositionNed_f()->z;
     //also reset gate position
     gate_heading = race_state.current_initial_heading;
+    gate_distance = race_state.current_initial_x;
     run_ekf = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("gate distance:%f\n",gate_distance);
+    printf("gate heading:%f\n",gate_heading);
+    MAT_PRINT(7, 7,P_k_1_k_1_d);
   }
   
   if(run_ekf){
@@ -564,8 +570,8 @@ void snake_gate_periodic(void)
   
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
-    debug_5 = X_int[2][0];
-   //debug_5 = u_k[2][0];
+    //debug_5 = X_int[2][0];
+   debug_5 = u_k[2][0];
    //debug_5 = X_int[6][0];//bias z
   
   
