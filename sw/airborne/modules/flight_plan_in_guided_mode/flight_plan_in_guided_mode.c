@@ -465,7 +465,6 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	arc_status.v_z_f += arc_status.dv_z_f/100.0;
 
 
-/*printf("v_x_f is %f\n",arc_status.v_x_f);*/
 
 
 	guidance_loop_set_theta(arc_status.theta_cmd);
