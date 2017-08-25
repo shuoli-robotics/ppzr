@@ -496,7 +496,7 @@ void drone_model(struct arc_open_loop_status* sta,double radius)
 		
 		double T = arc_status.thrust_cmd;
 		/*double T = -9.8/cos(theta)/cos(phi);*/
-		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_x_f*sta->d_psi;
+		sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f+sta->v_y_f*sta->d_psi;
 		/*sta->dv_x_f = cos(phi)*sin(theta)*T+sta->drag_x_f;*/
 		sta->dv_y_f = -sin(phi)*T+sta->drag_y_f-sta->v_x_f*sta->d_psi; 	
 		sta->dv_z_f = 9.8+cos(phi)*cos(theta)*T+sta->drag_z_f; 	
