@@ -473,7 +473,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 
 
-	if (fabs(stateGetNedToBodyEulers_f()->psi - (psi0+delta_psi)) < 1.0/180*3.14)
+	if (fabs(stateGetNedToBodyEulers_f()->psi - (psi0+delta_psi)) < 3.0/180*3.14)
 	{
 			arc_status.flag_in_arc = FALSE;
 			return 1;
