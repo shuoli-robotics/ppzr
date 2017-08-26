@@ -411,7 +411,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
     double psi = arc_status.psi_cmd;
 //     printf(" Psi is %f\n",arc_status.psi_cmd/3.14*180);
 //      printf(" Phi is %f\n",arc_status.phi_cmd/3.14*180);
-//     printf(" v_x_f is %f\n",arc_status.v_x_f);
+     printf(" v_x_f is %f\n",arc_status.v_x_f);
 	// calculate body velocity
 	arc_status.v_x_b = cos(theta)*arc_status.v_x_f-
 			sin(theta)*arc_status.v_z_f;
