@@ -270,7 +270,7 @@ bool take_off(void)
 				//printf("altitude counter is %d\n",tf_status.altitude_counter);
 		}
 		/*if (fabs(stateGetPositionNed_f()->z-tf_status.ave_altitude)<0.1 && tf_status.altitude_counter > 1000 )*/
-		if (tf_status.altitude_counter > 500 )
+		if (tf_status.altitude_counter > 1000 )
 		{
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
@@ -674,7 +674,7 @@ bool go_through_gate(float theta)
 				counter_primitive = 0;
 				time_primitive = 0;
 				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-				guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+				//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 				race_state.flag_in_open_loop = FALSE;
 				prev_D_term = 0.0;
 				previous_error_y = 0.0;

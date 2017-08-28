@@ -352,7 +352,9 @@ double last_detection_time = 0;
 
 float local_psi = 0;
 
-float gate_dist_x = 3.5;//was 2.5??
+float gate_dist_x = 3.5;//distance from filter init point to gate 
+float gate_size_m = 1;//size of gate edges in meters
+float gate_center_height = -3.5;//height of gate in meters ned wrt ground
 
 int hist_sample = 0;
 
@@ -1111,7 +1113,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   previous_best_gate.n_sides = best_gate.n_sides;
   
     //color filtered version of image for overlay and debugging
-  if (filter) {
+  if (0){//filter) {
     int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
@@ -1233,11 +1235,21 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
     gate_quality = best_gate.gate_q;
         	  
-	    
-	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
-	  VECT3_ASSIGN(gate_points[1], gate_dist_x,0.5000, -1.9000);
-	  VECT3_ASSIGN(gate_points[2], gate_dist_x,0.5000, -0.9000);
-	  VECT3_ASSIGN(gate_points[3], gate_dist_x,-0.5000, -0.9000);
+	    //Small gate 1m
+// 	  VECT3_ASSIGN(gate_points[0], gate_dist_x,-0.5000, -1.9000);
+// 	  VECT3_ASSIGN(gate_points[1], gate_dist_x,0.5000, -1.9000);
+// 	  VECT3_ASSIGN(gate_points[2], gate_dist_x,0.5000, -0.9000);
+// 	  VECT3_ASSIGN(gate_points[3], gate_dist_x,-0.5000, -0.9000);
+    
+	  //Variable gate dist TODO test variable gate dist
+	  gate_dist_x = 3.5;//distance from filter init point to gate 
+	  gate_size_m = 1.4;//size of gate edges in meters
+	  gate_center_height = -3.5;//
+	  
+          VECT3_ASSIGN(gate_points[0], gate_dist_x,-(gate_size_m/2), gate_center_height-(gate_size_m/2));
+	  VECT3_ASSIGN(gate_points[1], gate_dist_x, (gate_size_m/2), gate_center_height-(gate_size_m/2));
+	  VECT3_ASSIGN(gate_points[2], gate_dist_x, (gate_size_m/2), gate_center_height+(gate_size_m/2));
+	  VECT3_ASSIGN(gate_points[3], gate_dist_x,-(gate_size_m/2), gate_center_height+(gate_size_m/2));
 	  
 	
 	//Undistort fisheye points
