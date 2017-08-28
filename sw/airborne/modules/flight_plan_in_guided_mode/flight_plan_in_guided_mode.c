@@ -553,12 +553,11 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
     if(primitive_in_use != ZIGZAG_OPEN_LOOP)
     { 
 		primitive_in_use = ZIGZAG_OPEN_LOOP;
-        psi = stateGetNedToBodyEulers_f()->psi;
-		psi0 = psi;
+        zigzag_status.psi0 = stateGetNedToBodyEulers_f()->psi;
         z0 = stateGetPositionNed_f()->z;
 		zigzag_status.flag_in_zigzag = TRUE;
-		zigzag_status.position.x= stateGetPositionNed_f()->x;
-		zigzag_status.position.y= stateGetPositionNed_f()->y;
+		zigzag_status.position.x= 0.0;
+		zigzag_status.position.y= 0.0;
 		zigzag_status.position.z= stateGetPositionNed_f()->z;
 		zigzag_status.phi_cmd = stateGetNedToBodyEulers_f()->phi;
 		zigzag_status.theta_cmd = desired_theta;
@@ -573,9 +572,9 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 		zigzag_status.drag_coef.z = 0;
 		zigzag_status.drag_coef_angular_rate.x = -0.08;
 		zigzag_status.drag_coef_angular_rate.y = 0.1;
-        zigzag_status.velocity.x = stateGetSpeedNed_f()->x ;
-        zigzag_status.velocity.y = stateGetSpeedNed_f()->y ;
-        zigzag_status.velocity.z = stateGetSpeedNed_f()->z ;
+        zigzag_status.velocity.x = 1.8;
+        zigzag_status.velocity.y = 0.0;
+        zigzag_status.velocity.z = 0.0;
 		zigzag_status.flag_break = TRUE;
 		counter_temp3 = 0;
 		time_temp3 = 0;
@@ -598,16 +597,15 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 	// calculate body velocity
     zigzag_status.eulers.phi = stateGetNedToBodyEulers_f()->phi;
     zigzag_status.eulers.theta = stateGetNedToBodyEulers_f()->theta;
-    zigzag_status.eulers.psi = stateGetNedToBodyEulers_f()->psi;
+    zigzag_status.eulers.psi = stateGetNedToBodyEulers_f()->psi-zigzag_status.psi0;
     float_rmat_of_eulers_321(&zigzag_status.R_E_B,&zigzag_status.eulers); 
     float_rmat_vmult(&zigzag_status.body_velocity,&zigzag_status.R_E_B,&zigzag_status.velocity);
 
 //  calculate drag in body velocity
 
-	/*zigzag_status.drag_b.x = zigzag_status.drag_coef.x*zigzag_status.body_velocity.x+*/
-			/*zigzag_status.drag_coef_angular_rate.x*;*/
-	/*zigzag_status.drag_b.y = zigzag_status.drag_coef.y*zigzag_status.body_velocity.y;*/
-	/*[>z<]igzag_status.drag_b.z = zigzag_status.drag_coef.z*zigzag_status.body_velocity.z;*/
+	zigzag_status.drag_b.x = zigzag_status.drag_coef.x*zigzag_status.body_velocity.x;
+	zigzag_status.drag_b.y = zigzag_status.drag_coef.y*zigzag_status.body_velocity.y;
+	zigzag_status.drag_b.z = zigzag_status.drag_coef.z*zigzag_status.body_velocity.z;
 
 //  transfer drag from body coordinate to earth coordinate
 
@@ -633,8 +631,8 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 	float_vect_copy(&zigzag_status.d_position.x,&zigzag_status.velocity.x,3);
 
 //  intergrate position and velocity
-    float_vect3_integrate_fi(&zigzag_status.position,&zigzag_status.d_position,1.0/20.0);
-    float_vect3_integrate_fi(&zigzag_status.velocity,&zigzag_status.d_velocity,1.0/20.0);
+    float_vect3_integrate_fi(&zigzag_status.position,&zigzag_status.d_position,1.0/100.0);
+    float_vect3_integrate_fi(&zigzag_status.velocity,&zigzag_status.d_velocity,1.0/100.0);
 
 	// calculte angle command
 	guidance_loop_set_theta(desired_theta);

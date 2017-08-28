@@ -70,7 +70,10 @@ float gate_initial_heading[] = {0, 135.0/180*3.14,0.0};
 
 float gate_altitude[] = {-1.5,-1.5,-1.5};
 float open_loop_altitude[] = {-1.5,-1.5,-1.5};
-int   flag_right[] = {1,0,0};
+int   flag_arc_right[] = {1,-1,-1};
+int   flag_zig_zag_right[] = {0,0,0};
+float zigzag_desired_y[] = {0,0,0};
+float zig_zag_break_time[] = {0,0,0};
 
 struct race_states race_state;
 
@@ -198,9 +201,10 @@ void second_part_logic()
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
 							state_lower_level = GO_STRAIGHT_CM;
-							/*state_upper_level = THIRD_PART;*/
 				}
 				break;
+			case ZIGZAG_CM:
+				
 			default:
 					break;
 	}

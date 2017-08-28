@@ -131,6 +131,7 @@ struct zigzag_open_loop_status{
 		struct FloatVect3 drag_coef_angular_rate;
 
 		double thrust_cmd;
+		double psi0;
 
 		double phi_cmd;
 		double theta_cmd;
