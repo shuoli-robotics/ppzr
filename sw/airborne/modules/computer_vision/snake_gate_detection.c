@@ -221,84 +221,84 @@ float ls_pos_z = 0;
 
 //KF 
 
-#define dt_  0.002
+//#define dt_  0.002
 
-float Gamma[4][2] = {  
-   {0, 0} ,   /*  initializers for row indexed by 0 */
-   {0, 0} ,   /*  initializers for row indexed by 1 */
-   {1, 0} ,  /*  initializers for row indexed by 2 */
-   {0, 1}
-};
-
-float Phi[4][4] = {  
-   {1, 0, dt_, 0} ,   /*  initializers for row indexed by 0 */
-   {0, 1, 0, dt_} ,   /*  initializers for row indexed by 1 */
-   {0, 0, 1,   0} ,   /*  initializers for row indexed by 2 */
-   {0, 0, 0,   1}
-};
-
-float Psi[4][2] = {  
-   {0,   0} ,   /*  initializers for row indexed by 0 */
-   {0,   0} ,   /*  initializers for row indexed by 1 */
-   {dt_, 0} ,  /*  initializers for row indexed by 2 */
-   {0,   dt_}
-};
+// float Gamma[4][2] = {  
+//    {0, 0} ,   /*  initializers for row indexed by 0 */
+//    {0, 0} ,   /*  initializers for row indexed by 1 */
+//    {1, 0} ,  /*  initializers for row indexed by 2 */
+//    {0, 1}
+// };
+// 
+// float Phi[4][4] = {  
+//    {1, 0, dt_, 0} ,   /*  initializers for row indexed by 0 */
+//    {0, 1, 0, dt_} ,   /*  initializers for row indexed by 1 */
+//    {0, 0, 1,   0} ,   /*  initializers for row indexed by 2 */
+//    {0, 0, 0,   1}
+// };
+// 
+// float Psi[4][2] = {  
+//    {0,   0} ,   /*  initializers for row indexed by 0 */
+//    {0,   0} ,   /*  initializers for row indexed by 1 */
+//    {dt_, 0} ,  /*  initializers for row indexed by 2 */
+//    {0,   dt_}
+// };
 
 float X_int[7][1] = {{0}};
 
-float X_opt[4][1] = {  
-   {0} ,   /*  initializers for row indexed by 0 */
-   {0} ,   /*  initializers for row indexed by 1 */
-   {0} ,  /*  initializers for row indexed by 2 */
-   {0}
-};
+// float X_opt[4][1] = {  
+//    {0} ,   /*  initializers for row indexed by 0 */
+//    {0} ,   /*  initializers for row indexed by 1 */
+//    {0} ,  /*  initializers for row indexed by 2 */
+//    {0}
+// };
+// 
+// float X_prev[4][1] = {  
+//    {0} ,   /*  initializers for row indexed by 0 */
+//    {0} ,   /*  initializers for row indexed by 1 */
+//    {0} ,  /*  initializers for row indexed by 2 */
+//    {0}
+// };
 
-float X_prev[4][1] = {  
-   {0} ,   /*  initializers for row indexed by 0 */
-   {0} ,   /*  initializers for row indexed by 1 */
-   {0} ,  /*  initializers for row indexed by 2 */
-   {0}
-};
+// float X_temp_1[4][1];
+// float X_temp_2[4][1];
+// float X_temp_3[4][1];
 
-float X_temp_1[4][1];
-float X_temp_2[4][1];
-float X_temp_3[4][1];
+// float P_k_1[4][4] = {  
+//    {0, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
+//    {0, 0, 0, 0} ,   /*  initializers for row indexed by 1 */
+//    {0, 0, 0, 0} ,   /*  initializers for row indexed by 2 */
+//    {0, 0, 0, 0}
+// };
 
-float P_k_1[4][4] = {  
-   {0, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
-   {0, 0, 0, 0} ,   /*  initializers for row indexed by 1 */
-   {0, 0, 0, 0} ,   /*  initializers for row indexed by 2 */
-   {0, 0, 0, 0}
-};
+//#define init_P 1.0
+// float P_k_1_k_1[4][4] = {  
+//    {init_P, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
+//    {0, init_P, 0, 0} ,   /*  initializers for row indexed by 1 */
+//    {0, 0, init_P, 0} ,   /*  initializers for row indexed by 2 */
+//    {0, 0, 0, init_P}
+// };
 
-#define init_P 1.0
-float P_k_1_k_1[4][4] = {  
-   {init_P, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
-   {0, init_P, 0, 0} ,   /*  initializers for row indexed by 1 */
-   {0, 0, init_P, 0} ,   /*  initializers for row indexed by 2 */
-   {0, 0, 0, init_P}
-};
-
-float Q_mat[2][2] = {  //try 0.5?
-   {1, 0} ,  
-   {0, 1}  
-};
+// float Q_mat[2][2] = {  //try 0.5?
+//    {1, 0} ,  
+//    {0, 1}  
+// };
 
 // float R_k[2][2] = {  //try other?
 //    {0.2, 0} ,  
 //    {0, 0.2}  
 // };
 
-float R_k[2][2] = {  //try other?
-   {0.2, 0} ,  
-   {0, 0.2}  
-};
-
-//output mat
-float H_k[2][4] = {  
-   {1, 0, 0, 0} ,  
-   {0, 1, 0, 0}  
-};
+// float R_k[2][2] = {  //try other?
+//    {0.2, 0} ,  
+//    {0, 0.2}  
+// };
+// 
+// //output mat
+// float H_k[2][4] = {  
+//    {1, 0, 0, 0} ,  
+//    {0, 1, 0, 0}  
+// };
 
 float u_k[8][1] = {{0}};
 
@@ -316,29 +316,29 @@ float EKF_m_dt = 0;
 double time_prev = 0;
 double time_prev_m = 0;
 
-float temp_2_4[2][4];
-float temp_4_4_a[4][4];
-float temp_4_4_b[4][4];
-float temp_4_4_c[4][4];
-float temp_4_2_a[4][2];
-float temp_4_2_b[4][2];
-float temp_2_2_a[2][2];
-float temp_2_2_b[2][2];
-
-float inv_2_2[2][2];
-
-float K_k[4][2];
-
-float inn_vec[2][1];
-
-float temp_4_1[4][1];
-
-float eye_4[4][4] = {  
-   {1, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
-   {0, 1, 0, 0} ,   /*  initializers for row indexed by 1 */
-   {0, 0, 1, 0} ,   /*  initializers for row indexed by 2 */
-   {0, 0, 0, 1}
-};
+// float temp_2_4[2][4];
+// float temp_4_4_a[4][4];
+// float temp_4_4_b[4][4];
+// float temp_4_4_c[4][4];
+// float temp_4_2_a[4][2];
+// float temp_4_2_b[4][2];
+// float temp_2_2_a[2][2];
+// float temp_2_2_b[2][2];
+// 
+// float inv_2_2[2][2];
+// 
+// float K_k[4][2];
+// 
+// float inn_vec[2][1];
+// 
+// float temp_4_1[4][1];
+// 
+// float eye_4[4][4] = {  
+//    {1, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
+//    {0, 1, 0, 0} ,   /*  initializers for row indexed by 1 */
+//    {0, 0, 1, 0} ,   /*  initializers for row indexed by 2 */
+//    {0, 0, 0, 1}
+// };
 
 //final KF results
 float kf_pos_x = 0;
@@ -369,6 +369,7 @@ float gate_heading = 0;
 float gate_distance = 3.5;
 
 int run_ekf = 0;
+int run_ekf_m = 0;
 
 double last_open_loop_time = 0;
 
@@ -473,12 +474,14 @@ void initialize_EKF(){
     X_int[2][0] = stateGetPositionNed_f()->z;
     //also reset gate position
     gate_heading = race_state.current_initial_heading;
-    gate_distance = race_state.current_initial_x;
+    gate_dist_x = race_state.current_initial_x;
     run_ekf = 1;
+    run_ekf_m = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
     MAT_PRINT(7, 7,P_k_1_k_1_d);
+    debug_5 = gate_dist_x;
 }
 
 //state filter in periodic loop
@@ -489,11 +492,11 @@ void snake_gate_periodic(void)
   EKF_dt = time_now - time_prev;
   time_prev = time_now;
   
-  if((time_now-last_detection_time)>0.3){
-    ls_pos_y = 0;
-    ls_pos_x = 0;
-    vision_sample == 1;
-  }
+//   if((time_now-last_detection_time)>0.3){///////////////////////////////does this make sense?????????
+//     ls_pos_y = 0;
+//     ls_pos_x = 0;
+//     vision_sample == 1;
+//   }
   
 //   struct Int32Vect3 acc_meas_body;
 //   struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
@@ -547,7 +550,7 @@ void snake_gate_periodic(void)
   }
 
   //bounding pos, speed and biases
-  if(X_int[0][0] > 6)X_int[0][0] = 6;//xmax
+  if(X_int[0][0] > 10)X_int[0][0] = 10;//xmax
   if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
   if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
@@ -587,7 +590,7 @@ void snake_gate_periodic(void)
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
     //debug_5 = X_int[2][0];
-   debug_5 = u_k[2][0];
+   //debug_5 = u_k[2][0];
    //debug_5 = X_int[6][0];//bias z
   
   
@@ -598,7 +601,10 @@ void snake_gate_periodic(void)
     if(X_int[0][0] < 1.8){
       hist_sample = 0;
     }
-  if(( vision_sample || hist_sample) && run_ekf && !isnan(ls_pos_x) && !isnan(ls_pos_y))
+    if(X_int[0][0] > (gate_dist_x - 0.2)){//block after to close to the target gate
+      run_ekf_m = 0;
+    }
+  if(( vision_sample || hist_sample) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
     gettimeofday(&stop, 0);
@@ -1113,7 +1119,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   previous_best_gate.n_sides = best_gate.n_sides;
   
     //color filtered version of image for overlay and debugging
-  if (0){//filter) {
+  if (1){//filter) {
     int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
@@ -1242,7 +1248,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 // 	  VECT3_ASSIGN(gate_points[3], gate_dist_x,-0.5000, -0.9000);
     
 	  //Variable gate dist TODO test variable gate dist
-	  gate_dist_x = 3.5;//distance from filter init point to gate 
+	  //gate_dist_x = 3.5;//distance from filter init point to gate 
 	  gate_size_m = 1.4;//size of gate edges in meters
 	  gate_center_height = -3.5;//
 	  
@@ -2088,7 +2094,5 @@ void snake_gate_detection_init(void)
   init_butterworth_2_low_pass_int(&filter_z, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   
   EKF_init();
-  
-  MAT_PRINT(4,4,eye_4);
   
 }
