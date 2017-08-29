@@ -474,7 +474,7 @@ void initialize_EKF(){
     //also reset gate position
     gate_heading = gate_initial_heading[race_state.gate_counter];
     gate_distance = gate_initial_position_y[race_state.gate_counter];
-    run_ekf = 1;
+    run_ekf_m = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
@@ -547,7 +547,7 @@ void snake_gate_periodic(void)
   }
 
   //bounding pos, speed and biases
-  if(X_int[0][0] > 6)X_int[0][0] = 6;//xmax
+  if(X_int[0][0] > 10)X_int[0][0] = 10;//xmax
   if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
   if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
