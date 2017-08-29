@@ -33,7 +33,7 @@ extern void command_init(void);
 
 enum states_lower_level{HOVER_AT_ORIGIN_CM,HOVER_CM,
 TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,PREPARE_CM,
-     ZIGZAG_CM,ARC_CM}; 
+     ZIGZAG_CM,ARC_CM,TWO_ARCS_CM}; 
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART};
 
 
@@ -48,8 +48,17 @@ struct race_states
 		float current_initial_x;
 		float current_initial_heading;
 		float current_arc_radius;
-		float current_delta_psi;
-		int current_flag_right;
+		float current_arc_delta_psi;
+		int current_arc_flag_right;
+		float current_zigzag_break_time;
+		float current_zigzag_break_angle;
+		float current_zigzag_desired_y;
+		float current_zigzag_desired_theta;
+		float current_zigzag_max_roll;
+		int current_zigzag_flag_right;
+		int current_zigzag_flag_break;
+		float current_2_arcs_radius;
+		float current_2_arcs_flag_right;
 };
 
 
@@ -69,5 +78,7 @@ extern float delta_arc_angle[];
 extern float gate_initial_heading[];
 extern float gate_altitude[] ;
 extern float open_loop_altitude[];
+extern int  flag_2_arc_right[];
+extern float two_arc_radius[];
 #endif
 

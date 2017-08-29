@@ -472,8 +472,8 @@ void initialize_EKF(){
     X_int[1][0] = 0;
     X_int[2][0] = stateGetPositionNed_f()->z;
     //also reset gate position
-    gate_heading = race_state.current_initial_heading;
-    gate_distance = race_state.current_initial_x;
+    gate_heading = gate_initial_heading[race_state.gate_counter];
+    gate_distance = gate_initial_position_y[race_state.gate_counter];
     run_ekf = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     printf("gate distance:%f\n",gate_distance);
@@ -489,11 +489,11 @@ void snake_gate_periodic(void)
   EKF_dt = time_now - time_prev;
   time_prev = time_now;
   
-  if((time_now-last_detection_time)>0.3){
-    ls_pos_y = 0;
-    ls_pos_x = 0;
-    vision_sample == 1;
-  }
+  /*if((time_now-last_detection_time)>0.3){*/
+    /*ls_pos_y = 0;*/
+    /*ls_pos_x = 0;*/
+    /*vision_sample == 1;*/
+  /*}*/
   
 //   struct Int32Vect3 acc_meas_body;
 //   struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);

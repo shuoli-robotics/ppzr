@@ -252,7 +252,11 @@ bool take_off(void)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
+						race_state.flag_in_open_loop = FALSE;
 						guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
+						printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);
+						printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);
+						initialize_EKF();
 				}
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 		}
@@ -397,7 +401,6 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 		/*arc_status.drag_coef_body_x_2 = -0;*/
 		/*arc_status.drag_coef_body_y_2 = 0;*/
 		/*arc_status.drag_coef_body_z_2 = 0;*/
-							race_state.gate_counter++;
     }
 
 // calculate command needed
@@ -473,6 +476,8 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	if (fabs(stateGetNedToBodyEulers_f()->psi - (psi0+delta_psi)) < 3.0/180*3.14)
 	{
 			arc_status.flag_in_arc = FALSE;
+			race_state.gate_counter++;
+			initialize_EKF();
 			return 1;
 	}
 	else
@@ -548,7 +553,7 @@ bool hover_at_origin()
 
 struct zigzag_open_loop_status zigzag_status;
 
-bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time)
+bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time,int flag_zigzag_right,int flag_break)
 {
     if(primitive_in_use != ZIGZAG_OPEN_LOOP)
     { 
@@ -580,18 +585,22 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 		time_temp3 = 0;
     }
 
-	if (zigzag_status.flag_break == TRUE)
+	if (flag_break == TRUE && zigzag_status.flag_break == TRUE)
 	{
 			guidance_loop_set_theta(break_angle);
 			guidance_loop_set_phi(0.0);
 			guidance_loop_set_heading(zigzag_status.psi_cmd);
 			guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+			/*printf("BBBBBBBBBBBBBBBBB\n");*/
+			/*printf("break_time is %f\n",break_time);*/
+			/*printf("time_temp3 is %f\n",time_temp3);*/
 			if(time_temp3 > break_time)
 			{
 					zigzag_status.flag_break = FALSE;
 			}
 			return 0;
 	}
+	/*printf("CCCCCCCCCCCCCCCCC\n");*/
 // calculate command needed
 // transfer velocity from earth coordinate to body and body fixed coordinate
 	// calculate body velocity
@@ -636,23 +645,42 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 
 	// calculte angle command
 	guidance_loop_set_theta(desired_theta);
-	if (zigzag_status.position.y < desired_y/2.0)
+	if(flag_zigzag_right == 1)
 	{
-			guidance_loop_set_phi(max_roll); 
-			printf("predicted position y == %f\n",zigzag_status.position.y);
+			if (zigzag_status.position.y < desired_y/2.0)
+			{
+					guidance_loop_set_phi(max_roll); 
+					printf("max_roll angle is %f\n",max_roll);
+					printf("predicted position y == %f\n",zigzag_status.position.y);
+			}
+			else
+			{
+					guidance_loop_set_phi(-max_roll); 
+					printf("EEEEEEEEEEEEEEEEE\n");
+					printf("predicted position y == %f\n",zigzag_status.position.y);
+			}
 	}
 	else
 	{
-			guidance_loop_set_phi(-max_roll); 
-			printf("predicted position y == %f\n",zigzag_status.position.y);
+			if (zigzag_status.position.y > desired_y/2.0)
+			{
+					guidance_loop_set_phi(-max_roll); 
+					printf("predicted position y == %f\n",zigzag_status.position.y);
+			}
+			else
+			{
+					guidance_loop_set_phi(max_roll); 
+					printf("predicted position y == %f\n",zigzag_status.position.y);
+			}
 	}
 	guidance_loop_set_heading(zigzag_status.psi_cmd);
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 
-
-	if (fabs(zigzag_status.position.y-desired_y)<0.2)
+	if (fabs(zigzag_status.position.y-desired_y)<0.3)
 	{
 			zigzag_status.flag_in_zigzag = FALSE;
+			race_state.gate_counter++;
+			initialize_EKF();
 			return 1;
 	}
 	else
@@ -690,19 +718,103 @@ bool go_through_gate(float theta)
 		else if (desired_phi < -MAX_PHI)
 				desired_phi = -MAX_PHI;
 
+		printf("desired_phi is %f\n",desired_phi/3.14*180);
+		printf("error y is %f\n",error_y);
 		guidance_loop_set_theta(theta);
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
 		guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
-// 		printf("altitude is ____________________%f\n",stateGetPositionNed_f()->z);
-// 		printf("gate counter is ____________________%d\n",race_state.gate_counter);
 		
 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
 		{
 				return TRUE;
+				printf("exit go through mode\n");
 		}
 		else
 		{
 				return FALSE;
+		}
+}
+
+bool go_straight_test(float time,float desired_theta)
+{
+		if(primitive_in_use != GO_STRAIGHT_TEST)
+		{
+				primitive_in_use = GO_STRAIGHT_TEST;
+				psi0 = stateGetNedToBodyEulers_f()->psi;
+				z0 = stateGetPositionNed_f()->z;
+				counter_primitive = 0;
+				time_primitive = 0;
+				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+				//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+				race_state.flag_in_open_loop = TRUE;
+		}
+		guidance_loop_set_theta(desired_theta);
+		guidance_loop_set_phi(0.0); 
+		guidance_loop_set_heading(psi0);
+		guidance_v_set_guided_z(-1.5);
+		if(time_primitive > time)
+				return TRUE;
+		else
+				return FALSE;
+}
+
+
+struct two_arc_status two_arc_st;
+bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
+{
+		if(two_arc_st.flag_in_two_arc_mode == FALSE)
+		{
+				two_arc_st.flag_in_two_arc_mode = TRUE;
+				two_arc_st.flag_first_arc = TRUE;
+				two_arc_st.flag_second_arc = FALSE;
+		}
+	
+		if(two_arc_st.flag_first_arc == TRUE)
+		{
+
+				if(flag_right == 1)
+				{
+					if(arc_open_loop(radius,desired_theta,179.0/180*3.14,1))
+					{
+							two_arc_st.flag_first_arc = FALSE;
+							two_arc_st.flag_second_arc = TRUE;
+					}
+				}
+				else
+				{
+					if(arc_open_loop(radius,desired_theta,-179.0/180*3.14,-1))
+					{
+							two_arc_st.flag_first_arc = FALSE;
+							two_arc_st.flag_second_arc = TRUE;
+					}
+				}
+
+		}
+
+		if(two_arc_st.flag_second_arc== TRUE)
+		{
+
+				if(flag_right == 1)
+				{
+					if(arc_open_loop(radius,desired_theta,-179.0/180*3.14,-1))
+					{
+							two_arc_st.flag_first_arc = FALSE;
+							two_arc_st.flag_second_arc = FALSE;
+							two_arc_st.flag_in_two_arc_mode = FALSE;
+							return TRUE;
+					}
+				}
+				else
+				{
+					if(arc_open_loop(radius,desired_theta,179.0/180*3.14,1))
+					{
+							two_arc_st.flag_first_arc = FALSE;
+							two_arc_st.flag_second_arc = TRUE;
+							two_arc_st.flag_in_two_arc_mode = FALSE;
+							return TRUE;
+					}
+				}
+
 		}
 }
