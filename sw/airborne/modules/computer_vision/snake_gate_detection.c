@@ -179,10 +179,6 @@ float debug_3 = 3.3;
 float debug_4 = 4.4;
 float debug_5 = 5.5;
 
-float snake_res_x = 0;
-float snake_res_y = 0;
-float snake_res_z = 0;
-
 //logging corner points in image plane
 float gate_img_point_x_1 = 0;
 float gate_img_point_y_1 = 0;
@@ -696,11 +692,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   best_quality = 0;
   best_gate.gate_q = 0;
 
-  snake_res_x = 0;
-  snake_res_y = 0;
-  snake_res_z = 0;
-
-
   n_gates = 0;
   
   //histogram for final approach gate detection
@@ -724,7 +715,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       histogram[x]++;
       
       // snake up and down:
-      snake_up_and_down(img, x, y, &y_low, &y_high);
+//       snake_up_and_down(img, x, y, &y_low, &y_high);
+      snake_up_and_down_new(img, x, y, &y_low, &y_high);
       sz = y_high - y_low;
 
       y_low = y_low + (sz * gate_thickness);
@@ -735,8 +727,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       // if the stretch is long enough
       if (sz > min_pixel_size) {
         // snake left and right:
-        snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
-        snake_left_and_right(img, x, y_high, &x_low2, &x_high2);
+//         snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
+//         snake_left_and_right(img, x, y_high, &x_low2, &x_high2);
+	snake_left_and_right_new(img, x, y_low, &x_low1, &x_high1);
+        snake_left_and_right_new(img, x, y_high, &x_low2, &x_high2);
 
         x_low1 = x_low1 + (sz * gate_thickness);
         x_high1 = x_high1 - (sz * gate_thickness);
@@ -799,6 +793,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //debug large closed snake gate
   ////////////////////////////////////////////////////////////////////////
   for(int i = 0;i < n_gates;i++){
+    printf("n_gates:%d\n",n_gates);
     draw_gate(img, gates[i]);
   }
   /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1002,19 +997,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
                                             );
   }
 
-  /**************************************
-  * BEST GATE -> TRANSFORM TO COORDINATES
-  ***************************************/
-  //xyz_dist zero unless sufficient quality
-  x_dist = 0;
-  y_dist = 0;
-  z_dist = 0;
-  if(best_gate.gate_q > (min_gate_quality*2)){
-  //draw_gate_color(img, best_gate, blue_color);
-  snake_res_x = x_dist;
-  snake_res_y = y_dist;
-  snake_res_z = z_dist;
-  }
   
   //set gate point coordinate logging values to zero, in case no detection happens
   gate_img_point_x_1 = 0;
@@ -1026,7 +1008,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   gate_img_point_x_4 = 0;
   gate_img_point_y_4 = 0;
   
-  draw_gate_color(img, best_gate, blue_color);
+  //draw_gate_color(img, best_gate, blue_color);
   
 //change to gate based heading 
     local_psi = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading;--------------------------------------------------------------
@@ -1956,6 +1938,158 @@ void snake_left_and_right(struct image_t *im, int x, int y, int *x_low, int *x_h
     }
   }
 }
+
+void snake_up_and_down_new(struct image_t *im, int x, int y, int *y_low, int *y_high)
+{
+  int done = 0;
+  int x_initial = x;
+  int no_pixel_gap = 0;
+  (*y_low) = y;
+
+  // snake towards negative y (down?)
+  while ((*y_low) > 0 && !done) {
+    if (check_color(im, x, (*y_low) - 1)) {
+      (*y_low)--;
+      no_pixel_gap = 1;
+    } else if (x+1 < im->h && check_color(im, x + 1, (*y_low) - 1)) {
+      x++;
+      (*y_low)--;
+      no_pixel_gap = 1;
+    } else if (x-1 >= 0 && check_color(im, x - 1, (*y_low) - 1)) {
+      x--;
+      (*y_low)--;
+      no_pixel_gap = 1;
+    } else if (~no_pixel_gap && check_color(im, x, (*y_low)-2)) {
+    	(*y_low) -= 2;
+    	no_pixel_gap = 1;
+    } else if (~no_pixel_gap && x+1 < im->h && check_color(im, x + 1, (*y_low)-2)) {
+    	x++;
+    	(*y_low) -=2;
+    	no_pixel_gap = 1;
+    } else if (~no_pixel_gap && x-1 > 0 && check_color(im, x - 1, (*y_low)-2)) {
+    	x--;
+    	(*y_low) -=2;
+    	no_pixel_gap = 1;
+    } else {
+      done = 1;
+    }
+    no_pixel_gap = 0;
+  }
+
+  x = x_initial;
+  (*y_high) = y;
+  done = 0;
+  // snake towards positive y (up?)
+  // while ((*y_high) < im->h - 1 && !done) {
+  while ((*y_high) < im->w - 1 && !done) {
+
+    if (check_color(im, x, (*y_high) + 1)) {
+      (*y_high)++;
+      no_pixel_gap = 1;
+    //    } else if (x < im->w - 1 && check_color(im, x + 1, (*y_high) + 1)) {
+    } else if (x < im->h - 1 && check_color(im, x + 1, (*y_high) + 1)) {
+      x++;
+      (*y_high)++;
+      no_pixel_gap = 1;
+    } else if (x > 0 && check_color(im, x - 1, (*y_high) + 1)) {
+      x--;
+      (*y_high)++;
+      no_pixel_gap = 1;
+    } else if (~no_pixel_gap && check_color(im, x, (*y_high) + 2)) {
+    	(*y_high) += 2;
+    	no_pixel_gap = 1;
+    } else if (~no_pixel_gap && check_color(im, x + 1, (*y_high) + 2)) {
+    	x++;
+    	(*y_high) += 2;
+    	no_pixel_gap = 1;
+    } else if (~no_pixel_gap && check_color(im, x - 1, (*y_high) + 2)) {
+    	x--;
+    	(*y_high) += 2;
+    } else {
+      done = 1;
+    }
+    no_pixel_gap = 0;
+  }
+}
+
+void snake_left_and_right_new(struct image_t *im, int x, int y, int *x_low, int *x_high)//, int y_result[])
+{
+  int done = 0;
+  int no_pixel_gap = 0;
+  int y_initial = y;
+  (*x_low) = x;
+
+  // snake towards negative x (left)
+  while ((*x_low) > 0 && !done) {
+    if (check_color(im, (*x_low) - 1, y)) {
+      (*x_low)--;
+      no_pixel_gap = 1;
+    // } else if (y < im->h - 1 && check_color(im, (*x_low) - 1, y + 1)) {
+    } else if (y < im->w - 1 && check_color(im, (*x_low) - 1, y + 1)) {
+      y++;
+      (*x_low)--;
+      no_pixel_gap = 1;
+    } else if (y > 0 && check_color(im, (*x_low) - 1, y - 1)) {
+      y--;
+      (*x_low)--;
+      no_pixel_gap = 1;
+    } else if (~no_pixel_gap && check_color(im, (*x_low) - 2, y)) {
+    	(*x_low)-=2;
+    	no_pixel_gap = 1;
+    } else if (y < im->w -1 && ~no_pixel_gap && check_color(im, (*x_low) - 2, y + 1)) {
+    	y++;
+    	(*x_low)-=2;
+    	no_pixel_gap = 1;
+    } else if (y > 0 && ~no_pixel_gap && check_color(im, (*x_low) - 2, y - 1)) {
+    	y--;
+    	(*x_low)-=2;
+    	no_pixel_gap = 1;
+    } else {
+      done = 1;
+    }
+    no_pixel_gap = 0;
+  }
+ // y_result[0] = y; // y to the left side
+  y = y_initial;
+  (*x_high) = x;
+  done = 0;
+  // snake towards positive x (right)
+  // while ((*x_high) < im->w - 1 && !done) {
+  // y+1? Problematic.
+  while ((*x_high) < im->h - 1 && !done) {
+
+    if (check_color(im, (*x_high) + 1, y)) {
+      (*x_high)++;
+      no_pixel_gap = 1;
+    // } else if (y < im->h - 1 && check_color(im, (*x_high) + 1, y++)) {
+    } else if (y < im->w - 1 && check_color(im, (*x_high) + 1, y + 1)) {
+      y++;
+      (*x_high)++;
+      no_pixel_gap = 1;
+    } else if (y > 0 && check_color(im, (*x_high) + 1, y - 1)) {
+      y--;
+      (*x_high)++;
+      no_pixel_gap = 1;
+    } else if (~no_pixel_gap && check_color(im, (*x_high) + 2, y)) {
+    	(*x_high)+=2;
+    	no_pixel_gap = 1;
+    } else if (y < im->w - 1 && ~no_pixel_gap && check_color(im, (*x_high) + 2, y + 1)) {
+    	y++;
+    	(*x_high)+=2;
+    	no_pixel_gap = 1;
+    } else if (y > 0 && ~no_pixel_gap && check_color(im, (*x_high) + 2, y - 1)) {
+    	y--;
+    	(*x_high)+=2;
+    	no_pixel_gap = 1;
+    } else {
+      done = 1;
+    }
+    no_pixel_gap = 0;
+  }
+  //y_result[1] = y; // y to the right side
+  y = y_initial;
+}
+
 
 
 void snake_gate_detection_init(void)
