@@ -55,6 +55,7 @@
 #define PREPARE_BEFORE_TAKE_OFF  23 
 #define ZIGZAG_OPEN_LOOP         24
 #define GO_THROUGH_GATE          25
+#define GO_STRAIGHT_TEST         26
 
 
 #ifndef PREPARE_TIME
@@ -131,6 +132,7 @@ struct zigzag_open_loop_status{
 		struct FloatVect3 drag_coef_angular_rate;
 
 		double thrust_cmd;
+		double psi0;
 
 		double phi_cmd;
 		double theta_cmd;
@@ -165,6 +167,16 @@ struct take_off_status
 		float ave_altitude;
 };
 
+struct two_arc_status
+{
+		bool flag_in_two_arc_mode;
+		bool flag_first_arc;
+		bool flag_second_arc;
+		bool flag_straight;
+
+
+};
+
  extern bool arc_is_finished;
  extern int primitive_in_use;
  extern float init_heading;
@@ -184,10 +196,13 @@ extern bool go_through_gate(float theta);
 extern int sample_pointer;
 
 extern struct arc_open_loop_status arc_status;
-extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time);
+extern bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float break_angle,float break_time,int flag_zigzag_right,int flag_break);
 extern double trim_phi;
 extern double trim_theta;
 extern struct take_off_status tf_status;
+extern bool go_straight_test(float time,float desired_theta);
+extern struct two_arc_status two_arc_st;
+extern bool two_arcs_open_loop(float radius,float desired_theta, int flag_right);
 
 #endif
 

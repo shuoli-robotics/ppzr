@@ -353,10 +353,15 @@ void initialize_EKF(){
     X_int[1][0] = 0;
     X_int[2][0] = stateGetPositionNed_f()->z;
     //also reset gate position
-    gate_heading = race_state.current_initial_heading;
-    gate_dist_x = race_state.current_initial_x;
-    run_ekf = 1;
+    gate_heading = gate_initial_heading[race_state.gate_counter];
+    gate_distance = gate_initial_position_y[race_state.gate_counter];
+    if(race_state.gate_counter < 2){
+      gate_size_m = 1.4;
+    }else{
+      gate_size_m = 1.0; //after second gate, switch to smaller gates
+    }
     run_ekf_m = 1;
+    run_ekf = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
@@ -372,11 +377,6 @@ void snake_gate_periodic(void)
   EKF_dt = time_now - time_prev;
   time_prev = time_now;
   
-//   if((time_now-last_detection_time)>0.3){///////////////////////////////does this make sense?????????
-//     ls_pos_y = 0;
-//     ls_pos_x = 0;
-//     vision_sample == 1;
-//   }
   
 //   struct Int32Vect3 acc_meas_body;
 //   struct Int32RMat *body_to_imu_rmat = orientationGetRMat_i(&imu.body_to_imu);
@@ -466,13 +466,13 @@ void snake_gate_periodic(void)
       hist_sample = 0;
     }
     
-    if(X_int[0][0] > (gate_dist_x - 0.2)){//block after to close to the target gate
-      ekf_sonar_update = 1;
-      //run_ekf_m = 0;
+    if(X_int[0][0] > (gate_dist_x - 0.4)){//block after to close to the target gate
+      //ekf_sonar_update = 1;
+      run_ekf_m = 0;
     }else{
       ekf_sonar_update = 0;
     }
-  if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && !isnan(ls_pos_x) && !isnan(ls_pos_y))
+  if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
     gettimeofday(&stop, 0);
@@ -795,6 +795,13 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     }
 
   }
+  
+  //debug large closed snake gate
+  ////////////////////////////////////////////////////////////////////////
+  for(int i = 0;i < n_gates;i++){
+    draw_gate(img, gates[i]);
+  }
+  /////////////////////////////////////////////////////////////////////////////////////////////
 
   // variables used for fitting:
   //float x_center, y_center, radius,
@@ -987,7 +994,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   previous_best_gate.n_sides = best_gate.n_sides;
   
     //color filtered version of image for overlay and debugging
-  if (1){//filter) {
+  if (0){//filter) {
     int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
@@ -1019,7 +1026,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   gate_img_point_x_4 = 0;
   gate_img_point_y_4 = 0;
   
- // draw_gate_color(img, best_gate, blue_color);
+  draw_gate_color(img, best_gate, blue_color);
   
 //change to gate based heading 
     local_psi = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading;--------------------------------------------------------------
@@ -1119,7 +1126,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
 	  //Variable gate dist TODO test variable gate dist
 	  //gate_dist_x = 3.5;//distance from filter init point to gate 
-	  gate_size_m = 1.4;//size of gate edges in meters
+	  //gate_size_m = 1.4;//size of gate edges in meters
 	  gate_center_height = -3.5;//
 	  
           VECT3_ASSIGN(gate_points[0], gate_dist_x,-(gate_size_m/2), gate_center_height-(gate_size_m/2));

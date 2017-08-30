@@ -66,7 +66,7 @@
     <module name="send_imu_mag_current"/>
     <module name="video_thread">
     </module>
-    <!--module name="sonar_bebop"/-->
+    <module name="sonar_bebop"/>
     <module name="pose_history"/>
     <!--module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
@@ -279,10 +279,10 @@
     <!--define name="HOVER_KP" value="550"/-->
     <!--define name="HOVER_KP" value="1200"/>
     <define name="HOVER_KD" value="100"/-->
-    <define name="HOVER_KP" value="750"/>
-    <define name="HOVER_KD" value="50"/>
+    <define name="HOVER_KP" value="550"/>
+    <define name="HOVER_KD" value="60"/>
     <define name="HOVER_KI" value="13"/>  <!-- 13 -->
-    <define name="NOMINAL_HOVER_THROTTLE" value="0.65"/>
+    <define name="NOMINAL_HOVER_THROTTLE" value="0.75"/>
     <define name="ADAPT_THROTTLE_ENABLED" value="TRUE"/>
   </section>
 
