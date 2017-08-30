@@ -114,7 +114,6 @@ void command_run() {
 		state_upper_level = FIRST_PART;
 		/*state_upper_level = FOURTH_PART;*/
         init_heading = stateGetNedToBodyEulers_f()->psi;
-		flag_init_geo = FALSE;
 		arc_passed = 0;
 		arc_counter = 0;
 		race_state.flag_in_open_loop = TRUE;
