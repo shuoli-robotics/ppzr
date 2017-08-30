@@ -392,16 +392,6 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 		arc_status.drag_coef_body_x_2 = 0;
 		arc_status.drag_coef_body_y_2 = 0;
 		arc_status.drag_coef_body_z_2 = 0;
-		/*arc_status.drag_coef_body_x_1 = -0.5;*/
-		/*arc_status.drag_coef_body_y_1 = 0;*/
-		/*arc_status.drag_coef_body_z_1 = -0;*/
-		/*arc_status.drag_coef_body_x_0 = -0;*/
-		/*arc_status.drag_coef_body_y_0 = 0;*/
-		/*arc_status.drag_coef_body_z_0 = -0;*/
-		/*arc_status.drag_coef_body_x_2 = -0;*/
-		/*arc_status.drag_coef_body_y_2 = 0;*/
-		/*arc_status.drag_coef_body_z_2 = 0;*/
-		printf("First time enter arc mode !!!\n");
     }
 
 // calculate command needed
@@ -780,7 +770,7 @@ bool go_straight_test(float time,float desired_theta)
 
 
 struct two_arc_status two_arc_st;
-bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
+bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float delta_psi)
 {
 		if(two_arc_st.flag_in_two_arc_mode == FALSE)
 		{
@@ -797,7 +787,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
 				if(flag_right == 1)
 				{
 						printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);
-					if(arc_open_loop(radius,desired_theta,180.0/180*3.14,1))
+					if(arc_open_loop(radius,desired_theta,delta_psi,1))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_straight = TRUE;
@@ -813,7 +803,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
 				{
 
 						printf("BBBBBBBBBBBBBBBBBBBB\n!");
-					if(arc_open_loop(radius,desired_theta,-180.0/180*3.14,-1))
+					if(arc_open_loop(radius,desired_theta,-delta_psi,-1))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_straight = TRUE;
@@ -834,7 +824,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
 				guidance_loop_set_heading(psi0);
 				guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
 				printf("!!!!!!!!!!!!!\n");
-				if(time_temp3 > 0.8)
+				if(time_temp3 > 2.5)
 				{
 						two_arc_st.flag_straight = FALSE;
 						two_arc_st.flag_second_arc= TRUE;
@@ -849,7 +839,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
 				if(flag_right == 1)
 				{
 						printf("CCCCCCCCCCCCCCCCCCC  radius is %f\n!",radius);
-					if(arc_open_loop(radius,desired_theta,-180.0/180*3.14,-1))
+					if(arc_open_loop(radius,desired_theta,-delta_psi,-1))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_second_arc = FALSE;
@@ -863,7 +853,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right)
 				else
 				{
 						printf("DDDDDDDDDDDDDDDDDD\n!");
-					if(arc_open_loop(radius,desired_theta,180.0/180*3.14,1))
+					if(arc_open_loop(radius,desired_theta,delta_psi,1))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_second_arc = FALSE;

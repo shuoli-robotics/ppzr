@@ -202,7 +202,7 @@ extern double trim_theta;
 extern struct take_off_status tf_status;
 extern bool go_straight_test(float time,float desired_theta);
 extern struct two_arc_status two_arc_st;
-extern bool two_arcs_open_loop(float radius,float desired_theta, int flag_right);
+extern bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float delta_psi);
 
 #endif
 

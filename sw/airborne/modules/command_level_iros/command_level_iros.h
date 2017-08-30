@@ -59,6 +59,7 @@ struct race_states
 		int current_zigzag_flag_break;
 		float current_2_arcs_radius;
 		float current_2_arcs_flag_right;
+		float current_2_arcs_delta_heading;
 };
 
 
