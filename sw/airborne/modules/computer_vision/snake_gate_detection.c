@@ -127,27 +127,6 @@ float x_dist = 0;
 float y_dist = 0;
 float z_dist = 0;
 
-//state filter
-// float body_v_x = 0;
-// float body_v_y = 0;
-// 
-// float body_filter_x = 0;
-// float body_filter_y = 0;
-// 
-// float predicted_x_gate = 0;
-// float predicted_y_gate = 0;
-// float predicted_z_gate = 0;
-// 
-// float current_x_gate = 0;
-// float current_y_gate = 0;
-// float current_z_gate = 0;
-// 
-// float delta_z_gate   = 0;
-// 
-// float previous_x_gate = 0;
-// float previous_y_gate = 0;
-// float previous_z_gate = 0;
-
 int last_frame_detection = 0;
 int repeat_gate = 0;
 
@@ -221,84 +200,8 @@ float ls_pos_z = 0;
 
 //KF 
 
-//#define dt_  0.002
-
-// float Gamma[4][2] = {  
-//    {0, 0} ,   /*  initializers for row indexed by 0 */
-//    {0, 0} ,   /*  initializers for row indexed by 1 */
-//    {1, 0} ,  /*  initializers for row indexed by 2 */
-//    {0, 1}
-// };
-// 
-// float Phi[4][4] = {  
-//    {1, 0, dt_, 0} ,   /*  initializers for row indexed by 0 */
-//    {0, 1, 0, dt_} ,   /*  initializers for row indexed by 1 */
-//    {0, 0, 1,   0} ,   /*  initializers for row indexed by 2 */
-//    {0, 0, 0,   1}
-// };
-// 
-// float Psi[4][2] = {  
-//    {0,   0} ,   /*  initializers for row indexed by 0 */
-//    {0,   0} ,   /*  initializers for row indexed by 1 */
-//    {dt_, 0} ,  /*  initializers for row indexed by 2 */
-//    {0,   dt_}
-// };
-
 float X_int[7][1] = {{0}};
 
-// float X_opt[4][1] = {  
-//    {0} ,   /*  initializers for row indexed by 0 */
-//    {0} ,   /*  initializers for row indexed by 1 */
-//    {0} ,  /*  initializers for row indexed by 2 */
-//    {0}
-// };
-// 
-// float X_prev[4][1] = {  
-//    {0} ,   /*  initializers for row indexed by 0 */
-//    {0} ,   /*  initializers for row indexed by 1 */
-//    {0} ,  /*  initializers for row indexed by 2 */
-//    {0}
-// };
-
-// float X_temp_1[4][1];
-// float X_temp_2[4][1];
-// float X_temp_3[4][1];
-
-// float P_k_1[4][4] = {  
-//    {0, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
-//    {0, 0, 0, 0} ,   /*  initializers for row indexed by 1 */
-//    {0, 0, 0, 0} ,   /*  initializers for row indexed by 2 */
-//    {0, 0, 0, 0}
-// };
-
-//#define init_P 1.0
-// float P_k_1_k_1[4][4] = {  
-//    {init_P, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
-//    {0, init_P, 0, 0} ,   /*  initializers for row indexed by 1 */
-//    {0, 0, init_P, 0} ,   /*  initializers for row indexed by 2 */
-//    {0, 0, 0, init_P}
-// };
-
-// float Q_mat[2][2] = {  //try 0.5?
-//    {1, 0} ,  
-//    {0, 1}  
-// };
-
-// float R_k[2][2] = {  //try other?
-//    {0.2, 0} ,  
-//    {0, 0.2}  
-// };
-
-// float R_k[2][2] = {  //try other?
-//    {0.2, 0} ,  
-//    {0, 0.2}  
-// };
-// 
-// //output mat
-// float H_k[2][4] = {  
-//    {1, 0, 0, 0} ,  
-//    {0, 1, 0, 0}  
-// };
 
 float u_k[8][1] = {{0}};
 
@@ -315,30 +218,6 @@ float EKF_dt = 0;
 float EKF_m_dt = 0;
 double time_prev = 0;
 double time_prev_m = 0;
-
-// float temp_2_4[2][4];
-// float temp_4_4_a[4][4];
-// float temp_4_4_b[4][4];
-// float temp_4_4_c[4][4];
-// float temp_4_2_a[4][2];
-// float temp_4_2_b[4][2];
-// float temp_2_2_a[2][2];
-// float temp_2_2_b[2][2];
-// 
-// float inv_2_2[2][2];
-// 
-// float K_k[4][2];
-// 
-// float inn_vec[2][1];
-// 
-// float temp_4_1[4][1];
-// 
-// float eye_4[4][4] = {  
-//    {1, 0, 0, 0} ,   /*  initializers for row indexed by 0 */
-//    {0, 1, 0, 0} ,   /*  initializers for row indexed by 1 */
-//    {0, 0, 1, 0} ,   /*  initializers for row indexed by 2 */
-//    {0, 0, 0, 1}
-// };
 
 //final KF results
 float kf_pos_x = 0;
@@ -370,6 +249,7 @@ float gate_distance = 3.5;
 
 int run_ekf = 0;
 int run_ekf_m = 0;
+int ekf_sonar_update = 0;
 
 double last_open_loop_time = 0;
 
@@ -527,23 +407,8 @@ void snake_gate_periodic(void)
     last_open_loop_time = time_now;
     run_ekf = 0;
     //printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
-  }
-  //prev_arc_status = race_state.flag_in_open_loop;
-  
-//   if(time_now - last_open_loop_time > 0.4 && run_ekf == 0){
-//     X_int[0][0] = 0;
-//     X_int[1][0] = 0;
-//     X_int[2][0] = stateGetPositionNed_f()->z;
-//     //also reset gate position
-//     gate_heading = race_state.current_initial_heading;
-//     gate_distance = race_state.current_initial_x;
-//     run_ekf = 1;
-//     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("gate distance:%f\n",gate_distance);
-//     printf("gate heading:%f\n",gate_heading);
-//     MAT_PRINT(7, 7,P_k_1_k_1_d);
-//   }
-//   
+  }  
+   
   if(run_ekf){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
@@ -555,7 +420,7 @@ void snake_gate_periodic(void)
   if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
   if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
   if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
-  if(X_int[2][0] < -4)X_int[2][0] = -4;//xmin
+  if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
   
   //speed
   if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
@@ -589,22 +454,25 @@ void snake_gate_periodic(void)
   
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
+   debug_3 = X_int[2][0];
     //debug_5 = X_int[2][0];
    //debug_5 = u_k[2][0];
    //debug_5 = X_int[6][0];//bias z
   
   
-  //if measurement available -> do KF measurement update 
+  //if measurement available -> do EKF measurement update 
 
-  //if(hist_peek_value > 7 && x_pos_hist < 1.5) -> hist_sample == 1
-   //(vision_sample || hist_sample)
     if(X_int[0][0] < 1.8){
       hist_sample = 0;
     }
+    
     if(X_int[0][0] > (gate_dist_x - 0.2)){//block after to close to the target gate
-      run_ekf_m = 0;
+      ekf_sonar_update = 1;
+      //run_ekf_m = 0;
+    }else{
+      ekf_sonar_update = 0;
     }
-  if(( vision_sample || hist_sample) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
+  if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     
     gettimeofday(&stop, 0);
@@ -631,15 +499,15 @@ void snake_gate_periodic(void)
 	local_y = ls_pos_y;
       }
       
-      debug_3 = local_x;
-      debug_4 = local_y;
+//       debug_3 = local_x;
+//       debug_4 = local_y;
       
       float z_k_d[3];
       z_k_d[0] = local_x;
       z_k_d[1] = local_y;
       z_k_d[2] = stateGetPositionNed_f()->z;
       
-      EKF_update_state(X_int,X_int,z_k_d,EKF_m_dt);
+      EKF_update_state(X_int,X_int,z_k_d,EKF_m_dt,ekf_sonar_update);
       
     vision_sample = 0;
   }
@@ -1191,6 +1059,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     hist_sample = 0;
   }
   
+  //print_sides(img,side_1,side_2);
+  
 //   debug_3 = x_pos_hist;
 //   debug_4 = y_pos_hist;
   
@@ -1369,7 +1239,6 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	  
 	  
 	}
-	
 
 	
 	MAT33_INV(temp_mat,Q_mat);
