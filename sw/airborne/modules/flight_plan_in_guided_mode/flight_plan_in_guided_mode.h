@@ -172,6 +172,7 @@ struct two_arc_status
 		bool flag_in_two_arc_mode;
 		bool flag_first_arc;
 		bool flag_second_arc;
+		bool flag_straight;
 
 
 };
@@ -200,6 +201,8 @@ extern double trim_phi;
 extern double trim_theta;
 extern struct take_off_status tf_status;
 extern bool go_straight_test(float time,float desired_theta);
+extern struct two_arc_status two_arc_st;
+extern bool two_arcs_open_loop(float radius,float desired_theta, int flag_right);
 
 #endif
 
