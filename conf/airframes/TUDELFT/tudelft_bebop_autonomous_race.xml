@@ -91,7 +91,7 @@
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
 	<define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="1"/>
-	<define name="VIEWVIDEO_QUALITY_FACTOR" value="99"/><!--70-->
+	<define name="VIEWVIDEO_QUALITY_FACTOR" value="70"/><!--70-->
     </module>
 
     <module name="vertical_loop_control_module"/>

@@ -469,9 +469,14 @@ void snake_gate_periodic(void)
     }else{
       ekf_sonar_update = 0;
     }
+    
+    if(primitive_in_use == ZIGZAG_2){
+      run_ekf_m = 0;
+    }
+    
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
-    
+   // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);
     gettimeofday(&stop, 0);
     double time_m = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
     EKF_m_dt = time_m - time_prev_m;
