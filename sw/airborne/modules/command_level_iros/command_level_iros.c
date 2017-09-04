@@ -63,7 +63,7 @@ enum states_upper_level state_upper_level ;
 
 
 float gate_initial_position_y[] = {3.0,3.0,6.5};
-float turn_point[] = {6.5,5.5,7.5};
+float turn_point[] = {4.0,5.5,7.5};
 float gate_initial_heading[] = {0, 90.0/180*3.14,90.0/180*3.14};
 
 float gate_altitude[] = {-2.5,-2.5,-1.5};

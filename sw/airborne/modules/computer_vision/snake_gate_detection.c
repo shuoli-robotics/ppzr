@@ -715,8 +715,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       histogram[x]++;
       
       // snake up and down:
-//       snake_up_and_down(img, x, y, &y_low, &y_high);
-      snake_up_and_down_new(img, x, y, &y_low, &y_high);
+       snake_up_and_down(img, x, y, &y_low, &y_high);
+//      snake_up_and_down_new(img, x, y, &y_low, &y_high);
       sz = y_high - y_low;
 
       y_low = y_low + (sz * gate_thickness);
@@ -727,10 +727,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       // if the stretch is long enough
       if (sz > min_pixel_size) {
         // snake left and right:
-//         snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
-//         snake_left_and_right(img, x, y_high, &x_low2, &x_high2);
-	snake_left_and_right_new(img, x, y_low, &x_low1, &x_high1);
-        snake_left_and_right_new(img, x, y_high, &x_low2, &x_high2);
+        snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
+         snake_left_and_right(img, x, y_high, &x_low2, &x_high2);
+// 	snake_left_and_right_new(img, x, y_low, &x_low1, &x_high1);
+//         snake_left_and_right_new(img, x, y_high, &x_low2, &x_high2);
 
         x_low1 = x_low1 + (sz * gate_thickness);
         x_high1 = x_high1 - (sz * gate_thickness);
@@ -794,7 +794,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   ////////////////////////////////////////////////////////////////////////
   for(int i = 0;i < n_gates;i++){
     printf("n_gates:%d\n",n_gates);
-    draw_gate(img, gates[i]);
+   // draw_gate(img, gates[i]);
   }
   /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1043,7 +1043,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   float min_dist_h = 0.4;
   if(hist_peek_value > 7 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;
-    print_sides(img,side_1,side_2);
+    //print_sides(img,side_1,side_2);
   }else{
     hist_sample = 0;
   }
@@ -1058,7 +1058,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //debug_5 = local_psi*57;
   
   /////////////////////////////////////////////////////////////////////////
-  print_hist(img,histogram);
+  //print_hist(img,histogram);
   
   
   if (best_gate.gate_q > (min_gate_quality*2) && best_gate.n_sides > 3) {//n_sides was > 2
@@ -1074,6 +1074,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     
     
     //draw_gate_color(img, best_gate, blue_color);
+    if(1){//gate drawing /////////////////////////////////////////////////////////////////////////////////////
 	if(repeat_gate == 0){
 	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
 	}
@@ -1083,7 +1084,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	    draw_cross(img,last_gate.x_corners[i],last_gate.y_corners[i],blue_color);
 	  }
 	}
-    
+    }
     //save for next iteration
     memcpy(&(last_gate.x_corners[0]),&(best_gate.x_corners[0]),sizeof(int)*4);
     memcpy(&(last_gate.y_corners[0]),&(best_gate.y_corners[0]),sizeof(int)*4);
@@ -1273,7 +1274,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   }
   	
 	//better principal point?
-	draw_cross(img,158,32,green_color);
+	//draw_cross(img,158,32,green_color);
 	
   return img; // snake_gate_detection did not make a new image
 }
