@@ -352,7 +352,8 @@ void initialize_EKF(){
     gate_heading = gate_initial_heading[race_state.gate_counter];
     gate_distance = gate_initial_position_y[race_state.gate_counter];
     if(race_state.gate_counter < 2){
-      gate_size_m = 1.4;
+      /*gate_size_m = 1.4;*/
+      gate_size_m = 1.0;
     }else{
       gate_size_m = 1.0; //after second gate, switch to smaller gates
     }
@@ -413,8 +414,8 @@ void snake_gate_periodic(void)
   //bounding pos, speed and biases
   if(X_int[0][0] > 10)X_int[0][0] = 10;//xmax
   if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
-  if(X_int[1][0] > 5)X_int[1][0] = 5;//ymax
-  if(X_int[1][0] < -3)X_int[1][0] = -3;//ymin
+  if(X_int[1][0] > 7)X_int[1][0] = 7;//ymax
+  if(X_int[1][0] < -7)X_int[1][0] = -7;//ymin
   if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
   if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
   
@@ -450,7 +451,7 @@ void snake_gate_periodic(void)
   
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
-   debug_3 = X_int[2][0];
+   /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
    //debug_5 = u_k[2][0];
    //debug_5 = X_int[6][0];//bias z
@@ -495,8 +496,8 @@ void snake_gate_periodic(void)
 	local_y = ls_pos_y;
       }
       
-//       debug_3 = local_x;
-//       debug_4 = local_y;
+	   debug_3 = local_x;
+	   debug_4 = local_y;
       
       float z_k_d[3];
       z_k_d[0] = local_x;
@@ -715,8 +716,10 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       histogram[x]++;
       
       // snake up and down:
-       snake_up_and_down(img, x, y, &y_low, &y_high);
-//      snake_up_and_down_new(img, x, y, &y_low, &y_high);
+
+	   snake_up_and_down(img, x, y, &y_low, &y_high);
+      /*snake_up_and_down_new(img, x, y, &y_low, &y_high);*/
+
       sz = y_high - y_low;
 
       y_low = y_low + (sz * gate_thickness);
@@ -727,10 +730,12 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
       // if the stretch is long enough
       if (sz > min_pixel_size) {
         // snake left and right:
-        snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
-         snake_left_and_right(img, x, y_high, &x_low2, &x_high2);
-// 	snake_left_and_right_new(img, x, y_low, &x_low1, &x_high1);
-//         snake_left_and_right_new(img, x, y_high, &x_low2, &x_high2);
+
+		 snake_left_and_right(img, x, y_low, &x_low1, &x_high1);
+		 snake_left_and_right(img, x, y_high, &x_low2, &x_high2);
+	/*snake_left_and_right_new(img, x, y_low, &x_low1, &x_high1);*/
+        /*snake_left_and_right_new(img, x, y_high, &x_low2, &x_high2);*/
+
 
         x_low1 = x_low1 + (sz * gate_thickness);
         x_high1 = x_high1 - (sz * gate_thickness);
@@ -793,8 +798,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   //debug large closed snake gate
   ////////////////////////////////////////////////////////////////////////
   for(int i = 0;i < n_gates;i++){
-    printf("n_gates:%d\n",n_gates);
-   // draw_gate(img, gates[i]);
+    /*printf("n_gates:%d\n",n_gates);*/
+    /*draw_gate(img, gates[i]);*/
   }
   /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1247,8 +1252,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	//if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6)ls_pos_y-=0.25;
 	
 	ls_pos_z = pos_vec.z;
-// 	debug_3 = ls_pos_x;
-// 	debug_4 = ls_pos_y;
+ 	debug_3 = ls_pos_x;
+ 	debug_4 = ls_pos_y;
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
 	  
