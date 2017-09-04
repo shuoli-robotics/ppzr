@@ -45,7 +45,7 @@ float DHx[3][7] = {
 float R_k_d[3][3] = {   
    { 0.2, 0, 0, } ,
    { 0, 0.2, 0, } ,
-   { 0, 0, 0.2, }
+   { 0, 0, 0.8, }//was 0.2////////////////////////////////////////////////////////////////////////////////////////////
 };
 
 float K_d[7][3] = {{0}};
@@ -150,7 +150,7 @@ void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, fl
   
 }
 
-void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], float EKF_delta){
+void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], float EKF_delta, int sonar_only){
 //         x_kk_1 = X_int(n,:);
 //         %G = d_kf_calc_G_nl(x_kk_1);
 //         G = eye(7);
@@ -181,6 +181,15 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   
   float p_s = stateGetBodyRates_f()->p;
   float q_s = stateGetBodyRates_f()->q;
+  
+  //adapt DHx if only using sonar
+  if(sonar_only){
+    DHx[0][0] = 0;
+    DHx[1][1] = 0;
+  }else{
+    DHx[0][0] = 1;
+    DHx[1][1] = 1;
+  }
   
 //   //Trail solution matlab
 //   float phi_s = 0.1;

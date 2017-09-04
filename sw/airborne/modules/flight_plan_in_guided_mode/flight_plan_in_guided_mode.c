@@ -52,7 +52,7 @@
 // #define KD_Y 0.2
 
 #define KP_Y 0.35//40 //was 0.4
-#define KI_Y 0.0
+#define KI_Y -0.00
 #define KD_Y 0.30  //0.3//0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
@@ -715,11 +715,26 @@ bool go_through_gate(float theta)
 				race_state.flag_in_open_loop = FALSE;
 				prev_D_term = 0.0;
 				previous_error_y = 0.0;
+				counter_temp2 = 0;
+				time_temp2 = 0;
+		}
+
+		if(break_time[race_state.gate_counter]!=0 && time_temp2 <break_time[race_state.gate_counter])
+		{
+				/*printf("BREAK!!!!!!!!!!!!!!!!\n");*/
+				/*printf("time temp3 = %f break_time is %f\n",time_temp2,break_time[race_state.gate_counter]);*/
+				guidance_loop_set_theta(5.0/180*3.14);
+				guidance_loop_set_phi(0.0); 
+				guidance_loop_set_heading(psi0);
+				guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+				return FALSE;
 		}
        		
 		float error_y = -kf_pos_y;
 		float D_term = error_y-previous_error_y;
-		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100;
+		race_state.sum_y_error += error_y;
+		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
 		previous_error_y = error_y;
 		previous_D_term = D_term;
 		if(desired_phi > MAX_PHI)
@@ -727,8 +742,8 @@ bool go_through_gate(float theta)
 		else if (desired_phi < -MAX_PHI)
 				desired_phi = -MAX_PHI;
 
-		printf("desired_phi is %f\n",desired_phi/3.14*180);
-		printf("error y is %f\n",error_y);
+		/*printf("desired_phi is %f\n",desired_phi/3.14*180);*/
+		/*printf("error y is %f\n",error_y);*/
 		guidance_loop_set_theta(theta);
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
@@ -786,7 +801,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 
 				if(flag_right == 1)
 				{
-						printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);
+						/*printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);*/
 					if(arc_open_loop(radius,desired_theta,delta_psi,1))
 					{
 							two_arc_st.flag_first_arc = FALSE;
@@ -802,7 +817,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				else
 				{
 
-						printf("BBBBBBBBBBBBBBBBBBBB\n!");
+						/*printf("BBBBBBBBBBBBBBBBBBBB\n!");*/
 					if(arc_open_loop(radius,desired_theta,-delta_psi,-1))
 					{
 							two_arc_st.flag_first_arc = FALSE;
@@ -823,8 +838,8 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				guidance_loop_set_phi(0.0); 
 				guidance_loop_set_heading(psi0);
 				guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
-				printf("!!!!!!!!!!!!!\n");
-				if(time_temp3 > 2.5)
+				/*printf("!!!!!!!!!!!!!\n");*/
+				if(time_temp3 > 0.3)
 				{
 						two_arc_st.flag_straight = FALSE;
 						two_arc_st.flag_second_arc= TRUE;
@@ -866,4 +881,93 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 							return FALSE;
 				}
 		}
+}
+
+
+bool zigzag_2(float break_time,float max_roll,float distance_y)
+{
+		if(primitive_in_use != ZIGZAG_2)
+		{
+				primitive_in_use = ZIGZAG_2;
+				psi0 = stateGetNedToBodyEulers_f()->psi;
+				z0 = stateGetPositionNed_f()->z;
+				counter_primitive = 0;
+				time_primitive = 0;
+				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+				counter_temp2 = 0;
+				time_temp2 = 0;
+				race_state.flag_in_open_loop = FALSE;
+				initialize_EKF();
+		}
+
+		if(time_temp2 < break_time)
+		{
+				guidance_loop_set_theta(5.0/180*3.14);
+				guidance_loop_set_phi(0.0); 
+				guidance_loop_set_heading(psi0);
+				guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+				return FALSE;
+		}
+
+		printf("Kalman filter y disdance is %f\n",kf_pos_y);
+		if(fabs(kf_pos_y)<fabs(distance_y)/2.0)
+		{
+				if (distance_y > 0)
+				{
+						guidance_loop_set_theta(0.0/180*3.14);
+						guidance_loop_set_phi(max_roll); 
+						guidance_loop_set_heading(psi0);
+						guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+						return FALSE;
+				}
+				else
+				{
+						guidance_loop_set_theta(0.0/180*3.14);
+						guidance_loop_set_phi(-max_roll); 
+						guidance_loop_set_heading(psi0);
+						guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+						return FALSE;
+				}
+		}
+		else
+		{
+				if (distance_y > 0)
+				{
+						guidance_loop_set_theta(0.0/180*3.14);
+						guidance_loop_set_phi(-max_roll); 
+						guidance_loop_set_heading(psi0);
+						guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+						if(fabs(distance_y-kf_pos_y)<0.2)
+						{
+								race_state.gate_counter++;
+								race_state.flag_in_open_loop = FALSE;
+								initialize_EKF();
+								return TRUE;
+						}
+						else
+						{
+								return FALSE;
+						}
+				}
+				else
+				{
+						guidance_loop_set_theta(0.0/180*3.14);
+						guidance_loop_set_phi(max_roll); 
+						guidance_loop_set_heading(psi0);
+						guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+						if(fabs(distance_y-kf_pos_y)<0.2)
+						{
+								race_state.gate_counter++;
+								race_state.flag_in_open_loop = FALSE;
+								initialize_EKF();
+								return TRUE;
+						}
+						else
+						{
+								return FALSE;
+						}
+				}
+
+		}
+
 }

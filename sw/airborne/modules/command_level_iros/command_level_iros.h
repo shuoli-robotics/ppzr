@@ -60,6 +60,7 @@ struct race_states
 		float current_2_arcs_radius;
 		float current_2_arcs_flag_right;
 		float current_2_arcs_delta_heading;
+		float sum_y_error;
 };
 
 
@@ -81,5 +82,6 @@ extern float gate_altitude[] ;
 extern float open_loop_altitude[];
 extern int  flag_2_arc_right[];
 extern float two_arc_radius[];
+extern float break_time[];
 #endif
 
