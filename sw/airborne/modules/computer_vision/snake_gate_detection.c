@@ -72,7 +72,7 @@ uint8_t color_cr_max  = 230;//255;
 
 // Gate detection settings:
 int n_samples = 10000;//2000;//1000;//500;
-int min_pixel_size = 30;//20;//40;//100;
+int min_pixel_size = 30;////30;//20;//40;//100;
 float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
@@ -193,6 +193,9 @@ float gate_img_point_y_4 = 0;
 float ls_pos_x = 0;
 float ls_pos_y = 0;
 float ls_pos_z = 0;
+
+float prev_ls_pos_x = 0;
+float prev_ls_pos_y = 0;
 
 //KF 
 
@@ -366,6 +369,11 @@ void initialize_EKF(){
     debug_5 = gate_dist_x;
 }
 
+void init_next_open_gate(){
+  gate_distance = X_int[0][0] + gate_initial_position_y[race_state.gate_counter] - ls_pos_x;//
+  X_int[1][0] = ls_pos_y;//init y estimate with first new ls detection
+}
+
 //state filter in periodic loop
 void snake_gate_periodic(void)
 {
@@ -419,7 +427,7 @@ void snake_gate_periodic(void)
   if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
   if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
   
-  //speed
+  //w speed
   if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
   if(X_int[3][0] < -1.5)X_int[3][0] = -1.5;//ymin
   
@@ -463,16 +471,37 @@ void snake_gate_periodic(void)
       hist_sample = 0;
     }
     
-    if(X_int[0][0] > (gate_dist_x - 0.4)){//block after to close to the target gate
+    if(X_int[0][0] > (gate_dist_x - 0.4)){//block after to close to the target gate //////////////0.8, was 0.4
       //ekf_sonar_update = 1;
+      
       run_ekf_m = 0;
-    }else{
+    }else if(X_int[0][0] > gate_dist_x && run_ekf_m == 0){
+      run_ekf_m = 1;
+      printf("run_ekf_m = 1;--------------------------------------------------\n");
+    }
+    else{
       ekf_sonar_update = 0;
     }
     
     if(primitive_in_use == ZIGZAG_2){
       run_ekf_m = 0;
     }
+    
+    //First stretch gate switching logic
+    float switch_threshold_x = 1.0;
+    float switch_threshold_y = 0.5;
+    if(vision_sample && run_ekf_m == 1  && fabs(X_int[0][0]-ls_pos_x)>switch_threshold_x && fabs(X_int[1][0]-ls_pos_y)>switch_threshold_y){
+      init_next_open_gate();
+      printf("init_next_open_gate()--------------------------------------------------\n");
+    }
+
+    //only update when we trust the vision such to be good enough for a meausrement update 
+//     if(vision_sample && run_ekf_m == 1){
+//     prev_ls_pos_x = ls_pos_x;
+//     prev_ls_pos_y = ls_pos_y;
+//     }
+
+    hist_sample = 0;
     
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
@@ -1184,7 +1213,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	
 	
 	
-	for(int i = 0;i<4;i++)
+	//for(int i = 0;i<4;i++)
+	for(int i = 1;i<3;i++)
 	{
 	  float undist_x, undist_y;
 	  //debug_1 = (float)best_gate.x_corners[i];// best_gate.y_corners[i]
@@ -1253,7 +1283,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
 	
-	ls_pos_y = pos_vec.y;//-0.10;//visual bias??
+	ls_pos_y = pos_vec.y - 0.5;//// minus for simulating open gate ! ---------------------------------------------------------------------
 	//if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6)ls_pos_y-=0.25;
 	
 	ls_pos_z = pos_vec.z;

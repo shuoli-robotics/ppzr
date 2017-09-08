@@ -64,7 +64,7 @@ enum states_upper_level state_upper_level ;
 
 
 float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
-float turn_point[] = {4.0,5.5,4.5,4.5};
+float turn_point[] = {7.0,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
 float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5};
@@ -83,10 +83,10 @@ float two_arc_radius[] =     { 1.5,          1.5,           0.75};
 float delta_2_arc_angle[] = {0.0,      180.0/180*3.14, 180.0/180*3.14, 180.0/180*3.14};
 
 
-int   flag_zig_zag_right[] = {1,0,0};
-int   flag_zig_zag_break[] = {1,0,0};
+int   flag_zig_zag_right[] = {0,0,0};//no zigzag
+int   flag_zig_zag_break[] = {0,0,0};
 float zig_zag_desired_y[] = {7.0,0,0};
-float zig_zag_break_time[] = {1.5,0,0};
+float zig_zag_break_time[] = {0.0,0,0};
 float zig_zag_max_roll[] = {10.0/180*3.14,20.0/180*3.14,0};
 
 struct race_states race_state;

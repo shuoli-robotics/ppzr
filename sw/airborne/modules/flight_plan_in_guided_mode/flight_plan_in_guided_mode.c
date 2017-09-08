@@ -730,7 +730,16 @@ bool go_through_gate(float theta)
 				return FALSE;
 		}
        		
-		float error_y = -kf_pos_y;
+		float error_y;
+		
+		if(kf_pos_y > 0){//drone is on the right of the gate, and should stay at the right
+		  error_y = -(kf_pos_y-0.5);//-kf_pos_y;
+		}else{//drone on the left, and should stay there
+		  error_y = -(kf_pos_y+0.5);
+		  //printf("error_y:%f\n",error_y);
+		}
+		
+		
 		float D_term = error_y-previous_error_y;
 		race_state.sum_y_error += error_y;
 		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
