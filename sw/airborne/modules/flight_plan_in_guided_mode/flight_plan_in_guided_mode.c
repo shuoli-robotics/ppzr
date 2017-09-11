@@ -478,7 +478,9 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	else
 	{
 
-			double height = open_loop_altitude[race_state.gate_counter]+0.08*time_primitive;
+			double height = open_loop_altitude[race_state.gate_counter]-0.5*time_primitive;
+			printf("desired height is %f ----------------\n",height);
+			printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);
 			guidance_v_set_guided_z(height);
 	}
 

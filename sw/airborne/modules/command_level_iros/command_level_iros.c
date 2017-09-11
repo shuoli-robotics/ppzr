@@ -65,7 +65,7 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {TWO_ARCS_R,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
 
 float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
-float turn_point[] = {4.0,5.5,4.5,4.5};
+float turn_point[] = {3.2,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
 float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5};
@@ -187,7 +187,7 @@ void first_part_logic()
 			{
 				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
 				state_lower_level =  GO_STRAIGHT_CM;
-				state_upper_level =  THIRD_PART;
+				state_upper_level =  FOURTH_PART;
 				/*state_upper_level =  FOURTH_PART;*/
 			}
 			break;
@@ -312,6 +312,7 @@ void fourth_part_logic() {
 						break;
 
 				case ARC_CM:
+						printf("ascending in arc of three gates\n");
 				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,1))
 				{
 
@@ -321,7 +322,7 @@ void fourth_part_logic() {
 				break;
 
 				default:
-				return 0;
+				break;
 		}
 
 }
