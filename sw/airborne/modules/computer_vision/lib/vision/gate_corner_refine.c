@@ -5,6 +5,7 @@
 #include "modules/computer_vision/cv.h"
 #include "modules/computer_vision/lib/vision/image.h"
 #include "modules/computer_vision/snake_gate_detection.h"
+#include "modules/computer_vision/lib/vision/open_gate_processing.h"
 
 
 uint8_t g_color[4] = {255,128,255,128};
@@ -240,5 +241,347 @@ int bound_value_int(int input, int min, int max){
   else{
     return input;
   }
+}
+
+int array_y[160]; //actual size not known yet.
+int cmp_i_y(const void *a, const void *b){
+    int ia = *(int *)a;
+    int ib = *(int *)b;
+    return array_y[ia] < array_y[ib] ? -1 : array_y[ia] > array_y[ib];
+}
+
+
+//without a neccessary gap, histogram might find two close peaks close to each other.
+void find_thres_hist_peaks(int* hist_raw, int* hist_peek, int max_hist, int hist_size) {
+	int thres = (int) (max_hist * 0.4);
+	memset(hist_peek, 0, sizeof(int)*hist_size);
+	//for (int i=0; i<hist_size; i++) {
+	//	if (hist_raw[i] > thres) {
+	//		hist_peek[i] = hist_raw[i];
+	//		i+=15; // once found a peak, the next peak should be at least twenty? pixels away.
+	//	}
+	//}
+	int window_size = 20;
+	int outer_loop = hist_size / window_size;
+	int residue = hist_size - outer_loop*window_size;
+	int window_max=0;
+	int window_max_index=0;
+	for (int j=0; j<outer_loop; j++) {
+		for (int k=0; k<window_size; k++) {
+			if (hist_raw[j*window_size+k] > window_max) {
+				window_max = hist_raw[j*window_size+k];
+				window_max_index = j*window_size+k;
+			}
+		}
+		if (hist_raw[window_max_index] > thres) {
+			hist_peek[window_max_index] = hist_raw[window_max_index];
+		}
+		window_max = 0;
+		window_max_index=0;
+	}
+	for (int m=0; m<residue; m++) {
+		if (hist_raw[outer_loop*window_size+m] > window_max) {
+			window_max = hist_raw[outer_loop*window_size+m];
+			window_max_index = outer_loop*window_size+m;
+		}
+	}
+	if (hist_raw[window_max_index] > thres) {
+		hist_peek[window_max_index] = hist_raw[window_max_index];
+	}
+}
+
+void find_pointy_hist_peaks(int* hist_raw, int* hist_peek, int hist_size) {
+	int last_sign = 0;
+	int last_idx = 0;
+	memset(hist_peek, 0, hist_size*sizeof(int));
+	for (int i=1;i<hist_size;i++) {
+		int sign = hist_raw[i] - hist_raw[i-1];
+		if (last_sign > 0 && sign < 0){
+			int m_idx = (int) (i+last_idx)/2.0;
+			hist_peek[m_idx] = hist_raw[m_idx];
+		}
+		if (sign!=0) {
+			last_sign = sign;
+			last_idx = i;
+		}
+	}
+}
+
+float sort_hist_peaks(int *hist_raw, int hist_size, int side_bars[]) {
+	// histogram_raw can be raw, smoothed or peek histogram.
+	//int size = sizeof(hist_raw)/sizeof(*hist_raw);
+	//int index[size];
+	int index[hist_size];
+	for (int i=0; i<hist_size; i++) {
+		index[i] = i;
+	}
+	memset(array_y, 0, 160*sizeof(int));
+	memcpy(array_y, hist_raw, hist_size*sizeof(int));
+	qsort(index, hist_size, sizeof(*index), cmp_i_y);
+	if (index[hist_size-2] < index[hist_size-1]) {
+		side_bars[0] = index[hist_size-2]; // lower bar.
+		side_bars[1] = index[hist_size-1];
+	}
+	else {
+		side_bars[0] = index[hist_size-1];
+		side_bars[1] = index[hist_size-2];
+	}
+	float peek_value = (hist_raw[index[hist_size-2]] + hist_raw[index[hist_size-1]])/2;
+	return peek_value;
+}
+
+void ogate_histogram(struct image_t* im, struct opengate_img* opengate, float size_factor, int best_bars[]) {
+	int best_loc_left=0;
+	int best_loc_right=0;
+	int best_hist_left = 0;
+	int best_hist_right = 0;
+
+	int x = opengate->x;
+	int x_range = (int) (size_factor * (float) opengate->size_bar);
+
+	int y_center = (int) ((opengate->y_h + opengate->y_l)/2);
+    float y_half = (float) ((opengate->y_h - opengate->y_l)/2);
+	int y_range = (int) (size_factor * y_half);
+	int y_range_extend = (int) (3 * size_factor * y_half);
+
+	int x_l = (x - x_range < 0)? 0 : x - x_range;
+	int x_h = (x + x_range >= im->h) ? im->h-1 : x + x_range;
+	//int y_l = (y_center - y_range < 0) ? 0 : y_center - y_range;
+	//int y_h = (y_center + y_range > im->w) ? im->w : y_center + y_range;
+	int y_l, y_h;
+	if ( (opengate->found[0]||opengate->found[3]) && (opengate->found[1]||opengate->found[2]) ) {
+		y_l = (y_center - y_range < 0) ? 0 : y_center - y_range;
+		y_h = (y_center + y_range >= im->w) ? im->w-1 : y_center + y_range;
+	} else if ( (opengate->found[0]||opengate->found[3]) && ~(opengate->found[1]||opengate->found[2]) ) {
+		y_l = (y_center - y_range < 0) ? 0 : y_center - y_range;
+		y_h = (y_center + y_range_extend >= im->w) ? im->w-1 : y_center + y_range_extend;
+	} else if ( ~(opengate->found[0]||opengate->found[3]) && (opengate->found[1]||opengate->found[2]) ) {
+		y_l = (y_center - y_range_extend < 0) ? 0 : y_center - y_range_extend;
+		y_h = (y_center + y_range >= im->w) ? im->w-1 : y_center + y_range;
+	} else {}
+
+	int histogram_size = y_h - y_l + 1;
+	int histogram_left[histogram_size];
+	memset(histogram_left, 0, histogram_size*sizeof(int));
+	int histogram_right[histogram_size];
+	memset(histogram_right, 0, histogram_size*sizeof(int));
+
+	for (int y_pix=y_l; y_pix<=y_h; y_pix++) {
+		for (int x_pix=x_l; x_pix<x; x_pix++) {
+		    if (check_color(im, x_pix, y_pix)) {
+				histogram_left[y_pix-y_l]++; //pixel at y_l a.k.a histogram at 0.
+			}
+		}
+	}
+	for (int y_pix=y_l; y_pix<=y_h;y_pix++) {
+		for (int x_pix=x; x_pix<x_h; x_pix++) {
+			if (check_color(im, x_pix, y_pix)) {
+				histogram_right[y_pix-y_l]++;
+			}
+		}
+	}
+	for (int i=0; i<histogram_size; i++) {
+		if (histogram_left[i] > best_hist_left) {
+			best_hist_left = histogram_left[i];
+			best_loc_left = i;
+		}
+		if (histogram_right[i] > best_hist_right) {
+			best_hist_right = histogram_right[i];
+			best_loc_right = i;
+		}
+	}
+
+	best_loc_left += y_l; // histogram[0] corresponds to lowest y position y_l
+	best_loc_right += y_l;
+
+	best_bars[0] = best_loc_left;
+	best_bars[1] = best_loc_right;
+
+	int side_bars[2];
+	int bars[4];
+	int hist_left_peak[histogram_size], hist_right_peak[histogram_size]; //hist_peek set to zero in the next function.
+
+	find_thres_hist_peaks(histogram_left, hist_left_peak, best_hist_left, histogram_size);
+	//find_pointy_hist_peaks(hist_left_peak, hist_l_peak_p, histogram_size);
+	float peak_value_left = sort_hist_peaks(hist_left_peak, histogram_size, side_bars);
+	bars[0] = side_bars[0]+y_l;
+	bars[1] = side_bars[1]+y_l;
+
+	find_thres_hist_peaks(histogram_right, hist_right_peak, best_hist_right, histogram_size);
+	//find_pointy_hist_peaks(hist_right_peak, hist_r_peak_p, histogram_size);
+	float peak_value_right = sort_hist_peaks(hist_right_peak, histogram_size, side_bars);
+	bars[2] = side_bars[1]+y_l;
+	bars[3] = side_bars[0]+y_l;
+
+	float min_ratio_bar = 0.3;
+	int np, nc;
+    struct point_t from, to;
+
+	if (opengate->found[0]==0) {
+		from.x = x;
+		from.y = bars[0];
+		to.x = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
+		to.y = bars[0];
+		check_line(im, from, to, &np, &nc);
+		if ((float) nc/ (float) np >= min_ratio_bar) {
+			opengate->y_corners[0] = bars[0];
+		    opengate->x_corners[0] = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
+		    opengate->found[0] = 2;
+		    //printf("bar 0 refined\n");
+		}
+	}
+	if (opengate->found[1]==0) {
+		from.x = x;
+		from.y = bars[1];
+		to.x = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
+		to.y = bars[1];
+		check_line(im, from, to, &np, &nc);
+		if ((float) nc/ (float) np >= min_ratio_bar) {
+			opengate->y_corners[1] = bars[1];
+			opengate->x_corners[1] = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
+			opengate->found[1] = 2;
+			//printf("bar 1 refined\n");
+		}
+	}
+	if (opengate->found[2]==0) {
+		from.x = x;
+		from.y = bars[2];
+		to.x = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
+		to.y = bars[2];
+		check_line(im, from, to, &np, &nc);
+		if ((float) nc/ (float) np >= min_ratio_bar) {
+			opengate->y_corners[2] = bars[2];
+			opengate->x_corners[2] = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
+			opengate->found[2] = 2;
+			//printf("bar 2 refined\n");
+		}
+    }
+	if (opengate->found[3]==0) {
+		from.x = x;
+		from.y = bars[3];
+		to.x = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
+		to.y = bars[3];
+		check_line(im, from, to, &np, &nc);
+		if ((float) nc/ (float) np >= min_ratio_bar) {
+			opengate->y_corners[3] = bars[3];
+			opengate->x_corners[3] = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
+			opengate->found[3] = 2;
+			//printf("bar 3 refined\n");
+		}
+	}
+	/* //for debugging
+	struct point_t from, to;
+	//from.x = x-5;
+	//from.y = best_loc_left;
+	//to.x = 0;
+	//to.y = best_loc_left;
+	//image_draw_line(im, &from, &to);
+	//from.x = x+5;
+	//from.y = best_loc_right;
+	//to.x = 315;
+	//to.y = best_loc_right;
+	//image_draw_line(im, &from, &to);
+	//from.x = x;
+	//from.y = y_h;
+	//to.x = x;
+	//to.y = y_l;
+	//image_draw_line(im, &from, &to);
+	if (opengate->found[0]==0) {
+		//from.x = x_l;
+		from.x = x - opengate->size_bar;
+		from.y = bars[0];
+		to.x = x;
+		to.y = bars[0];
+		image_draw_line(im, &from, &to);
+		printf("bar 0 drawn\n");
+	}
+	if (opengate->found[1]==0) {
+		//from.x = x_l;
+		from.x = x - opengate->size_bar;
+		from.y = bars[1];
+		to.x = x;
+		to.y = bars[1];
+		image_draw_line(im, &from, &to);
+		printf("bar 1 drawn\n");
+	}
+	if (opengate->found[2]==0) {
+		from.x = x;
+		from.y = bars[2];
+		//to.x = x_h;
+		to.x = x + opengate->size_bar;
+		to.y = bars[2];
+		image_draw_line(im, &from, &to);
+		printf("bar 2 drawn\n");
+	}
+	if (opengate->found[3]==0) {
+		from.x = x;
+		from.y = bars[3];
+		//to.x = x_h;
+		to.x = x + opengate->size_bar;
+		to.y = bars[3];
+		image_draw_line(im, &from, &to);
+		printf("bar 3 drawn\n");
+	}
+	printf("bars location A%d, B%d,..., C%d, D%d\n", bars[0], bars[1], bars[2], bars[3]);
+	printf("bars found A%d B%d ,..., C%d D%d y_l %d\n\n", opengate->found[0], opengate->found[1], opengate->found[2], opengate->found[3], y_l);*/
+}
+
+static void smooth_hist_y(int *smooth, int *raw_hist, int window) {
+	for (int i=0; i< window; i++) {
+		smooth[i] = 0;
+	}
+	for (int i=160-window; i<160; i++) {
+		smooth[i] = 0;
+	}
+	for (int i = window; i<160-window; i++) {
+		float sum = 0;
+		for (int c = -window; c<window; c++) {
+			sum += raw_hist[i+c];
+		}
+		sum/=(window*2);
+		smooth[i] = (int) sum;
+	}
+}
+
+static int find_max_hist_y(int *hist) {
+	int max = 0;
+	for (int i=0; i<160; i++) {
+		if (hist[i] > max) max = hist[i];
+	}
+	return max;
+}
+
+void print_bars(struct image_t *im, int bars[]) {
+	struct point_t from, to;
+	from.x = 0;
+	from.y = bars[0];
+	to.x = bars[5];
+	to.y = bars[0];
+	image_draw_line(im, &from, &to);
+	from.x = 0;
+	from.y = bars[1];
+	to.x = bars[5];
+	to.y = bars[1];
+	image_draw_line(im, &from, &to);
+	from.x = bars[5];
+	from.y = bars[2];
+	to.x = 315;
+	to.y = bars[2];
+	image_draw_line(im, &from, &to);
+	from.x = bars[5];
+	from.y = bars[3];
+	to.x = 315;
+	to.y = bars[3];
+	image_draw_line(im, &from, &to);
+}
+
+void print_hist_y(struct image_t* img, int *hist_l, int *hist_r, int gap) {
+	int max_hist = (find_max_hist_y(hist_l) > find_max_hist_y(hist_r)) ? find_max_hist_y(hist_l) : find_max_hist_y(hist_r);
+	int bound = max_hist/500;
+	if (bound<=0) bound = 1;
+	for (int i = 0; i < img->w; i++) {
+		image_yuv422_set_color(img, img, gap+hist_l[i]/bound, i);
+		image_yuv422_set_color(img, img, 315-gap-hist_r[i]/bound, i);
+	}
 }
 

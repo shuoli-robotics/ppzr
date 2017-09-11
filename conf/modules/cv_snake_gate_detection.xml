@@ -37,6 +37,8 @@
     <file name="lib/vision/qr_code_recognition.c"/>
     <file name="lib/vision/integral_image.c"/>
     <file name="lib/vision/ekf_race.c"/> 
+    <file name="lib/vision/open_gate_processing.c"/>
+    <file name="lib/vision/closed_gate_processing.c"/>
   </makefile>
 </module>
 
