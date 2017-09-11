@@ -211,7 +211,7 @@ void second_part_logic()
 					}
 					break;
 			case TURN_CM:
-					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,1))
+					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,1,0))
 					{
 							race_state.gate_counter = 0; // clear gate counter since in arc_open_loop gate_counter++
 							state_upper_level = THIRD_PART;
@@ -265,7 +265,7 @@ void third_part_logic()
 					}
 					break;
 			case ARC_CM:
-				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right))
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,0))
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
@@ -298,13 +298,32 @@ void third_part_logic()
 
 
 void fourth_part_logic() {
-		
-		if(go_straight_test(2.0,-5.0/180*3.14))
+		switch(state_lower_level)		
 		{
+				case GO_STRAIGHT_CM:
+						if (go_through_gate(-5.0/180*PI))
+						{
+								state_lower_level =  ARC_CM;
+								race_state.flag_in_open_loop = TRUE;
+								race_state.current_arc_radius = 3.0;
+								race_state.current_arc_delta_psi= 90.0/180*PI;
+								race_state.current_arc_flag_right = TRUE;
+						}
+						break;
 
-				state_upper_level = THIRD_PART;
-				state_lower_level = ZIGZAG_CM;
+				case ARC_CM:
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,1))
+				{
+
+						state_lower_level = ARC_CM;
+						state_upper_level = FIFTH_PART;
+				}
+				break;
+
+				default:
+				return 0;
 		}
+
 }
 
 

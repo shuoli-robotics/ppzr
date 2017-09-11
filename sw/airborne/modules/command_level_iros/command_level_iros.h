@@ -64,6 +64,7 @@ struct race_states
 		float current_2_arcs_delta_heading;
 		float sum_y_error;
 		float desired_x_in_first_part;
+		float target_heading;
 };
 
 
