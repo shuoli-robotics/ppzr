@@ -33,8 +33,10 @@ extern void command_init(void);
 
 enum states_lower_level{HOVER_AT_ORIGIN_CM,HOVER_CM,
 TAKE_OFF_OPEN_LOOP_CM,TAKE_OFF_CLOSE_LOOP_CM,LAND_CM,GO_STRAIGHT_CM,PREPARE_CM,
-     ZIGZAG_CM,ARC_CM,TWO_ARCS_CM}; 
+     ZIGZAG_CM,ARC_CM,TWO_ARCS_CM,TURN_CM}; 
 enum states_upper_level{FIRST_PART,SECOND_PART,THIRD_PART,FOURTH_PART,FIFTH_PART};
+
+enum maneuver{ARC_R,ARC_L,TWO_ARCS_L,TWO_ARCS_R,ZIGZAG_L,ZIGZAG_R};
 
 
 extern enum states_lower_level state_lower_level;
@@ -61,6 +63,7 @@ struct race_states
 		float current_2_arcs_flag_right;
 		float current_2_arcs_delta_heading;
 		float sum_y_error;
+		float desired_x_in_first_part;
 };
 
 
