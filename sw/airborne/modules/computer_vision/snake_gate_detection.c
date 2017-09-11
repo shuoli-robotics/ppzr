@@ -446,7 +446,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   int open_gate = 0;
   
-  if(open_gate){
+  if(state_upper_level  == SECOND_PART){
     //OPENGATE 
     float o_x_p = 0;
     float o_y_p = 0;
