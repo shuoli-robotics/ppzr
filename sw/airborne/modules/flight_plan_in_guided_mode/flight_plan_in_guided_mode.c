@@ -743,7 +743,16 @@ bool go_through_gate(float theta)
 				return FALSE;
 		}
        		
-		float error_y = -kf_pos_y;
+		float error_y;
+		
+		if(kf_pos_y > 0){//drone is on the right of the gate, and should stay at the right
+		  error_y = -(kf_pos_y-0.6);//-kf_pos_y;
+		}else{//drone on the left, and should stay there
+		  error_y = -(kf_pos_y+0.6);
+		  //printf("error_y:%f\n",error_y);
+		}
+		
+		
 		float D_term = error_y-previous_error_y;
 		race_state.sum_y_error += error_y;
 		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
@@ -915,7 +924,7 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 
 		if(time_temp2 < break_time)
 		{
-				guidance_loop_set_theta(5.0/180*3.14);
+				guidance_loop_set_theta(10.0/180*3.14);
 				guidance_loop_set_phi(0.0); 
 				guidance_loop_set_heading(psi0);
 				guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
@@ -947,10 +956,10 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 				if (distance_y > 0)
 				{
 						guidance_loop_set_theta(0.0/180*3.14);
-						guidance_loop_set_phi(-max_roll); 
+						guidance_loop_set_phi(-max_roll/2.0); 
 						guidance_loop_set_heading(psi0);
 						guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
-						if(fabs(distance_y-kf_pos_y)<0.2)
+						if(fabs(distance_y-kf_pos_y)<1.0)
 						{
 								race_state.gate_counter++;
 								race_state.flag_in_open_loop = FALSE;
@@ -968,7 +977,7 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 						guidance_loop_set_phi(max_roll); 
 						guidance_loop_set_heading(psi0);
 						guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
-						if(fabs(distance_y-kf_pos_y)<0.2)
+						if(fabs(distance_y-kf_pos_y)<0.6)
 						{
 								race_state.gate_counter++;
 								race_state.flag_in_open_loop = FALSE;
