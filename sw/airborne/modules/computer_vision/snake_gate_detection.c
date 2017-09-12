@@ -368,7 +368,8 @@ void snake_gate_periodic(void)
       run_ekf_m = 1;
       printf("run_ekf_m = 1;--------------------------------------------------\n");
     }
-    else{
+    else{//default back to one
+      run_ekf_m = 1;
       ekf_sonar_update = 0;
     }
     
@@ -391,7 +392,7 @@ void snake_gate_periodic(void)
 //     }
 
     hist_sample = 0;
-    //printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
+    printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);

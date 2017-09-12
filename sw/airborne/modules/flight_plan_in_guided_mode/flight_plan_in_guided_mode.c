@@ -248,7 +248,7 @@ bool take_off(void)
 		{
 				guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);  // vertical module should be called!
 				guidance_loop_set_velocity(0,0);
-				if (time_primitive > 3.5)
+				if (time_primitive > 4.0)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
