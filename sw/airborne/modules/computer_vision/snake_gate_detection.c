@@ -396,6 +396,7 @@ void snake_gate_periodic(void)
   {
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);
    // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);
+    printf("AAAAAAAAA    pos x = %f and pos_y = %f\n",debug_1,debug_2);
     gettimeofday(&stop, 0);
     double time_m = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
     EKF_m_dt = time_m - time_prev_m;
@@ -448,6 +449,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   int open_gate = 0;
   
   if(1){//state_upper_level  == SECOND_PART){
+
     //OPENGATE 
     float o_x_p = 0;
     float o_y_p = 0;
@@ -464,7 +466,9 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
   }else{
   closed_gate_processing(img);
   }
+
    //printf("position x=%.2f, y=%.2f, z=%.2f\n", ls_pos_x, ls_pos_y, ls_pos_x);
+
   return img;
 }
 

@@ -244,11 +244,11 @@ bool take_off(void)
 				tf_status.ave_altitude = 0.0;
 		}
 
-		if (tf_status.flag_open_loop == TRUE )
+		if (tf_status.flag_open_loop == TRUE)
 		{
 				guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);  // vertical module should be called!
 				guidance_loop_set_velocity(0,0);
-				if (time_primitive > 2.5)
+				if (time_primitive > 3.5)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
@@ -356,7 +356,7 @@ void drone_model(struct arc_open_loop_status * sta,double radius);
 
 
 
-bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_right)
+bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_right,int flag_height)
 {
     if(primitive_in_use != ARC_OPEN_LOOP)
     { 
@@ -392,6 +392,15 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 		arc_status.drag_coef_body_x_2 = 0;
 		arc_status.drag_coef_body_y_2 = 0;
 		arc_status.drag_coef_body_z_2 = 0;
+		race_state.target_heading = psi0+delta_psi;
+		if(flag_right == TRUE)
+				race_state.target_heading = psi0+delta_psi;
+		else
+				race_state.target_heading = psi0 - delta_psi;
+		if (race_state.target_heading > 3.14)
+				race_state.target_heading -= 2*3.14;
+		else if(race_state.target_heading < -3.14)
+				race_state.target_heading += 2*3.14;
     }
 
 // calculate command needed
@@ -451,7 +460,6 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	// euler method to predict
 	drone_model(&arc_status,radius);
 
-	printf("d_psi is %f !!!!!!!!!!!!!\n",arc_status.d_psi/3.14*180);
 	arc_status.x += arc_status.dx/100.0;
 	arc_status.y += arc_status.dy/100.0;
 	arc_status.z += arc_status.dz/100.0;
@@ -459,20 +467,25 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	arc_status.v_y_f += arc_status.dv_y_f/100.0;
 	arc_status.v_z_f += arc_status.dv_z_f/100.0;
  
-	printf("v_x_f is %f\n",arc_status.v_x_f);
-	printf("Desired phi in arc is %f\n",arc_status.phi_cmd/3.14*180);
 	guidance_loop_set_theta(arc_status.theta_cmd);
 	guidance_loop_set_phi(arc_status.phi_cmd); 
 	guidance_loop_set_heading(arc_status.psi_cmd);
+	
+	if(flag_height == FALSE)
+	{
+			guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+	}
+	else
+	{
 
-	guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+			double height = open_loop_altitude[race_state.gate_counter]-0.5*time_primitive;
+			printf("desired height is %f ----------------\n",height);
+			printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);
+			guidance_v_set_guided_z(height);
+	}
 
-	float target_heading = psi0+delta_psi;
-	if (target_heading > 3.14)
-			target_heading -= 2*3.14;
-	else if(target_heading < -3.14)
-			target_heading += 2*3.14;
-	if (fabs(stateGetNedToBodyEulers_f()->psi - target_heading)< 3.0/180*3.14)
+
+	if (fabs(stateGetNedToBodyEulers_f()->psi - race_state.target_heading)< 3.0/180*3.14)
 	{
 			arc_status.flag_in_arc = FALSE;
 			if(two_arc_st.flag_first_arc == FALSE)
@@ -484,7 +497,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 			else
 			{
 
-					printf("first part is finished without adding counter\n");
+					/*printf("first part is finished without adding counter\n");*/
 					primitive_in_use = NO_PRIMITIVE;
 			}
 			return 1;
@@ -810,8 +823,8 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 
 				if(flag_right == 1)
 				{
-						/*printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);*/
-					if(arc_open_loop(radius,desired_theta,delta_psi,1))
+						printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);
+					if(arc_open_loop(radius,desired_theta,delta_psi,1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_straight = TRUE;
@@ -826,8 +839,8 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				else
 				{
 
-						/*printf("BBBBBBBBBBBBBBBBBBBB\n!");*/
-					if(arc_open_loop(radius,desired_theta,-delta_psi,-1))
+						printf("BBBBBBBBBBBBBBBBBBBB\n!");
+					if(arc_open_loop(radius,desired_theta,delta_psi,-1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_straight = TRUE;
@@ -863,7 +876,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				if(flag_right == 1)
 				{
 						printf("CCCCCCCCCCCCCCCCCCC  radius is %f\n!",radius);
-					if(arc_open_loop(radius,desired_theta,-delta_psi,-1))
+					if(arc_open_loop(radius,desired_theta,delta_psi,-1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_second_arc = FALSE;
@@ -877,7 +890,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				else
 				{
 						printf("DDDDDDDDDDDDDDDDDD\n!");
-					if(arc_open_loop(radius,desired_theta,delta_psi,1))
+					if(arc_open_loop(radius,desired_theta,delta_psi,1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_second_arc = FALSE;
@@ -979,4 +992,50 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 
 		}
 
+}
+
+
+bool go_through_open_gate(double desired_theta, double desired_x)
+{
+		if(primitive_in_use != GO_THROUGH_OPEN_GATE)
+		{
+				primitive_in_use = GO_THROUGH_OPEN_GATE;
+				psi0 = stateGetNedToBodyEulers_f()->psi;
+				z0 = stateGetPositionNed_f()->z;
+				counter_primitive = 0;
+				time_primitive = 0;
+				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+		}
+	float error_y;
+
+	if(kf_pos_y > 0){//drone is on the right of the gate, and should stay at the right
+		error_y = -(kf_pos_y-0.5);//-kf_pos_y;
+	}else{//drone on the left, and should stay there
+		error_y = -(kf_pos_y+0.5);
+		//printf("error_y:%f\n",error_y);
+	}
+
+
+	float D_term = error_y-previous_error_y;
+	race_state.sum_y_error += error_y;
+	float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+	/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
+	previous_error_y = error_y;
+	previous_D_term = D_term;
+	if(desired_phi > MAX_PHI)
+		desired_phi = MAX_PHI;
+	else if (desired_phi < -MAX_PHI)
+		desired_phi = -MAX_PHI;
+
+	/*printf("desired_phi is %f\n",desired_phi/3.14*180);*/
+	/*printf("error y is %f\n",error_y);*/
+	guidance_loop_set_theta(desired_theta);
+	guidance_loop_set_phi(desired_phi);
+	guidance_loop_set_heading(psi0);
+	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+	
+	if(kf_pos_x > desired_x)
+			return TRUE;
+	else
+			return FALSE;
 }

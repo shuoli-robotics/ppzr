@@ -57,7 +57,7 @@
 #define GO_THROUGH_GATE          25
 #define GO_STRAIGHT_TEST         26
 #define ZIGZAG_2                 27
-
+#define GO_THROUGH_OPEN_GATE     28
 
 #ifndef PREPARE_TIME
 #define PREPARE_TIME 1
@@ -190,7 +190,7 @@ struct two_arc_status
  extern void land(void);
 extern void set_attitude(float desired_theta,float desired_phi);
 extern void calculate_attitude_average(double * p_theta,double *p_phi,struct acceleration* p_accel);
-extern bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_right);
+extern bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_right,int flag_height);
 extern bool hover_at_origin(void);
 extern bool prepare_before_take_off(double prepare_time);
 extern bool go_through_gate(float theta);
@@ -205,6 +205,7 @@ extern bool go_straight_test(float time,float desired_theta);
 extern struct two_arc_status two_arc_st;
 extern bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float delta_psi);
 extern bool zigzag_2(float break_time,float max_roll,float distance_y);
+extern bool go_through_open_gate(double desired_theta, double desired_x);
 
 #endif
 
