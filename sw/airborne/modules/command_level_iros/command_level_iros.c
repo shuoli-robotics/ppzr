@@ -204,6 +204,7 @@ void second_part_logic()
 	{
 
 			case GO_STRAIGHT_CM:
+					printf("go straght !!!!!!!!!!!\n");
 					if (go_through_open_gate(-5.0/180*PI,race_state.desired_x_in_first_part))
 					{ 
 							state_lower_level =  TURN_CM;
