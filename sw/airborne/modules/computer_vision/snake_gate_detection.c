@@ -143,11 +143,7 @@ struct timeval stop, start;
 
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
-//   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID, &pix_x, &pix_y, &pix_y, &hor_angle, &vert_angle, &x_dist, &y_dist,
-//                                 &z_dist,
-//                                 &debug_5, &debug_1, &debug_2, &debug_3, &debug_4,
-//                                 &y_center_picker, &cb_center, &dummy, &dummy, &dummy, &dummy,
-//                                 &debug_5);//psi_gate); //
+  pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&debug_1, &debug_2, &debug_3, &debug_4,&debug_5);
 }
 
 
@@ -479,7 +475,7 @@ void snake_gate_detection_init(void)
 {
   //previous_best_gate.sz = 0;
   listener = cv_add_to_device(&SGD_CAMERA, snake_gate_detection_func);
-  //register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SNAKE_GATE_INFO, snake_gate_send);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SNAKE_GATE_INFO, snake_gate_send);
   gettimeofday(&start, NULL);
   
   init_butterworth_2_low_pass_int(&filter_x, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
