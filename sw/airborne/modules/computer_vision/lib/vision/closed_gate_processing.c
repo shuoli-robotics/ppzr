@@ -876,8 +876,8 @@ int closed_gate_processing(struct image_t *img){
 	//if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6)ls_pos_y-=0.25;
 	
 	ls_pos_z = pos_vec.z;
- 	debug_3 = ls_pos_x;
- 	debug_4 = ls_pos_y;
+ 	//debug_3 = ls_pos_x;
+ 	//debug_4 = ls_pos_y;
 // 		printf("R_mat_trans:\n");
 //   		print_matrix(R_trans);
 	  
