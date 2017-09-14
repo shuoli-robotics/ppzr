@@ -1009,9 +1009,9 @@ bool go_through_open_gate(double desired_theta, double desired_x)
 	float error_y;
 
 	if(kf_pos_y > 0){//drone is on the right of the gate, and should stay at the right
-		error_y = -(kf_pos_y-0.6);//-kf_pos_y;
+		error_y = -(kf_pos_y-0.7);//-kf_pos_y;
 	}else{//drone on the left, and should stay there
-		error_y = -(kf_pos_y+0.6);
+		error_y = -(kf_pos_y+0.7);
 		//printf("error_y:%f\n",error_y);
 	}
 

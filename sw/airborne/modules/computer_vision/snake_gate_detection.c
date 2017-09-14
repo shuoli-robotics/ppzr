@@ -331,8 +331,6 @@ void snake_gate_periodic(void)
   
   
  //  debug_1 = X_int[2][0];
-  
-  
 //   debug_2 = X_int[1][0];
   
 //   debug_3 = kf_pos_x;
@@ -342,8 +340,8 @@ void snake_gate_periodic(void)
 //   debug_2 = u_k[3][0];
 //   debug_3 = u_k[4][0];
   
-//    debug_1 = X_int[0][0];
-//    debug_2 = X_int[1][0];
+   debug_1 = X_int[0][0];
+   debug_2 = X_int[1][0];
    
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
@@ -456,7 +454,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   int open_gate = 0;
   
-  if(0){//state_upper_level  == SECOND_PART){
+  if(1){//state_upper_level  == SECOND_PART){
 
     //OPENGATE 
     float o_x_p = 0;
@@ -466,8 +464,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     if(open_gate_processing(img,&o_x_p,&o_y_p,&o_z_p)){
       ls_pos_x = o_x_p;
       ls_pos_y = o_y_p;
-      debug_1 = ls_pos_x;
-      debug_2 = ls_pos_y;
+//       debug_1 = ls_pos_x;
+//       debug_2 = ls_pos_y;
       vision_sample = 1;
       //printf("position x=%.2f, y=%.2f, z=%.2f\n", o_x_p, o_y_p, o_z_p);
     }

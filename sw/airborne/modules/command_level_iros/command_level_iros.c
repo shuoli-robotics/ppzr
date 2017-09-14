@@ -33,7 +33,8 @@
 #include "modules/kalman_filter/kalman_filter.h"
 
 #define PI 3.1415926
-#define DESIRED_X_IN_FIRST_PART 6.0
+
+#define DESIRED_X_IN_FIRST_PART 8.0
 
 uint8_t previous_mode;
 uint8_t current_mode;
@@ -62,17 +63,18 @@ bool flag_init_geo;
 enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
-enum maneuver maneuvers[] = {TWO_ARCS_R,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
+// enum maneuver maneuvers[] = {ARC_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
+enum maneuver maneuvers[] = {ZIGZAG_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
 
 float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
-float turn_point[] = {6.2,5.5,4.5,4.5};
+float turn_point[] = {3.5,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
-float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5};
-float open_loop_altitude[] = {-1.5,-1.5,-1.5,-1.5};
+float gate_altitude[] = {-2.5,-1.5,-1.5,-1.5};
+float open_loop_altitude[] = {-2.5,-1.5,-1.5,-1.5};
 
 
-float break_time[] = {0.0,0.5,0.0,0.0};
+float break_time[] = {0.5,0.5,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
 float arc_radius[] =     {1.5,             1.5,           1.0};
@@ -87,7 +89,7 @@ float delta_2_arc_angle[] = {180.0/180*3.14,     180.0/180*3.14, 180.0/180*3.14,
 int   flag_zig_zag_right[] = {0,0,0};
 int   flag_zig_zag_break[] = {1,0,0};
 float zig_zag_desired_y[] = {6.0,0,0};
-float zig_zag_break_time[] = {3.0,0,0};
+float zig_zag_break_time[] = {2.0,0,0};
 float zig_zag_max_roll[] = {10.0/180*3.14,20.0/180*3.14,0};
 
 struct race_states race_state;
@@ -188,7 +190,7 @@ void first_part_logic()
 				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
 				state_lower_level =  GO_STRAIGHT_CM;
 				state_upper_level =  SECOND_PART;
-				/*state_upper_level =  FOURTH_PART;*/
+				//state_upper_level =  THIRD_PART;
 			}
 			break;
 		default:
@@ -204,7 +206,7 @@ void second_part_logic()
 	{
 
 			case GO_STRAIGHT_CM:
-					printf("go straght !!!!!!!!!!!\n");
+					//printf("go straght !!!!!!!!!!!\n");
 					if (go_through_open_gate(-5.0/180*PI,race_state.desired_x_in_first_part))
 					{ 
 							state_lower_level =  TURN_CM;
@@ -212,7 +214,8 @@ void second_part_logic()
 					}
 					break;
 			case TURN_CM:
-					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,1,0))
+			  printf("The arc in first strech is executed__________________!!!!!!!!!!!!!!!!!\n");
+					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,0,0))
 					{
 							race_state.gate_counter = 0; // clear gate counter since in arc_open_loop gate_counter++
 							state_upper_level = THIRD_PART;

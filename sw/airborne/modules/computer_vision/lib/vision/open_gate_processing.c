@@ -62,7 +62,7 @@
 #define HFF_LOWPASS_CUTOFF_FREQUENCY 14
 
 // Gate detection settings:
-int min_pixel_size_o = 30;//20;//30;//100;
+int min_pixel_size_o = 40;//20;//30;//100;
 int min_pixel_size_hor = 20;
 float min_gate_quality_o = 0.15;//0.2;
 
@@ -83,7 +83,7 @@ float ox_dist = 0;
 float oy_dist = 0;
 float oz_dist = 0;
 //struct FloatVect3 ogate_vectors[5];
-struct FloatVect3 ogate_points[5];
+//struct FloatVect3 ogate_points[5];
 float ogate_dist_x = 3.50;
 // my modification
 
@@ -316,16 +316,19 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
       //image_draw_line_color(img, &low_s1, &high_s1, green_color);
       //image_draw_line_color(img, &low_s2, &high_s2, green_color);
     
-	  /*temp_best_opengate.x = opengates[n_opengates-1].x;
-	  temp_best_opengate.y_l = opengates[n_opengates-1].y_l;
-	  temp_best_opengate.y_h = opengates[n_opengates-1].y_h;
-	  temp_best_opengate.size_bar = opengates[n_opengates-1].size_bar;
-	  memcpy(&(temp_best_opengate.x_corners[0]), &(opengates[n_opengates-1].x_corners[0]), sizeof(int)*4);
-	  memcpy(&(temp_best_opengate.y_corners[0]), &(opengates[n_opengates-1].y_corners[0]), sizeof(int)*4);
-	  memcpy(&(temp_best_opengate.found[0]), &(opengates[n_opengates-1].found[0]), sizeof(int)*4);
-	  ogate_histogram(img, &(temp_best_opengate), size_factor, best_loc); // before color seg!
-	  check_opengate(img, temp_best_opengate, &(temp_best_opengate.opengate_q), &(temp_best_opengate.n_bars));
-	  draw_opengate(img, temp_best_opengate, blue_color);*/
+	  // find a better search region for the histogram since y_low and y_hight might not be accurate.
+	  if (opengates[n_opengates-1].found[0] && (opengates[n_opengates-1].y_l > opengates[n_opengates-1].y_corners[0])) {
+	      opengates[n_opengates-1].y_l = opengates[n_opengates-1].y_corners[0];
+	  }
+	  if (opengates[n_opengates-1].found[3] && (opengates[n_opengates-1].y_l > opengates[n_opengates-1].y_corners[3])) {
+		  opengates[n_opengates-1].y_l = opengates[n_opengates-1].y_corners[3];
+	  }
+	  if (opengates[n_opengates-1].found[1] && (opengates[n_opengates-1].y_h < opengates[n_opengates-1].y_corners[1])) {
+		  opengates[n_opengates-1].y_h = opengates[n_opengates-1].y_corners[1];
+	  }
+	  if (opengates[n_opengates-1].found[2] && (opengates[n_opengates-1].y_h < opengates[n_opengates-1].y_corners[2])) {
+	  		  opengates[n_opengates-1].y_h = opengates[n_opengates-1].y_corners[2];
+	  }
 	  if ((~opengates[n_opengates-1].found[0]) || (~opengates[n_opengates-1].found[1])
 			  || (~opengates[n_opengates-1].found[2]) || (~opengates[n_opengates-1].found[3])) {
 		  ogate_histogram(img, &(opengates[n_opengates-1]), size_factor, best_loc); // before color seg!
@@ -364,17 +367,21 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
   //1m 6
   //1.5m 5
   
-  printf("side_angle:%f              peek_height_o:%d\n",side_angle*57,peek_height_o);
+  //printf("side_angle:%f              peek_height_o:%d\n",side_angle*57,peek_height_o);
   
-  if(peek_height_o > 5)print_side(img,center_p);
+  if(peek_height_o > 4)print_side(img,center_p);
   
 
   //printf("opengates[n_opengates-1].n_bars:%d\n",opengates[n_opengates-1].n_bars);
   // Best open gate to coordinates.
-  if (n_opengates>0 && opengates[n_opengates-1].opengate_q > min_gate_quality_o && opengates[n_opengates-1].n_bars > 2) {
+  if (n_opengates>0 && opengates[n_opengates-1].opengate_q > min_gate_quality_o &&
+    opengates[n_opengates-1].found[0] && opengates[n_opengates-1].found[1] &&
+    (opengates[n_opengates-1].found[2] || opengates[n_opengates-1].found[3])
+  ) {
     
 	  draw_opengate(img, opengates[n_opengates-1], blue_color);
     
+	  struct FloatVect3 ogate_points[5];
 	  struct point_t central_points[5];
 	  int left;
 	  central_points[0].x = opengates[n_opengates-1].x;
@@ -535,79 +542,99 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
 
 // my modification.
 void check_opengate(struct image_t *im, struct opengate_img opengate, float *quality, int *n_bars){
-	int n_points = 0;
-	int n_colored_points = 0;
-	int np, nc;
+	int color_count = 0;
+	int n_random_samples = 30;
+	float distractor_thres = 0.25;
 
-	float min_ratio_bar = 0.30;
-	(*n_bars) = 0;
-	struct point_t from, to;
-    from.x = opengate.x;
-    from.y = opengate.y_l;
-    to.x = opengate.x;
-    to.y = opengate.y_h;
-    check_line(im, from, to, &np, &nc);
-    n_points += np;
-    n_colored_points += nc;
+	int x_sample;
+	int y_sample;
+	int x_low = (opengate.x - opengate.size_bar < 0) ? 0 : opengate.x - opengate.size_bar;
+	int x_high = (opengate.x + opengate.size_bar > im->h) ? im->h-1 : opengate.x + opengate.size_bar;
 
-    if (opengate.x_corners[0] > 0) {
-    from.x = opengate.x_corners[0];
-    from.y = opengate.y_corners[0];
-    to.x = opengate.x;
-    to.y = opengate.y_corners[0];
-    check_line(im, from, to, &np, &nc);
-    if ((float) nc/ (float) np >= min_ratio_bar) {
-     	(*n_bars)++;
-    }
-    n_points += np;
-    n_colored_points += nc;
-    }
+	for (int i=0; i<n_random_samples; i++) {
+		x_sample = (rand() % (x_high + 1 - x_low)) + x_low;
+		y_sample = (rand() % (opengate.y_h + 1 - opengate.y_l)) + opengate.y_l;
+		if (check_color(im, x_sample, y_sample)) {
+			color_count++;
+		}
+	}
 
-    if (opengate.x_corners[1] > 0) {
-    from.x = opengate.x_corners[1];
-    from.y = opengate.y_corners[1];
-    to.x = opengate.x;
-    to.y = opengate.y_corners[1];
-    check_line(im, from, to, &np, &nc);
-    if ((float) nc/ (float) np >= min_ratio_bar) {
-      	(*n_bars)++;
-    }
-    n_points += np;
-    n_colored_points += nc;
-    }
+	if ( (float) color_count/ (float) n_random_samples > distractor_thres) {
+		(*quality) = 0;
+	} else {
+	    int n_points = 0;
+	    int n_colored_points = 0;
+	    int np, nc;
 
-    if (opengate.x_corners[2] > 0) {
-    from.x = opengate.x_corners[2];
-    from.y = opengate.y_corners[2];
-    to.x = opengate.x;
-    to.y = opengate.y_corners[2];
-    check_line(im, from, to, &np, &nc);
-    if ((float) nc/ (float) np >= min_ratio_bar) {
-      	(*n_bars)++;
-    }
-    n_points += np;
-    n_colored_points += nc;
-    }
+	    float min_ratio_bar = 0.30;
+	    (*n_bars) = 0;
+	    struct point_t from, to;
+        from.x = opengate.x;
+        from.y = opengate.y_l;
+        to.x = opengate.x;
+        to.y = opengate.y_h;
+        check_line(im, from, to, &np, &nc);
+        n_points += np;
+        n_colored_points += nc;
 
-    if (opengate.x_corners[3] > 0) {
-    from.x = opengate.x_corners[3];
-    from.y = opengate.y_corners[3];
-    to.x = opengate.x;
-    to.y = opengate.y_corners[3];
-    check_line(im, from, to, &np, &nc);
-    if ((float) nc/ (float) np >= min_ratio_bar) {
-      	(*n_bars)++;
-    }
-    n_points += np;
-    n_colored_points += nc;
-    }
+        if (opengate.x_corners[0] > 0) {
+            from.x = opengate.x_corners[0];
+            from.y = opengate.y_corners[0];
+            to.x = opengate.x;
+            to.y = opengate.y_corners[0];
+            check_line(im, from, to, &np, &nc);
+            if ((float) nc/ (float) np >= min_ratio_bar) {
+     	        (*n_bars)++;
+            }
+            n_points += np;
+            n_colored_points += nc;
+        }
 
-    if (n_points == 0){
-    	(*quality) = 0;
-    }
-    else {
-    	(*quality) = (((float) n_colored_points)/ ((float) n_points));
-    }
+        if (opengate.x_corners[1] > 0) {
+            from.x = opengate.x_corners[1];
+            from.y = opengate.y_corners[1];
+            to.x = opengate.x;
+            to.y = opengate.y_corners[1];
+            check_line(im, from, to, &np, &nc);
+            if ((float) nc/ (float) np >= min_ratio_bar) {
+      	        (*n_bars)++;
+            }
+            n_points += np;
+            n_colored_points += nc;
+        }
+
+        if (opengate.x_corners[2] > 0) {
+            from.x = opengate.x_corners[2];
+            from.y = opengate.y_corners[2];
+            to.x = opengate.x;
+            to.y = opengate.y_corners[2];
+            check_line(im, from, to, &np, &nc);
+            if ((float) nc/ (float) np >= min_ratio_bar) {
+      	        (*n_bars)++;
+            }
+            n_points += np;
+            n_colored_points += nc;
+        }
+
+        if (opengate.x_corners[3] > 0) {
+            from.x = opengate.x_corners[3];
+            from.y = opengate.y_corners[3];
+            to.x = opengate.x;
+            to.y = opengate.y_corners[3];
+            check_line(im, from, to, &np, &nc);
+            if ((float) nc/ (float) np >= min_ratio_bar) {
+      	        (*n_bars)++;
+            }
+            n_points += np;
+            n_colored_points += nc;
+        }
+
+        if (n_points == 0){
+    	    (*quality) = 0;
+        } else {
+    	    (*quality) = (((float) n_colored_points)/ ((float) n_points));
+        }
+	}
 }
 
 void draw_opengate(struct image_t *im, struct opengate_img opengate, uint8_t* color) {
