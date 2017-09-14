@@ -33,7 +33,7 @@
 #include "modules/kalman_filter/kalman_filter.h"
 
 #define PI 3.1415926
-#define DESIRED_X_IN_FIRST_PART 3.0
+#define DESIRED_X_IN_FIRST_PART 6.0
 
 uint8_t previous_mode;
 uint8_t current_mode;
@@ -65,7 +65,7 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {TWO_ARCS_R,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
 
 float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
-float turn_point[] = {3.2,5.5,4.5,4.5};
+float turn_point[] = {6.2,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
 float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5};

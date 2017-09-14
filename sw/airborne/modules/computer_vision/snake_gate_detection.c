@@ -342,8 +342,9 @@ void snake_gate_periodic(void)
 //   debug_2 = u_k[3][0];
 //   debug_3 = u_k[4][0];
   
-   debug_1 = X_int[0][0];
-   debug_2 = X_int[1][0];
+//    debug_1 = X_int[0][0];
+//    debug_2 = X_int[1][0];
+   
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
    //debug_5 = u_k[2][0];
@@ -356,18 +357,21 @@ void snake_gate_periodic(void)
       hist_sample = 0;
     }
     
+    //-1.6 for open gate?
     if(X_int[0][0] > (gate_dist_x - 0.4)){//block after to close to the target gate //////////////0.8, was 0.4
       //ekf_sonar_update = 1;
-    
       run_ekf_m = 0;
-    }else if(X_int[0][0] > gate_dist_x && run_ekf_m == 0){
+    }else{
+      run_ekf_m = 1;
+    }
+    
+    if(X_int[0][0] > gate_dist_x && run_ekf_m == 0){
       run_ekf_m = 1;
       printf("run_ekf_m = 1;--------------------------------------------------\n");
     }
-    else{//default back to one
-      run_ekf_m = 1;
+    
+    
       ekf_sonar_update = 0;
-    }
     
     if(primitive_in_use == ZIGZAG_2){
       //run_ekf_m = 0;
@@ -377,8 +381,8 @@ void snake_gate_periodic(void)
     float switch_threshold_x = 1.0;
     float switch_threshold_y = 0.5;
     if(vision_sample && run_ekf_m == 1  && fabs(X_int[0][0]-ls_pos_x)>switch_threshold_x && fabs(X_int[1][0]-ls_pos_y)>switch_threshold_y){
-      init_next_open_gate();
-      printf("init_next_open_gate()--------------------------------------------------\n");
+      //init_next_open_gate();
+      //printf("init_next_open_gate()--------------------------------------------------\n");
     }
 
     //only update when we trust the vision such to be good enough for a meausrement update 
@@ -387,15 +391,20 @@ void snake_gate_periodic(void)
 //     prev_ls_pos_y = ls_pos_y;
 //     }
 
+
+      //If in first stretch limit detection distance///////////////////////////
+      if(ls_pos_x < 0)run_ekf_m = 0;
+
+
     hist_sample = 0;
-    printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
+    //printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     debug_5 = 0;
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     debug_5 = 1;
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);
    // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);
-    printf("AAAAAAAAA    pos x = %f and pos_y = %f\n",debug_1,debug_2);
+    //printf("AAAAAAAAA    pos x = %f and pos_y = %f\n",debug_1,debug_2);
     gettimeofday(&stop, 0);
     double time_m = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
     EKF_m_dt = time_m - time_prev_m;
@@ -447,7 +456,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   int open_gate = 0;
   
-  if(1){//state_upper_level  == SECOND_PART){
+  if(0){//state_upper_level  == SECOND_PART){
 
     //OPENGATE 
     float o_x_p = 0;
@@ -457,6 +466,8 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
     if(open_gate_processing(img,&o_x_p,&o_y_p,&o_z_p)){
       ls_pos_x = o_x_p;
       ls_pos_y = o_y_p;
+      debug_1 = ls_pos_x;
+      debug_2 = ls_pos_y;
       vision_sample = 1;
       //printf("position x=%.2f, y=%.2f, z=%.2f\n", o_x_p, o_y_p, o_z_p);
     }

@@ -424,7 +424,7 @@ int closed_gate_processing(struct image_t *img){
   ////////////////////////////////////////////////////////////////////////
   for(int i = 0;i < n_gates;i++){
     /*printf("n_gates:%d\n",n_gates);*/
-    /*draw_gate(img, gates_c[i]);*/
+    //draw_gate(img, gates_c[i]);
   }
   /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1448,6 +1448,30 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
   } else {
     (*quality) = ((float) n_colored_points) / ((float) n_points);
   }
+  
+  
+  //randomly sample inside 
+  int n_samples_in = 20;
+  float num_color_center = 0;
+  float center_discard_threshold = 0.25;
+  
+  for (int i = 0; i < n_samples_in; i++) {
+    // get a random coordinate:
+    int x_in = gate.x + (rand() % gate.sz)-(0.5*gate.sz);//im->h;
+    int y_in = gate.y + (rand() % gate.sz)-(0.5*gate.sz);//im->w;
+    
+    // image_yuv422_set_color(im,im,x_in,y_in);
+
+    // check if it has the right color
+    if (check_color(im, x_in, y_in)) {
+      num_color_center ++;
+    }
+  }
+  
+  //how much center pixels colored?
+  float center_factor = num_color_center/(float)n_samples_in;
+  if(center_factor > center_discard_threshold) (*quality) = 0;
+  
 }
 
 

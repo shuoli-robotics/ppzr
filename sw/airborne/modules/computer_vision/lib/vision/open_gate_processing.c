@@ -25,6 +25,7 @@
 
 // Own header
 #include "modules/computer_vision/lib/vision/open_gate_processing.h"
+//#include "modules/computer_vision/lib/vision/closed_gate_processing.h"//for histogram stuf
 #include "modules/computer_vision/snake_gate_detection.h"
 #include <stdio.h>
 #include "modules/computer_vision/lib/vision/image.h"
@@ -102,6 +103,63 @@ struct FloatVect3 p3p_pos_solution;
 
 float local_psi_o = 0;
 
+int *array_o;
+//return indexes
+int cmp_i_o(const void *a, const void *b){
+    int ia = *(int *)a;
+    int ib = *(int *)b;
+    return array_o[ia] < array_o[ib] ? -1 : array_o[ia] > array_o[ib];
+}
+
+float detect_gate_side_o(int *hist_raw, int *side){
+  int hist_peeks[315];//max nr of peeks, for sure
+  int hist_smooth[315];
+  smooth_hist(hist_smooth, hist_raw, 4);//was 10
+  int peek_count = find_hist_peeks_flat(hist_smooth,hist_peeks);
+  int max_peek = find_max_hist(hist_raw);
+  int size = sizeof(hist_peeks)/sizeof(*hist_peeks);
+  int index[size];
+  for(int i=0;i<size;i++){
+        index[i] = i;
+    }
+  array_o = hist_peeks;
+  qsort(index, size, sizeof(*index), cmp_i_o);
+  //printf("p1:%d p2:%d p3:%d p4:%d p5:%d p6:%d\n",hist_raw[index[0]],hist_raw[index[1]],hist_raw[index[2]],hist_raw[index[3]],hist_raw[index[4]],hist_raw[index[5]]);
+  // printf("size:%d\n",size);
+  //   printf("\n\ndata\tindex\n");
+  //     for(int i=0;i<size;i++){
+  //         printf("%d\t%d,i:%d\n", hist_peeks[index[i]], index[i],i);
+  //     }
+    
+ 
+      *side = index[314];
+  
+    //avarage peek height
+   
+    //debug_5 = peek_value;
+  
+//     for(int i = 0;i<315;i++){
+//     printf("hist_peeks[%d]:%d\n",i,hist_peeks[i]);
+//     }
+ 
+//     for(int i = 0;i<315;i++){
+//       printf("hist_raw[%d]:%d hist_smooth[%d]:%d hist_peeks[%d]:%d\n",i,hist_raw[i],i,hist_smooth[i],i,hist_peeks[i]);
+//     }
+    return hist_peeks[index[314]];
+
+}
+
+void print_side(struct image_t *im, int side){
+    
+    struct point_t from, to;
+    from.x = side;
+    from.y = 0;
+    to.x = side;
+    to.y = 160;
+    image_draw_line(im, &from, &to);
+  
+}
+
 // Function
 // Samples from the image and checks if the pixel is the right color.
 // If yes, it "snakes" up and down to see if it is the side of a gate.
@@ -135,12 +193,19 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
   int found[4] = {0}; // left lower; left upper; right upper; right lower found
   int size_factor = 1.5;
   int best_loc[2];
+  
+  int histogram_c[315] = {0};
+  
   struct opengate_img temp_best_opengate;
   for (i = 0; i < n_op_samples; i++) {
 	  x = rand() % img->h;
 	  y = rand() % img->w;
 
 	  if (check_color(img, x, y)) {
+	    
+		  //build histogram for closed gate pole avoidance
+		  histogram_c[x]++;
+	    
 		  // snake up and down for the central bar.
 		  snake_up_and_down_new(img, x, y, &y_low, &y_high);
 		  sz = y_high - y_low;
@@ -280,9 +345,33 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
 			  color_cb_min, color_cb_max,
     		  color_cr_min, color_cr_max);
   }
+  
+  
+  //Open gate histogram stuff 
+  int center_p;
+  int peek_height_o = detect_gate_side_o(histogram_c,&center_p);
+  
+  float undist_x, undist_y;
+  float princ_x = 157.0;
+  float princ_y = 32.0;
+  int f_fisheye = 168;
+  
+  //float psi_comp = stateGetNedToBodyEulers_f()->psi;
+  undistort_fisheye_point(center_p,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
+  float side_angle = atanf(undist_x/f_fisheye);
+  
+  //0.5m 8
+  //1m 6
+  //1.5m 5
+  
+  printf("side_angle:%f              peek_height_o:%d\n",side_angle*57,peek_height_o);
+  
+  if(peek_height_o > 5)print_side(img,center_p);
+  
 
+  //printf("opengates[n_opengates-1].n_bars:%d\n",opengates[n_opengates-1].n_bars);
   // Best open gate to coordinates.
-  if (n_opengates>0 && opengates[n_opengates-1].opengate_q > min_gate_quality_o) {
+  if (n_opengates>0 && opengates[n_opengates-1].opengate_q > min_gate_quality_o && opengates[n_opengates-1].n_bars > 2) {
     
 	  draw_opengate(img, opengates[n_opengates-1], blue_color);
     
