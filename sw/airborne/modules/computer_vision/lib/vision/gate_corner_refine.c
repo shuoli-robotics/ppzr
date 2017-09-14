@@ -253,7 +253,8 @@ int cmp_i_y(const void *a, const void *b){
 
 //without a neccessary gap, histogram might find two close peaks close to each other.
 void find_thres_hist_peaks(int* hist_raw, int* hist_peek, int max_hist, int hist_size) {
-	int thres = (int) (max_hist * 0.4);
+	float thres_f = 0.4 * (float) max_hist;
+	int thres = (int) thres_f;
 	memset(hist_peek, 0, sizeof(int)*hist_size);
 	//for (int i=0; i<hist_size; i++) {
 	//	if (hist_raw[i] > thres) {
@@ -308,24 +309,52 @@ void find_pointy_hist_peaks(int* hist_raw, int* hist_peek, int hist_size) {
 }
 
 float sort_hist_peaks(int *hist_raw, int hist_size, int side_bars[]) {
+	/*
+	 * It will be always good if there are two peaks found in histogram of one side.
+	 * It won't bring in false positive if no peaks are found since min_ratio_bar will rule them out.
+	 * It is however tricky if one peak is found in one side histogram. In this case, if one bar is detected
+	 * in initial snake detection, this bar might overlap with the found one.
+	 * */
 	// histogram_raw can be raw, smoothed or peek histogram.
 	//int size = sizeof(hist_raw)/sizeof(*hist_raw);
 	//int index[size];
 	int index[hist_size];
+	int half_hist_size = hist_size/2;
+
+	float peak_thres_f;
+	int peak_thres;
 	for (int i=0; i<hist_size; i++) {
 		index[i] = i;
 	}
 	memset(array_y, 0, 160*sizeof(int));
 	memcpy(array_y, hist_raw, hist_size*sizeof(int));
 	qsort(index, hist_size, sizeof(*index), cmp_i_y);
-	if (index[hist_size-2] < index[hist_size-1]) {
-		side_bars[0] = index[hist_size-2]; // lower bar.
-		side_bars[1] = index[hist_size-1];
+
+	peak_thres_f =  0.2* (float) hist_raw[index[hist_size-1]];
+	peak_thres = (int) peak_thres_f;
+	// if the second largest index corresponds to a histogram count that are lower than 0.2*largest
+	// (should be at least 0.4 from find_thres_hist_peeks), then that means there is only one peak.
+	// The second peak is probably zero. In this case, we cannot trust the comparision of index[hist_size-2]
+	// and index[hist_size-1] to decide which one is the lower bar because there are a lot of zeros in hist_raw
+	// (hist_left_peak, hist_right peak fed in ogate_histogram function).
+	if (hist_raw[index[hist_size-2]] < peak_thres) {
+		if (index[hist_size-1] > half_hist_size) {
+			side_bars[0] = -1;
+			side_bars[1] = index[hist_size-1];
+		} else {
+			side_bars[0] = index[hist_size-1];
+			side_bars[1] = -1;
+		}
+	} else {
+		if (index[hist_size-2] < index[hist_size-1]) {
+			side_bars[0] = index[hist_size-2]; //lower index assigned to side_bars[0];
+			side_bars[1] = index[hist_size-1];
+		} else {
+			side_bars[0] = index[hist_size-1];
+			side_bars[1] = index[hist_size-2];
+		}
 	}
-	else {
-		side_bars[0] = index[hist_size-1];
-		side_bars[1] = index[hist_size-2];
-	}
+
 	float peek_value = (hist_raw[index[hist_size-2]] + hist_raw[index[hist_size-1]])/2;
 	return peek_value;
 }
@@ -404,69 +433,81 @@ void ogate_histogram(struct image_t* im, struct opengate_img* opengate, float si
 	find_thres_hist_peaks(histogram_left, hist_left_peak, best_hist_left, histogram_size);
 	//find_pointy_hist_peaks(hist_left_peak, hist_l_peak_p, histogram_size);
 	float peak_value_left = sort_hist_peaks(hist_left_peak, histogram_size, side_bars);
-	bars[0] = side_bars[0]+y_l;
-	bars[1] = side_bars[1]+y_l;
+	if (side_bars[0] >= 0) {bars[0] = side_bars[0]+y_l;} else {bars[0] = -1;}
+	if (side_bars[1] >= 0) {bars[1] = side_bars[1]+y_l;} else {bars[1] = -1;}
+
 
 	find_thres_hist_peaks(histogram_right, hist_right_peak, best_hist_right, histogram_size);
 	//find_pointy_hist_peaks(hist_right_peak, hist_r_peak_p, histogram_size);
 	float peak_value_right = sort_hist_peaks(hist_right_peak, histogram_size, side_bars);
-	bars[2] = side_bars[1]+y_l;
-	bars[3] = side_bars[0]+y_l;
+	//bars[2] = side_bars[1]+y_l;
+	//bars[3] = side_bars[0]+y_l;
+	if (side_bars[1] >= 0) {bars[2] = side_bars[1]+y_l;} else {bars[2] = -1;}
+	if (side_bars[0] >= 0) {bars[3] = side_bars[0]+y_l;} else {bars[3] = -1;}
 
 	float min_ratio_bar = 0.3;
 	int np, nc;
     struct point_t from, to;
 
-	if (opengate->found[0]==0) {
+	if (opengate->found[0]==0 && bars[0] >= 0) {
 		from.x = x;
 		from.y = bars[0];
 		to.x = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
 		to.y = bars[0];
-		check_line(im, from, to, &np, &nc);
-		if ((float) nc/ (float) np >= min_ratio_bar) {
-			opengate->y_corners[0] = bars[0];
-		    opengate->x_corners[0] = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
-		    opengate->found[0] = 2;
-		    //printf("bar 0 refined\n");
+		if ( (opengate->found[1]>0 && abs(bars[0]-opengate->y_corners[1])>10) || opengate->found[1]==0 ) {
+		    check_line(im, from, to, &np, &nc);
+			if ((float) nc/ (float) np >= min_ratio_bar) {
+				opengate->y_corners[0] = bars[0];
+				opengate->x_corners[0] = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
+				opengate->found[0] = 2;
+				//printf("bar 0 refined\n");
+			}
 		}
+
 	}
-	if (opengate->found[1]==0) {
+	if (opengate->found[1]==0 && bars[1] >= 0) {
 		from.x = x;
 		from.y = bars[1];
 		to.x = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
 		to.y = bars[1];
-		check_line(im, from, to, &np, &nc);
-		if ((float) nc/ (float) np >= min_ratio_bar) {
-			opengate->y_corners[1] = bars[1];
-			opengate->x_corners[1] = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
-			opengate->found[1] = 2;
-			//printf("bar 1 refined\n");
+		if ( (opengate->found[0]>0 && abs(bars[1]-opengate->y_corners[0])>10) || opengate->found[0]==0) {
+			check_line(im, from, to, &np, &nc);
+			if ((float) nc/ (float) np >= min_ratio_bar) {
+				opengate->y_corners[1] = bars[1];
+				opengate->x_corners[1] = ((x - opengate->size_bar) < 0) ? 0 : x - opengate->size_bar;
+				opengate->found[1] = 2;
+				//printf("bar 1 refined\n");
+			}
 		}
 	}
-	if (opengate->found[2]==0) {
+	if (opengate->found[2]==0 && bars[2] >= 0) {
 		from.x = x;
 		from.y = bars[2];
 		to.x = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
 		to.y = bars[2];
-		check_line(im, from, to, &np, &nc);
-		if ((float) nc/ (float) np >= min_ratio_bar) {
-			opengate->y_corners[2] = bars[2];
-			opengate->x_corners[2] = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
-			opengate->found[2] = 2;
-			//printf("bar 2 refined\n");
+		if ( (opengate->found[3]>0 && abs(bars[2]-opengate->y_corners[3])>10) || opengate->found[3]==0 ) {
+			check_line(im, from, to, &np, &nc);
+			if ((float) nc/ (float) np >= min_ratio_bar) {
+				opengate->y_corners[2] = bars[2];
+				opengate->x_corners[2] = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
+				opengate->found[2] = 2;
+				//printf("bar 2 refined\n");
+			}
 		}
     }
-	if (opengate->found[3]==0) {
+	if (opengate->found[3]==0 && bars[3] >= 0) {
 		from.x = x;
 		from.y = bars[3];
 		to.x = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
 		to.y = bars[3];
-		check_line(im, from, to, &np, &nc);
-		if ((float) nc/ (float) np >= min_ratio_bar) {
-			opengate->y_corners[3] = bars[3];
-			opengate->x_corners[3] = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
-			opengate->found[3] = 2;
-			//printf("bar 3 refined\n");
+		if ( (opengate->found[2]>0 && abs(bars[3]-opengate->y_corners[2])>10) || opengate->found[2]==0) {
+			check_line(im, from, to, &np, &nc);
+			if ((float) nc/ (float) np >= min_ratio_bar) {
+				opengate->y_corners[3] = bars[3];
+				opengate->x_corners[3] = ((x + opengate->size_bar) > im->h) ? im->h : x + opengate->size_bar;
+				opengate->found[3] = 2;
+				//printf("bar 3 refined\n");
+			}
 		}
 	}
 	/* //for debugging

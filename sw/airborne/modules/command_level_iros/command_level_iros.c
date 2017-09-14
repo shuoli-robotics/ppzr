@@ -33,7 +33,7 @@
 #include "modules/kalman_filter/kalman_filter.h"
 
 #define PI 3.1415926
-#define DESIRED_X_IN_FIRST_PART 3.0
+#define DESIRED_X_IN_FIRST_PART 20.0
 
 uint8_t previous_mode;
 uint8_t current_mode;
