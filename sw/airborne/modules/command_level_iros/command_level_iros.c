@@ -34,7 +34,7 @@
 
 #define PI 3.1415926
 
-#define DESIRED_X_IN_FIRST_PART 8.0
+#define DESIRED_X_IN_FIRST_PART 15.0
 
 uint8_t previous_mode;
 uint8_t current_mode;

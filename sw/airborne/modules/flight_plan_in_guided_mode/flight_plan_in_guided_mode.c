@@ -234,35 +234,41 @@ bool take_off(void)
 				tf_status.flag_climb_mode = FALSE;
 				tf_status.flag_hover_mode = FALSE;
 				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-				states_race.attitude_control = FALSE;
-				guidance_loop_set_velocity(0,0);
+				states_race.attitude_control = TRUE;
+				guidance_loop_set_theta(0);
+				guidance_loop_set_phi(0);
 				states_race.altitude_is_achieved = 0;
 				tf_status.flag_open_loop = TRUE;
 				tf_status.take_off_altitude = TAKE_OFF_ALTITUDE;
 				tf_status.altitude_counter = 0;
 				tf_status.sum_altitude = 0.0;
 				tf_status.ave_altitude = 0.0;
+				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
+				guidance_v_z_sp = /*stateGetPositionNed_i()->z +*/ POS_BFP_OF_REAL(TAKE_OFF_ALTITUDE);
+				guidance_v_z_ref = guidance_v_z_sp;
+				gv_set_ref(guidance_v_z_sp,0,0);
 		}
 
 		if (tf_status.flag_open_loop == TRUE)
 		{
-				guidance_v_mode_changed(GUIDANCE_V_MODE_MODULE);  // vertical module should be called!
-				guidance_loop_set_velocity(0,0);
-				if (time_primitive > 4.0)
+				guidance_loop_set_theta(-10/57.6);
+				guidance_loop_set_phi(0);
+				if (time_primitive > 2.5)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
 						race_state.flag_in_open_loop = FALSE;
-						guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
+						//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
 						printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);
 						printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);
 						initialize_EKF();
+						return;
 				}
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 		}
 		else if(tf_status.flag_hover_mode == TRUE)
 		{
-				guidance_v_set_guided_z(tf_status.take_off_altitude) ;
+				//guidance_v_set_guided_z(tf_status.take_off_altitude) ;
 				tf_status.sum_altitude += stateGetPositionNed_f()->z;
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 				race_state.flag_in_open_loop = FALSE;
