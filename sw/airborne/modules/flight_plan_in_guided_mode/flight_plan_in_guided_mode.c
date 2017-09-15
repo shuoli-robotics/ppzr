@@ -97,7 +97,12 @@ void flight_plan_in_guided_mode_init() {
     primitive_in_use = NO_PRIMITIVE;
 }
 
-
+void set_altitude(float altitude)
+{
+		guidance_v_z_sp = /*stateGetPositionNed_i()->z +*/ POS_BFP_OF_REAL(TAKE_OFF_ALTITUDE);
+		guidance_v_z_ref = guidance_v_z_sp;
+		gv_set_ref(guidance_v_z_sp,0,0);
+}
 
 bool prepare_before_take_off(double prepare_time)
 {
@@ -244,9 +249,8 @@ bool take_off(void)
 				tf_status.sum_altitude = 0.0;
 				tf_status.ave_altitude = 0.0;
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
-				guidance_v_z_sp = /*stateGetPositionNed_i()->z +*/ POS_BFP_OF_REAL(TAKE_OFF_ALTITUDE);
-				guidance_v_z_ref = guidance_v_z_sp;
-				gv_set_ref(guidance_v_z_sp,0,0);
+				set_altitude(TAKE_OFF_ALTITUDE);
+
 		}
 
 		if (tf_status.flag_open_loop == TRUE)
@@ -262,7 +266,7 @@ bool take_off(void)
 						printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);
 						printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);
 						initialize_EKF();
-						return;
+						return TRUE;
 				}
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
 		}
@@ -479,7 +483,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	
 	if(flag_height == FALSE)
 	{
-			guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+				set_altitude(open_loop_altitude[race_state.gate_counter]);
 	}
 	else
 	{
