@@ -1040,7 +1040,7 @@ bool go_through_open_gate(double desired_theta, double desired_x)
 	guidance_loop_set_heading(psi0);
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 	
-	if(kf_pos_x > desired_x)
+	if(/*kf_pos_x > desired_x ||*/ time_primitive > 10.5)
 			return TRUE;
 	else
 			return FALSE;
