@@ -253,6 +253,7 @@ bool take_off(void)
 				set_altitude(TAKE_OFF_ALTITUDE);
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!
 				race_state.flag_in_open_loop = TRUE;
+						initialize_EKF();
 
 		}
 
@@ -272,7 +273,6 @@ bool take_off(void)
 						//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
 						printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);
 						printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);
-						initialize_EKF();
 						return TRUE;
 				}
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
