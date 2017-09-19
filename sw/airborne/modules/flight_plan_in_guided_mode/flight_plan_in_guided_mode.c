@@ -264,6 +264,7 @@ bool take_off(void)
 				if (time_primitive > 3.0 && tf_status.flag_ekf_initialized == FALSE)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
+						race_state.flag_open_loop = FALSE;
 						initialize_EKF();
 
 				}
