@@ -671,7 +671,7 @@ int closed_gate_processing(struct image_t *img){
   float min_dist_h = 0.4;
   if(hist_peek_value > 7 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;
-    //print_sides(img,side_1,side_2);
+    print_sides(img,side_1,side_2);
   }else{
     hist_sample = 0;
   }
@@ -872,7 +872,7 @@ int closed_gate_processing(struct image_t *img){
 	if(pos_vec.y < -y_threshold)pos_vec.y = -y_threshold;
 	
 	
-	ls_pos_y = pos_vec.y - 0.5;//// minus for simulating open gate ! ---------------------------------------------------------------------
+	ls_pos_y = pos_vec.y;//// minus for simulating open gate ! ---------------------------------------------------------------------
 	//if(stateGetNedToBodyEulers_f()->psi > 1.6 || stateGetNedToBodyEulers_f()->psi < -1.6)ls_pos_y-=0.25;
 	
 	ls_pos_z = pos_vec.z;

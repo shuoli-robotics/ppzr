@@ -67,14 +67,14 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {ZIGZAG_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
 
 float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
-float turn_point[] = {3.5,5.5,4.5,4.5};
+float turn_point[] = {3.3,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
-float gate_altitude[] = {-2.5,-1.5,-1.5,-1.5};
-float open_loop_altitude[] = {-2.5,-1.5,-1.5,-1.5};
+float gate_altitude[] = {-1.4,-2.0,-1.5,-1.5};
+float open_loop_altitude[] = {-1.4,-2.0,-1.5,-1.5};
 
 
-float break_time[] = {0.5,0.5,0.0,0.0};
+float break_time[] = {0.0,0.5,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
 float arc_radius[] =     {1.5,             1.5,           1.0};
@@ -88,8 +88,8 @@ float delta_2_arc_angle[] = {180.0/180*3.14,     180.0/180*3.14, 180.0/180*3.14,
 
 int   flag_zig_zag_right[] = {0,0,0};
 int   flag_zig_zag_break[] = {1,0,0};
-float zig_zag_desired_y[] = {6.0,0,0};
-float zig_zag_break_time[] = {2.0,0,0};
+float zig_zag_desired_y[] = {-6.9,0,0};
+float zig_zag_break_time[] = {1.0,0,0};
 float zig_zag_max_roll[] = {10.0/180*3.14,20.0/180*3.14,0};
 
 struct race_states race_state;
@@ -189,8 +189,9 @@ void first_part_logic()
 			{
 				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
 				state_lower_level =  GO_STRAIGHT_CM;
-				state_upper_level =  SECOND_PART;
-				//state_upper_level =  THIRD_PART;
+				/*state_upper_level =  SECOND_PART;*/
+				/*state_upper_level =  THIRD_PART;*/
+				state_upper_level =  FOURTH_PART;
 			}
 			break;
 		default:

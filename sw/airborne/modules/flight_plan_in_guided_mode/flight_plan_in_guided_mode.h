@@ -68,7 +68,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -2.0
+#define TAKE_OFF_ALTITUDE -1.4
 #endif
 struct acceleration{
 		double ax;
@@ -206,6 +206,7 @@ extern struct two_arc_status two_arc_st;
 extern bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float delta_psi);
 extern bool zigzag_2(float break_time,float max_roll,float distance_y);
 extern bool go_through_open_gate(double desired_theta, double desired_x);
+extern void set_altitude(float altitude);
 
 #endif
 

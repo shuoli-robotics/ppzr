@@ -239,11 +239,13 @@ void initialize_EKF(){
     //also reset gate position
     gate_heading = gate_initial_heading[race_state.gate_counter];
     gate_distance = gate_initial_position_y[race_state.gate_counter];
-    if(race_state.gate_counter < 2){
-      /*gate_size_m = 1.4;*/
-      gate_size_m = 1.0;
+    if(race_state.gate_counter < -1){
+	  gate_size_m = 1.4;
+        printf("LARGE GATE\n");
+      /*gate_size_m = 1.0;*/
     }else{
       gate_size_m = 1.0; //after second gate, switch to smaller gates
+        printf("SMALL GATE\n");
     }
     run_ekf_m = 1;
     run_ekf = 1;
@@ -372,7 +374,7 @@ void snake_gate_periodic(void)
       ekf_sonar_update = 0;
     
     if(primitive_in_use == ZIGZAG_2){
-      //run_ekf_m = 0;
+	  run_ekf_m = 0;
     }
     
     //First stretch gate switching logic

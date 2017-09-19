@@ -99,7 +99,7 @@ void flight_plan_in_guided_mode_init() {
 
 void set_altitude(float altitude)
 {
-		guidance_v_z_sp = /*stateGetPositionNed_i()->z +*/ POS_BFP_OF_REAL(TAKE_OFF_ALTITUDE);
+		guidance_v_z_sp = /*stateGetPositionNed_i()->z +*/ POS_BFP_OF_REAL(altitude);
 		guidance_v_z_ref = guidance_v_z_sp;
 		gv_set_ref(guidance_v_z_sp,0,0);
 }
@@ -111,7 +111,7 @@ bool prepare_before_take_off(double prepare_time)
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
     }
 	if (time_primitive > prepare_time)
 	{
@@ -141,7 +141,8 @@ bool go_straight(float theta,float distance,double ref_y){
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        /*guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);*/
+        guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
         psi0 = stateGetNedToBodyEulers_f()->psi;
         z0 = stateGetPositionNed_f()->z;
         x_start = stateGetPositionNed_f()->x;
@@ -239,9 +240,9 @@ bool take_off(void)
 				tf_status.flag_climb_mode = FALSE;
 				tf_status.flag_hover_mode = FALSE;
 				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-				states_race.attitude_control = TRUE;
-				guidance_loop_set_theta(0);
-				guidance_loop_set_phi(0);
+				states_race.attitude_control = FALSE;
+				/*guidance_loop_set_theta(0);*/
+				/*guidance_loop_set_phi(0);*/
 				states_race.altitude_is_achieved = 0;
 				tf_status.flag_open_loop = TRUE;
 				tf_status.take_off_altitude = TAKE_OFF_ALTITUDE;
@@ -255,13 +256,17 @@ bool take_off(void)
 
 		if (tf_status.flag_open_loop == TRUE)
 		{
-				guidance_loop_set_theta(-10/57.6);
-				guidance_loop_set_phi(0);
-				if (time_primitive > 2.5)
+				/*guidance_loop_set_theta(-0/57.6);*/
+				/*guidance_loop_set_phi(0);*/
+						/*guidance_loop_set_velocity(0.0,0.0);*/
+						printf("take off open loop\n");
+				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
+				if (time_primitive > 10.0)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;
 						race_state.flag_in_open_loop = FALSE;
+						guidance_loop_set_velocity(0.0,0.0);
 						//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
 						printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);
 						printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);
@@ -391,7 +396,8 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
         counter_primitive = 0;
         time_primitive = 0;
         guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-        guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+        /*guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);*/
+        guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
 		states_race.attitude_control = TRUE;
 		arc_status.drag_coef_body_x_1 = -0.53;
 		arc_status.drag_coef_body_y_1 = -0.47;
@@ -488,10 +494,10 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	else
 	{
 
-			double height = open_loop_altitude[race_state.gate_counter]-0.5*time_primitive;
+			double height = open_loop_altitude[race_state.gate_counter]-0.2*time_primitive;
 			printf("desired height is %f ----------------\n",height);
 			printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);
-			guidance_v_set_guided_z(height);
+				set_altitude(height);
 	}
 
 
@@ -736,6 +742,7 @@ bool go_through_gate(float theta)
 				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
 				//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
 				race_state.flag_in_open_loop = FALSE;
+				states_race.attitude_control = TRUE;
 				prev_D_term = 0.0;
 				previous_error_y = 0.0;
 				counter_temp2 = 0;
@@ -753,14 +760,9 @@ bool go_through_gate(float theta)
 				return FALSE;
 		}
        		
-		float error_y;
+		float error_y = -kf_pos_y;
 		
-		if(kf_pos_y > 0){//drone is on the right of the gate, and should stay at the right
-		  error_y = -(kf_pos_y-0.6);//-kf_pos_y;
-		}else{//drone on the left, and should stay there
-		  error_y = -(kf_pos_y+0.6);
-		  //printf("error_y:%f\n",error_y);
-		}
+		printf("go through function is called\n");
 		
 		
 		float D_term = error_y-previous_error_y;
@@ -779,8 +781,8 @@ bool go_through_gate(float theta)
 		guidance_loop_set_theta(theta);
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
-		guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
-		
+		/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
+		set_altitude(gate_altitude[race_state.gate_counter]);	
 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
 		{
 				return TRUE;
@@ -808,7 +810,8 @@ bool go_straight_test(float time,float desired_theta)
 		guidance_loop_set_theta(desired_theta);
 		guidance_loop_set_phi(0.0); 
 		guidance_loop_set_heading(psi0);
-		guidance_v_set_guided_z(-1.5);
+		/*guidance_v_set_guided_z(-1.5);*/
+		set_altitude(-1.5);	
 		if(time_primitive > time)
 				return TRUE;
 		else
@@ -869,7 +872,8 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				guidance_loop_set_theta(desired_theta);
 				guidance_loop_set_phi(0.0); 
 				guidance_loop_set_heading(psi0);
-				guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+				/*guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);*/
+				set_altitude(open_loop_altitude[race_state.gate_counter]);	
 				/*printf("!!!!!!!!!!!!!\n");*/
 				if(time_temp3 > 0.3)
 				{
@@ -937,10 +941,12 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 				guidance_loop_set_theta(10.0/180*3.14);
 				guidance_loop_set_phi(0.0); 
 				guidance_loop_set_heading(psi0);
-				guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+				/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
+				set_altitude(gate_altitude[race_state.gate_counter]);
 				return FALSE;
 		}
 
+		printf("zigzag_2 desired_y is %f\n",distance_y);
 		printf("Kalman filter y disdance is %f\n",kf_pos_y);
 		if(fabs(kf_pos_y)<fabs(distance_y)/2.0)
 		{
@@ -949,7 +955,8 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 						guidance_loop_set_theta(0.0/180*3.14);
 						guidance_loop_set_phi(max_roll); 
 						guidance_loop_set_heading(psi0);
-						guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+						/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
+						set_altitude(open_loop_altitude[race_state.gate_counter]);	
 						return FALSE;
 				}
 				else
@@ -957,7 +964,8 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 						guidance_loop_set_theta(0.0/180*3.14);
 						guidance_loop_set_phi(-max_roll); 
 						guidance_loop_set_heading(psi0);
-						guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);
+						/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
+						set_altitude(open_loop_altitude[race_state.gate_counter]);	
 						return FALSE;
 				}
 		}
@@ -966,10 +974,11 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 				if (distance_y > 0)
 				{
 						guidance_loop_set_theta(0.0/180*3.14);
-						guidance_loop_set_phi(-max_roll/2.0); 
+						guidance_loop_set_phi(-max_roll/3.0); 
 						guidance_loop_set_heading(psi0);
-						guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
-						if(fabs(distance_y-kf_pos_y)<1.0)
+						set_altitude(open_loop_altitude[race_state.gate_counter]);	
+						/*guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);*/
+						if(fabs(distance_y-kf_pos_y)<0.6)
 						{
 								race_state.gate_counter++;
 								race_state.flag_in_open_loop = FALSE;
@@ -984,9 +993,10 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 				else
 				{
 						guidance_loop_set_theta(0.0/180*3.14);
-						guidance_loop_set_phi(max_roll); 
+						guidance_loop_set_phi(max_roll/3.0); 
 						guidance_loop_set_heading(psi0);
-						guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);
+						/*guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);*/
+						set_altitude(open_loop_altitude[race_state.gate_counter]);
 						if(fabs(distance_y-kf_pos_y)<0.6)
 						{
 								race_state.gate_counter++;
@@ -1042,7 +1052,8 @@ bool go_through_open_gate(double desired_theta, double desired_x)
 	guidance_loop_set_theta(desired_theta);
 	guidance_loop_set_phi(desired_phi);
 	guidance_loop_set_heading(psi0);
-	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
+	/*guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);*/
+	set_altitude(TAKE_OFF_ALTITUDE);
 	
 	if(/*kf_pos_x > desired_x ||*/ time_primitive > 10.5)
 			return TRUE;
