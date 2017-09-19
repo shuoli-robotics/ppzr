@@ -252,7 +252,7 @@ bool take_off(void)
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 				set_altitude(TAKE_OFF_ALTITUDE);
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!
-				race_state.flag_in_open_loop = TURE;
+				race_state.flag_in_open_loop = TRUE;
 
 		}
 

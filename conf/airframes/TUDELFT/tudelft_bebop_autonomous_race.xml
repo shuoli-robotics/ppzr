@@ -162,12 +162,12 @@
    <define name="ACCEL_Y_SENS" value="2.4394"  integer="16"/>
    <define name="ACCEL_Z_SENS" value="2.4453" integer="16"/-->
 
-<define name="ACCEL_X_NEUTRAL" value="122"/>
+<!--define name="ACCEL_X_NEUTRAL" value="122"/>
 <define name="ACCEL_Y_NEUTRAL" value="-17"/>
 <define name="ACCEL_Z_NEUTRAL" value="-629"/>
 <define name="ACCEL_X_SENS" value="2.45647109131" integer="16"/>
 <define name="ACCEL_Y_SENS" value="2.44777763777" integer="16"/>
-<define name="ACCEL_Z_SENS" value="2.39465460205" integer="16"/>
+<define name="ACCEL_Z_SENS" value="2.39465460205" integer="16"/-->
 
   </section>
 

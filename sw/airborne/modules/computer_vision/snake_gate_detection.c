@@ -298,7 +298,7 @@ void snake_gate_periodic(void)
   if(race_state.flag_in_open_loop == TRUE){
     last_open_loop_time = time_now;
     run_ekf = 0;
-    //printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
+    printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
   }  
    
   if(run_ekf){
