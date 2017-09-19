@@ -264,11 +264,11 @@ bool take_off(void)
 				if (time_primitive > 3.0 && tf_status.flag_ekf_initialized == FALSE)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
-						race_state.flag_open_loop = FALSE;
+						race_state.flag_in_open_loop = FALSE;
 						initialize_EKF();
 
 				}
-				if (time_primitive > 10.0)
+				if (time_primitive > 6.0)
 				{
 						tf_status.flag_open_loop = FALSE;
 						tf_status.flag_hover_mode = TRUE;

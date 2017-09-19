@@ -68,7 +68,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -1.4
+#define TAKE_OFF_ALTITUDE -1.9
 #endif
 struct acceleration{
 		double ax;

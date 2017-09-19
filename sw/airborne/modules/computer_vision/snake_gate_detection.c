@@ -244,7 +244,7 @@ void initialize_EKF(){
         printf("LARGE GATE\n");
       /*gate_size_m = 1.0;*/
     }else{
-      gate_size_m = 1.4; //after second gate, switch to smaller gates
+      gate_size_m = 1.0; //after second gate, switch to smaller gates
         printf("SMALL GATE\n");
     }
     run_ekf_m = 1;
