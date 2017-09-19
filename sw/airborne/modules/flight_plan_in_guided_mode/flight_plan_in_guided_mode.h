@@ -166,6 +166,7 @@ struct take_off_status
 		int altitude_counter;
 		float sum_altitude;
 		float ave_altitude;
+		bool flag_ekf_initialized;
 };
 
 struct two_arc_status

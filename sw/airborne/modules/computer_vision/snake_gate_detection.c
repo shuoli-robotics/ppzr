@@ -244,7 +244,7 @@ void initialize_EKF(){
         printf("LARGE GATE\n");
       /*gate_size_m = 1.0;*/
     }else{
-      gate_size_m = 1.0; //after second gate, switch to smaller gates
+      gate_size_m = 1.4; //after second gate, switch to smaller gates
         printf("SMALL GATE\n");
     }
     run_ekf_m = 1;
@@ -298,7 +298,7 @@ void snake_gate_periodic(void)
   if(race_state.flag_in_open_loop == TRUE){
     last_open_loop_time = time_now;
     run_ekf = 0;
-    printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
+    //printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
   }  
    
   if(run_ekf){
@@ -397,10 +397,11 @@ void snake_gate_periodic(void)
 
 
     hist_sample = 0;
-    //printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
+//     printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     debug_5 = 0;
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
+    printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     debug_5 = 1;
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);
    // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);

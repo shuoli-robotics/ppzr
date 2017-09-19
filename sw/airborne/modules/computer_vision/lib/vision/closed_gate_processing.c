@@ -141,7 +141,7 @@ float local_psi = 0;
 double last_detection_time = 0;
 
 float gate_dist_x = 3.5;//distance from filter init point to gate 
-float gate_size_m = 1;//size of gate edges in meters
+float gate_size_m = 1.4;//size of gate edges in meters
 float gate_center_height = -3.5;//height of gate in meters ned wrt ground
 
 
@@ -663,7 +663,7 @@ int closed_gate_processing(struct image_t *img){
   float side_angle_2 = atanf(undist_x/f_fisheye)+local_psi;
   
   float b = (tanf(side_angle_2)*tanf(side_angle_1))/((tanf(side_angle_1)-tanf(side_angle_2))*tanf(side_angle_1)); //tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
-  y_pos_hist = 0.5+b;
+  y_pos_hist = (gate_size_m/2)+b;//was 0.5
   //float a = 1-b;
   x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   

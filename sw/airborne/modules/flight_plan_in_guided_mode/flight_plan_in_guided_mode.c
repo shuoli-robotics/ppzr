@@ -251,9 +251,7 @@ bool take_off(void)
 				tf_status.ave_altitude = 0.0;
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 				set_altitude(TAKE_OFF_ALTITUDE);
-				// !!!!!!!!!!!!!!!!!!!!!!!!!!
-				race_state.flag_in_open_loop = TRUE;
-						initialize_EKF();
+				tf_status.flag_ekf_initialized = FALSE;
 
 		}
 
@@ -261,9 +259,14 @@ bool take_off(void)
 		{
 				/*guidance_loop_set_theta(-0/57.6);*/
 				/*guidance_loop_set_phi(0);*/
-						/*guidance_loop_set_velocity(0.0,0.0);*/
-						printf("take off open loop\n");
+				guidance_loop_set_velocity(0.0,0.0);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
+				if (time_primitive > 3.0 && tf_status.flag_ekf_initialized == FALSE)
+				{
+						tf_status.flag_ekf_initialized = TRUE;
+						initialize_EKF();
+
+				}
 				if (time_primitive > 10.0)
 				{
 						tf_status.flag_open_loop = FALSE;
