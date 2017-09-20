@@ -67,11 +67,11 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {ZIGZAG_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
 
 float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
-float turn_point[] = {3.65,5.5,4.5,4.5};
+float turn_point[] = {4.0,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
-float gate_altitude[] = {-1.8,-2.0,-1.5,-1.5};
-float open_loop_altitude[] = {-1.8,-2.0,-1.5,-1.5};
+float gate_altitude[] = {-3.0,-1.8,-1.5,-1.5};
+float open_loop_altitude[] = {-3.0,-2.0,-1.5,-1.5};
 
 
 float break_time[] = {0.0,0.5,0.0,0.0};
@@ -190,8 +190,8 @@ void first_part_logic()
 				previous_lower_level = TAKE_OFF_OPEN_LOOP_CM;
 				state_lower_level =  GO_STRAIGHT_CM;
 				/*state_upper_level =  SECOND_PART;*/
-				/*state_upper_level =  THIRD_PART;*/
-				state_upper_level =  FOURTH_PART;
+				state_upper_level =  THIRD_PART;
+				/*state_upper_level =  FOURTH_PART;*/
 			}
 			break;
 		default:
@@ -220,6 +220,7 @@ void second_part_logic()
 					{
 							race_state.gate_counter = 0; // clear gate counter since in arc_open_loop gate_counter++
 							state_upper_level = THIRD_PART;
+							/*state_upper_level = SECOND_PART;*/
 							state_lower_level = GO_STRAIGHT_CM;
 					}
 
