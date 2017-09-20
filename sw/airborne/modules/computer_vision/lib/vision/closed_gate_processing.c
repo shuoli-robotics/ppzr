@@ -26,7 +26,7 @@
 
 // Gate detection settings:
 int n_samples = 10000;//2000;//1000;//500;
-int min_pixel_size = 30;////30;//20;//40;//100;
+int min_pixel_size = 55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
@@ -663,11 +663,11 @@ int closed_gate_processing(struct image_t *img){
   float side_angle_2 = atanf(undist_x/f_fisheye)+local_psi;
   
   float b = (tanf(side_angle_2)*tanf(side_angle_1))/((tanf(side_angle_1)-tanf(side_angle_2))*tanf(side_angle_1)); //tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
-  y_pos_hist = (gate_size_m/2)+b;//was 0.5
+  y_pos_hist = 0.4+b;//was 0.5
   //float a = 1-b;
   x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   
-  float max_dist_h = 1.5;
+  float max_dist_h = 1.8;
   float min_dist_h = 0.3;
   if(hist_peek_value > 7 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;

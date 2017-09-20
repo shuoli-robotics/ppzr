@@ -348,6 +348,12 @@ void snake_gate_periodic(void)
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
    
+//     debug_3 = ls_pos_x;
+//     debug_4 = ls_pos_y;
+   if(hist_sample){
+    debug_3 = x_pos_hist;
+    debug_4 = y_pos_hist;
+   }
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
    //debug_5 = u_k[2][0];
@@ -356,19 +362,19 @@ void snake_gate_periodic(void)
   
   //if measurement available -> do EKF measurement update 
 
-    if(X_int[0][0] < 1.8){
-      hist_sample = 0;
+    if(X_int[0][0] < 1.5 && (vision_sample == 0||ls_pos_x < 1.5)){
+      hist_sample = 0;//ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
     }
     
     //-1.6 for open gate?
-    if(X_int[0][0] > (gate_dist_x - 0.4)){//block after to close to the target gate //////////////0.8, was 0.4
+    if(X_int[0][0] > (gate_dist_x - 0.3)){//block after to close to the target gate //////////////0.8, was 0.4
       //ekf_sonar_update = 1;
       run_ekf_m = 0;
     }else{
       run_ekf_m = 1;
     }
     
-    if(X_int[0][0] > (gate_dist_x - 1.5))vision_sample = 0;//-----------------------------------------------------------???????????????
+    if(X_int[0][0] > (gate_dist_x - 0.3))vision_sample = 0;//-----------------------------------------------------------???????????????
    
     if(X_int[0][0] > gate_dist_x + 0.2 && run_ekf_m == 0){
       run_ekf_m = 1;
@@ -398,7 +404,7 @@ void snake_gate_periodic(void)
 
 
       //If in first stretch limit detection distance///////////////////////////
-      if(ls_pos_x < 0)vision_sample = 0;//;run_ekf_m = 0;
+      if(ls_pos_x < -1.5)vision_sample = 0;//;run_ekf_m = 0;
 
 
     //hist_sample = 0;///////////////////////////////////////////////////////////////////////////////////////
@@ -432,13 +438,15 @@ void snake_gate_periodic(void)
 	local_x = gate_dist_x - x_pos_hist;
 	local_y = y_pos_hist;
 	hist_sample = 0;
+	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
       }else{
 	local_x = ls_pos_x;
 	local_y = ls_pos_y;
       }
       
-	   debug_3 = local_x;
-	   debug_4 = local_y;
+// 	   debug_3 = local_x;
+// 	   debug_4 = local_y;
+
       
       float z_k_d[3];
       z_k_d[0] = local_x;
