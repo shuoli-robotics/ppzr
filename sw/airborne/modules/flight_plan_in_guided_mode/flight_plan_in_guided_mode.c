@@ -500,7 +500,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	else
 	{
 
-			double height = open_loop_altitude[race_state.gate_counter]-0.2*time_primitive;
+			double height = open_loop_altitude[race_state.gate_counter]-0.5*time_primitive;
 			printf("desired height is %f ----------------\n",height);
 			printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);
 				set_altitude(height);
@@ -789,7 +789,7 @@ bool go_through_gate(float theta)
 		guidance_loop_set_heading(psi0);
 		/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
 		set_altitude(gate_altitude[race_state.gate_counter]);	
-		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.2)
+		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
 		{
 				return TRUE;
 				printf("exit go through mode\n");

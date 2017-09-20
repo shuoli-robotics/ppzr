@@ -70,8 +70,8 @@ float gate_initial_position_y[] = {3.0,3.0,4.0,4.0};
 float turn_point[] = {3.2,5.5,4.5,4.5};
 float gate_initial_heading[] = {0, 0.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
-float gate_altitude[] = {-1.9,-2.0,-1.5,-1.5};
-float open_loop_altitude[] = {-1.9,-2.0,-1.5,-1.5};
+float gate_altitude[] = {-1.4,-2.0,-1.5,-1.5};
+float open_loop_altitude[] = {-1.4,-2.0,-1.5,-1.5};
 
 
 float break_time[] = {0.0,0.5,0.0,0.0};
@@ -310,7 +310,7 @@ void fourth_part_logic() {
 						{
 								state_lower_level =  ARC_CM;
 								race_state.flag_in_open_loop = TRUE;
-								race_state.current_arc_radius = 2.8;
+								race_state.current_arc_radius = 3.0;
 								race_state.current_arc_delta_psi= 90.0/180*PI;
 								race_state.current_arc_flag_right = TRUE;
 						}

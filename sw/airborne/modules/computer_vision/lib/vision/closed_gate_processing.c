@@ -668,7 +668,7 @@ int closed_gate_processing(struct image_t *img){
   x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   
   float max_dist_h = 1.5;
-  float min_dist_h = 0.4;
+  float min_dist_h = 0.3;
   if(hist_peek_value > 7 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;
     print_sides(img,side_1,side_2);

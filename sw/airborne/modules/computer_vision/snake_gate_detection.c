@@ -244,7 +244,7 @@ void initialize_EKF(){
         printf("LARGE GATE\n");
       /*gate_size_m = 1.0;*/
     }else{
-      gate_size_m = 1.0; //after second gate, switch to smaller gates
+      gate_size_m = 1.4; //after second gate, switch to smaller gates
         printf("SMALL GATE\n");
     }
     run_ekf_m = 1;
@@ -295,11 +295,14 @@ void snake_gate_periodic(void)
   u_k[7][0] = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading; Quick fix !!!!!!!!!!!!!!!!!!!!!!
   
   
-  if(race_state.flag_in_open_loop == TRUE){
+  if(race_state.flag_in_open_loop == TRUE || autopilot_mode == 4){
     last_open_loop_time = time_now;
     run_ekf = 0;
-    //printf("open loop true %f !!!!!!!!!!!!!!!!!!!!!!!!\n",time_now);
-  }  
+    printf("open loop true %d !!!!!!!!!!!!!!!!!!!!!!!!\n",race_state.flag_in_open_loop );
+  }else{
+    run_ekf = 1;
+  }
+  
    
   if(run_ekf){
       EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
@@ -365,7 +368,9 @@ void snake_gate_periodic(void)
       run_ekf_m = 1;
     }
     
-    if(X_int[0][0] > gate_dist_x && run_ekf_m == 0){
+    if(X_int[0][0] > (gate_dist_x - 1.5))vision_sample = 0;//-----------------------------------------------------------???????????????
+   
+    if(X_int[0][0] > gate_dist_x + 0.2 && run_ekf_m == 0){
       run_ekf_m = 1;
       printf("run_ekf_m = 1;--------------------------------------------------\n");
     }
@@ -393,10 +398,12 @@ void snake_gate_periodic(void)
 
 
       //If in first stretch limit detection distance///////////////////////////
-      if(ls_pos_x < 0)run_ekf_m = 0;
+      if(ls_pos_x < 0)vision_sample = 0;//;run_ekf_m = 0;
 
 
-    hist_sample = 0;
+    //hist_sample = 0;///////////////////////////////////////////////////////////////////////////////////////
+      
+      
 //     printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     debug_5 = 0;
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
