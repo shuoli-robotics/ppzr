@@ -310,7 +310,7 @@ void fourth_part_logic() {
 						{
 								state_lower_level =  ARC_CM;
 								race_state.flag_in_open_loop = TRUE;
-								race_state.current_arc_radius = 3.0;
+								race_state.current_arc_radius = 2.8;
 								race_state.current_arc_delta_psi= 90.0/180*PI;
 								race_state.current_arc_flag_right = TRUE;
 						}

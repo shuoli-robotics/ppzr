@@ -362,7 +362,7 @@ void snake_gate_periodic(void)
   
   //if measurement available -> do EKF measurement update 
 
-    if(X_int[0][0] < 1.5 && (vision_sample == 0||ls_pos_x < 1.5)){
+    if(X_int[0][0] < 1.5 ){//&& (vision_sample == 0||ls_pos_x < 1.5)){
       hist_sample = 0;//ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
     }
     
