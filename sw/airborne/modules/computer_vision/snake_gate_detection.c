@@ -141,6 +141,13 @@ double last_open_loop_time = 0;
 
 struct timeval stop, start;
 
+float acc_bias_x = 0;
+float acc_bias_y = 0;
+float acc_bias_z = 0;
+
+float local_x = 0;
+float local_y = 0;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&debug_1, &debug_2, &debug_3, &debug_4,&debug_5);
@@ -333,6 +340,9 @@ void snake_gate_periodic(void)
   kf_pos_y = X_int[1][0];
   kf_vel_x = X_int[2][0];
   kf_vel_y = X_int[3][0];
+  acc_bias_x = X_int[4][0];
+  acc_bias_y = X_int[5][0];
+  acc_bias_z = X_int[6][0];
   
   
  //  debug_1 = X_int[2][0];
@@ -430,8 +440,6 @@ void snake_gate_periodic(void)
     //update dt 
    
       //xy-position in local gate frame(ls, or histogram)
-      float local_x = 0;
-      float local_y = 0;
       
       //if histogram detection measures close proximity to the gate, switch to histogram method
       if(hist_sample){
