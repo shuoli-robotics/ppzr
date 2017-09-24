@@ -16,13 +16,13 @@
 
     <!--define name="USE_SONAR" value="TRUE"/-->
 
-	<define name="MT9F002_OUTPUT_WIDTH" value="480"/><!--160-->
-	<define name="MT9F002_OUTPUT_HEIGHT" value="640"/><!--315-->
+	<define name="MT9F002_OUTPUT_WIDTH" value="160"/><!--128-->
+	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
 
-	<define name="MT9F002_OUTPUT_SCALER" value="0.250"/>
-	<define name="MT9F002_INITIAL_OFFSET_X" value="1580"/>      <!--1280--><!--2050--><!--2034-->
+	<define name="MT9F002_OUTPUT_SCALER" value="0.125"/>
+	<define name="MT9F002_INITIAL_OFFSET_X" value="2050"/>      <!--2034--><!--2050-->
 
-	<define name="MT9F002_INITIAL_OFFSET_Y" value="334"/><!--384-->
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="476"/><!--700-->
 
 	<define name="MT9F002_TARGET_EXPOSURE" value="30.0"/>
 	<define name="MT9F002_GAIN_RED" value="3.0"/>
