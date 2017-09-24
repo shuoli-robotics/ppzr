@@ -45,25 +45,32 @@ extern enum states_upper_level state_upper_level;
 struct race_states
 {
 
-		bool flag_in_open_loop;
-		int gate_counter;
-		float current_initial_x;
+		bool flag_in_open_loop;             // gate = close loop, arc&zigzag are open-loop
+		int gate_counter;                   // Only for the closed gates in curved section
+		float current_initial_x;            // Gate-centered frame
 		float current_initial_heading;
+
 		float current_arc_radius;
 		float current_arc_delta_psi;
-		int current_arc_flag_right;
+
+		int current_arc_flag_right;         // 1=right, 0=left
 		float current_zigzag_break_time;
 		float current_zigzag_break_angle;
 		float current_zigzag_desired_y;
 		float current_zigzag_desired_theta;
 		float current_zigzag_max_roll;
-		int current_zigzag_flag_right;
-		int current_zigzag_flag_break;
+		int current_zigzag_flag_right;      // 1=right zigzag
+		int current_zigzag_flag_break;      // Now we always break....
+
+		// not used
 		float current_2_arcs_radius;
 		float current_2_arcs_flag_right;
 		float current_2_arcs_delta_heading;
+
+		// was PID -> now PD... -> not used
 		float sum_y_error;
-		float desired_x_in_first_part;
+
+		float desired_x_in_first_part;      // decide when to turn: TODO
 		float target_heading;
 };
 
