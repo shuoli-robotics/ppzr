@@ -16,13 +16,15 @@
 
     <!--define name="USE_SONAR" value="TRUE"/-->
 
-	<define name="MT9F002_OUTPUT_WIDTH" value="160"/><!--128-->
-	<define name="MT9F002_OUTPUT_HEIGHT" value="315"/>
+	<define name="MT9F002_OUTPUT_WIDTH" value="480"/><!--160-->
+	<define name="MT9F002_OUTPUT_HEIGHT" value="640"/><!--315-->
 
-	<define name="MT9F002_OUTPUT_SCALER" value="0.125"/>
-	<define name="MT9F002_INITIAL_OFFSET_X" value="2050"/>      <!--2034--><!--2050-->
+	<define name="MT9F002_OUTPUT_SCALER" value="0.250"/>
+	<define name="MT9F002_INITIAL_OFFSET_X" value="1580"/>      <!--1280--><!--2050--><!--2034-->
 
-	<define name="MT9F002_INITIAL_OFFSET_Y" value="476"/><!--700-->
+	<define name="MT9F002_INITIAL_OFFSET_Y" value="334"/><!--384-->
+
+
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -70,6 +72,11 @@
     <module name="pose_history"/>
     <!--module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
+    </module-->
+
+    <!--module name="video_capture">
+       <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
+       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Left_2m"/>
     </module-->
 
     <module name="cv_snake_gate_detection">
