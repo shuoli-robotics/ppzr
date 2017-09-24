@@ -74,7 +74,7 @@ float gate_altitude[] = {-3.0,-1.8,-1.5,-1.5};
 float open_loop_altitude[] = {-3.0,-2.0,-1.5,-1.5};
 
 
-float break_time[] = {0.0,0.5,0.0,0.0};
+float break_time[] = {0.0,0.0,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
 float arc_radius[] =     {1.5,             1.5,           1.0};
@@ -215,7 +215,7 @@ void second_part_logic()
 					}
 					break;
 			case TURN_CM:
-			  printf("The arc in first strech is executed__________________!!!!!!!!!!!!!!!!!\n");
+			  /*printf("The arc in first strech is executed__________________!!!!!!!!!!!!!!!!!\n");*/
 					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,0,0))
 					{
 							race_state.gate_counter = 0; // clear gate counter since in arc_open_loop gate_counter++
@@ -279,7 +279,7 @@ void third_part_logic()
 				}
 				break;
 			case ZIGZAG_CM:
-				printf("zigzag mode\n");
+				/*printf("zigzag mode\n");*/
 				if(zigzag_2(race_state.current_zigzag_break_time,race_state.current_zigzag_max_roll,race_state.current_zigzag_desired_y))
 				{
 							previous_mode = ZIGZAG_CM;
@@ -288,7 +288,7 @@ void third_part_logic()
 				}
 				break;
 			case TWO_ARCS_CM:
-				printf("TWO arc mode \n");
+				/*printf("TWO arc mode \n");*/
 				if(two_arcs_open_loop(race_state.current_2_arcs_radius,-5.0/180*3.14,race_state.current_2_arcs_flag_right,race_state.current_2_arcs_delta_heading))
 				{
 						previous_mode = TWO_ARCS_CM;
@@ -318,10 +318,8 @@ void fourth_part_logic() {
 						break;
 
 				case ARC_CM:
-						printf("ascending in arc of three gates\n");
 				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,1))
 				{
-
 						state_lower_level = ARC_CM;
 						state_upper_level = FIFTH_PART;
 				}

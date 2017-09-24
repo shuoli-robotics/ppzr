@@ -275,8 +275,8 @@ bool take_off(void)
 						race_state.flag_in_open_loop = FALSE;
 						guidance_loop_set_velocity(0.0,0.0);
 						//guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);  // vertical module should be called!
-						printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);
-						printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);
+						/*printf("gate initial heading is %f\n",gate_initial_heading[race_state.gate_counter]);*/
+						/*printf("gate initial y is %f\n",gate_initial_position_y[race_state.gate_counter]);*/
 						return TRUE;
 				}
 				//printf("Take off attitude is %f\n",tf_status.take_off_altitude);
@@ -300,7 +300,7 @@ bool take_off(void)
 				tf_status.flag_open_loop = FALSE;
 				tf_status.flag_climb_mode = FALSE;
 				tf_status.flag_hover_mode = FALSE;
-				printf("exit take off !!!!!\n");
+				/*printf("exit take off !!!!!\n");*/
 				return TRUE;
 		}
 		else
@@ -363,7 +363,7 @@ void set_attitude(float desired_theta,float desired_phi)
 	guidance_v_set_guided_z(TAKE_OFF_ALTITUDE);
 	guidance_loop_set_phi(desired_phi); 
 	guidance_loop_set_heading(psi0);
-	printf("It is in attitude control mode!!!!!!!!!!!\n");
+	/*printf("It is in attitude control mode!!!!!!!!!!!\n");*/
 }
 
 
@@ -499,11 +499,10 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	}
 	else
 	{
-
 			double height = open_loop_altitude[race_state.gate_counter]-0.5*time_primitive;
-			printf("desired height is %f ----------------\n",height);
-			printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);
-				set_altitude(height);
+			/*printf("desired height is %f ----------------\n",height);*/
+			/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
+			set_altitude(height);
 	}
 
 
@@ -588,8 +587,8 @@ bool hover_at_origin()
  }
  else
  {
-		 printf("Trim phi = %f,\n",trim_phi/3.14*180);
-		 printf("Trim theta= %f,\n",trim_theta/3.14*180);
+		 /*printf("Trim phi = %f,\n",trim_phi/3.14*180);*/
+		 /*printf("Trim theta= %f,\n",trim_theta/3.14*180);*/
 		 return 0;
  }
 }
@@ -694,14 +693,14 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 			if (zigzag_status.position.y < desired_y/2.0)
 			{
 					guidance_loop_set_phi(max_roll); 
-					printf("max_roll angle is %f\n",max_roll);
-					printf("predicted position y == %f\n",zigzag_status.position.y);
+					/*printf("max_roll angle is %f\n",max_roll);*/
+					/*printf("predicted position y == %f\n",zigzag_status.position.y);*/
 			}
 			else
 			{
 					guidance_loop_set_phi(-max_roll); 
-					printf("EEEEEEEEEEEEEEEEE\n");
-					printf("predicted position y == %f\n",zigzag_status.position.y);
+					/*printf("EEEEEEEEEEEEEEEEE\n");*/
+					/*printf("predicted position y == %f\n",zigzag_status.position.y);*/
 			}
 	}
 	else
@@ -709,12 +708,12 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 			if (zigzag_status.position.y > desired_y/2.0)
 			{
 					guidance_loop_set_phi(-max_roll); 
-					printf("predicted position y == %f\n",zigzag_status.position.y);
+					/*printf("predicted position y == %f\n",zigzag_status.position.y);*/
 			}
 			else
 			{
 					guidance_loop_set_phi(max_roll); 
-					printf("predicted position y == %f\n",zigzag_status.position.y);
+					/*printf("predicted position y == %f\n",zigzag_status.position.y);*/
 			}
 	}
 	guidance_loop_set_heading(zigzag_status.psi_cmd);
@@ -768,7 +767,7 @@ bool go_through_gate(float theta)
        		
 		float error_y = -kf_pos_y;
 		
-		printf("go through function is called\n");
+		/*printf("go through function is called\n");*/
 		
 		
 		float D_term = error_y-previous_error_y;
@@ -792,7 +791,7 @@ bool go_through_gate(float theta)
 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
 		{
 				return TRUE;
-				printf("exit go through mode\n");
+				/*printf("exit go through mode\n");*/
 		}
 		else
 		{
@@ -842,7 +841,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 
 				if(flag_right == 1)
 				{
-						printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);
+						/*printf("AAAAAAAAAAAAAAAA radius is %f!\n",radius);*/
 					if(arc_open_loop(radius,desired_theta,delta_psi,1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
@@ -858,7 +857,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				else
 				{
 
-						printf("BBBBBBBBBBBBBBBBBBBB\n!");
+						/*printf("BBBBBBBBBBBBBBBBBBBB\n!");*/
 					if(arc_open_loop(radius,desired_theta,delta_psi,-1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
@@ -895,7 +894,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 
 				if(flag_right == 1)
 				{
-						printf("CCCCCCCCCCCCCCCCCCC  radius is %f\n!",radius);
+						/*printf("CCCCCCCCCCCCCCCCCCC  radius is %f\n!",radius);*/
 					if(arc_open_loop(radius,desired_theta,delta_psi,-1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
@@ -909,14 +908,14 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 				}
 				else
 				{
-						printf("DDDDDDDDDDDDDDDDDD\n!");
+						/*printf("DDDDDDDDDDDDDDDDDD\n!");*/
 					if(arc_open_loop(radius,desired_theta,delta_psi,1,0))
 					{
 							two_arc_st.flag_first_arc = FALSE;
 							two_arc_st.flag_second_arc = FALSE;
 							two_arc_st.flag_in_two_arc_mode = FALSE;
 							initialize_EKF();
-							printf("EEEEEEEEEEEEEEEEEE\n");
+							/*printf("EEEEEEEEEEEEEEEEEE\n");*/
 							return TRUE;
 					}
 					else
@@ -952,8 +951,8 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 				return FALSE;
 		}
 
-		printf("zigzag_2 desired_y is %f\n",distance_y);
-		printf("Kalman filter y disdance is %f\n",kf_pos_y);
+		/*printf("zigzag_2 desired_y is %f\n",distance_y);*/
+		/*printf("Kalman filter y disdance is %f\n",kf_pos_y);*/
 		if(fabs(kf_pos_y)<fabs(distance_y)/2.0)
 		{
 				if (distance_y > 0)
