@@ -179,6 +179,14 @@ extern float gate_quality;
 
 extern void initialize_EKF(void);
 
+//biaases logging
+extern float acc_bias_x;
+extern float acc_bias_y;
+extern float acc_bias_z;
+
+extern float local_x;
+extern float local_y;
+
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */
 #define VECT3_VECT3_TRANS_MUL(_mat, _v_a,_v_b) {    \
