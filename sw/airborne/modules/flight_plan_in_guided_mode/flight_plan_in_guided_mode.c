@@ -57,6 +57,10 @@
 #define KD_Y 0.30  //0.3//0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
+
+# define FAST_TIME 5.5
+# define TURN_TIME 7.5
+
 //most turns until now
 //P 0.4
 //D 0.07
@@ -1140,19 +1144,23 @@ bool take_off_fast(void)
 				set_altitude(TAKE_OFF_ALTITUDE);
 				tf_status.flag_ekf_initialized = FALSE;
 		}
-				guidance_loop_set_theta(-15/57.6);
+		if (time_primitive < FAST_TIME)
+		{
+				guidance_loop_set_theta(-13/57.6);
 				guidance_loop_set_phi(0);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
-				if (time_primitive > 8.5)
+		}
+		else if (time_primitive < TURN_TIME)
+		{
+				guidance_loop_set_theta(-0.0/57.6);
+				guidance_loop_set_phi(0);
+		}
+		else if (time_primitive > TURN_TIME)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
 						race_state.flag_in_open_loop = FALSE;
 						initialize_EKF();
 						return TRUE;
 
-				}
-				else
-				{
-						return FALSE;
-				}
+				} return FALSE;
 }
