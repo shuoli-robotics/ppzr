@@ -79,7 +79,7 @@ struct image_t img_result;
 
 // my modification
 struct opengate_img opengates[MAX_GATES];
-int n_op_samples = 3000;//number for open gate samples.
+int n_op_samples = 10000;//number for open gate samples.
 float ox_dist = 0;
 float oy_dist = 0;
 float oz_dist = 0;
@@ -358,7 +358,6 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
 			  color_cb_min, color_cb_max,
     		  color_cr_min, color_cr_max);
   }
-  
   
   //Open gate histogram stuff 
   peek_height_o = detect_gate_side_o(histogram_c,&center_p);
