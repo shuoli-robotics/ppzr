@@ -480,14 +480,14 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 
   int open_gate = 0;
   
-  if(state_upper_level  == SECOND_PART){
+  if(1){//state_upper_level  == SECOND_PART){
 
     //OPENGATE 
     float o_x_p = 0;
     float o_y_p = 0;
     float o_z_p = 0;
     
-    int process_vision = 0;
+    int process_vision = 1;
     if(process_vision){
 	if(open_gate_processing(img,&o_x_p,&o_y_p,&o_z_p)){
 	    ls_pos_x = o_x_p;
@@ -498,7 +498,7 @@ struct image_t *snake_gate_detection_func(struct image_t *img)
 	    //printf("position x=%.2f, y=%.2f, z=%.2f\n", o_x_p, o_y_p, o_z_p);
 	  }
 	}else{
-	closed_gate_processing(img);
+	//closed_gate_processing(img);
 	}
    }
    //printf("position x=%.2f, y=%.2f, z=%.2f\n", ls_pos_x, ls_pos_y, ls_pos_x);

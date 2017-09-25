@@ -103,6 +103,11 @@ struct FloatVect3 p3p_pos_solution;
 
 float local_psi_o = 0;
 
+//first stretch histogram testing
+int center_p = 0;
+int peek_height_o = 0;
+float side_angle_o = 0;
+
 int *array_o;
 //return indexes
 int cmp_i_o(const void *a, const void *b){
@@ -351,8 +356,7 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
   
   
   //Open gate histogram stuff 
-  int center_p;
-  int peek_height_o = detect_gate_side_o(histogram_c,&center_p);
+  peek_height_o = detect_gate_side_o(histogram_c,&center_p);
   
   float undist_x, undist_y;
   float princ_x = 157.0;
@@ -361,7 +365,7 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
   
   //float psi_comp = stateGetNedToBodyEulers_f()->psi;
   undistort_fisheye_point(center_p,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
-  float side_angle = atanf(undist_x/f_fisheye);
+  side_angle_o = atanf(undist_x/f_fisheye);
   
   //0.5m 8
   //1m 6
@@ -369,7 +373,7 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
   
   //printf("side_angle:%f              peek_height_o:%d\n",side_angle*57,peek_height_o);
   
-  if(peek_height_o > 4)print_side(img,center_p);
+  if(peek_height_o > 3)print_side(img,center_p);
   
 
   //printf("opengates[n_opengates-1].n_bars:%d\n",opengates[n_opengates-1].n_bars);

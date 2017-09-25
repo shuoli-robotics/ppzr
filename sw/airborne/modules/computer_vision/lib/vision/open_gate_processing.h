@@ -74,6 +74,11 @@ uint8_t color_cr_max;
 
 int color_count;
 
+//first stretch histogram testing
+extern int center_p;
+extern int peek_height_o;
+extern float side_angle_o;
+
 //static void snake_gate_send(struct transport_tx *trans, struct link_device *dev);
 
 //uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, int x, int y);
