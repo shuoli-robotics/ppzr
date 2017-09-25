@@ -266,7 +266,6 @@ bool take_off(void)
 						tf_status.flag_ekf_initialized = TRUE;
 						race_state.flag_in_open_loop = FALSE;
 						initialize_EKF();
-
 				}
 				if (time_primitive > 6.0)
 				{
@@ -925,7 +924,7 @@ bool two_arcs_open_loop(float radius,float desired_theta, int flag_right,float d
 }
 
 
-bool zigzag_2(float break_time,float max_roll,float distance_y)
+bool zigzag_2(float zig_zag_break_time,float max_roll,float distance_y)
 {
 		if(primitive_in_use != ZIGZAG_2)
 		{
@@ -941,7 +940,7 @@ bool zigzag_2(float break_time,float max_roll,float distance_y)
 				initialize_EKF();
 		}
 
-		if(time_temp2 < break_time)
+		if(time_temp2 < zig_zag_break_time)
 		{
 				guidance_loop_set_theta(10.0/180*3.14);
 				guidance_loop_set_phi(0.0); 
@@ -1064,4 +1063,94 @@ bool go_through_open_gate(double desired_theta, double desired_x)
 			return TRUE;
 	else
 			return FALSE;
+}
+
+
+bool stop_turn(float stop_turn_break_time, float delta_psi)
+{
+		if(primitive_in_use != STOP_TURN)
+		{
+				primitive_in_use = STOP_TURN;
+				psi0 = stateGetNedToBodyEulers_f()->psi;
+				z0 = stateGetPositionNed_f()->z;
+				counter_primitive = 0;
+				time_primitive = 0;
+				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+				race_state.flag_in_open_loop = TRUE;
+				race_state.target_heading = psi0+delta_psi;
+				if (race_state.target_heading > 3.14)
+						race_state.target_heading -= 2*3.14;
+				else if(race_state.target_heading < -3.14)
+						race_state.target_heading += 2*3.14;
+		}
+		if (time_primitive < stop_turn_break_time)
+		{
+				guidance_loop_set_theta(10.0/180*3.14);
+				guidance_loop_set_phi(0.0); 
+				guidance_loop_set_heading(psi0);
+				/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
+				set_altitude(gate_altitude[race_state.gate_counter]);
+				return FALSE;
+		}
+
+		guidance_loop_set_theta(0.0/180*3.14);
+		guidance_loop_set_phi(0.0); 
+		guidance_loop_set_heading(race_state.target_heading);
+		/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
+		set_altitude(gate_altitude[race_state.gate_counter]);
+	if (fabs(stateGetNedToBodyEulers_f()->psi - race_state.target_heading)< 1.0/180*3.14)
+	{
+			race_state.gate_counter++;
+			race_state.flag_in_open_loop = FALSE;
+			initialize_EKF();
+			return TRUE;
+	}
+	else
+	{
+			return FALSE;
+	}
+
+
+}
+
+
+
+bool take_off_fast(void)
+{
+		if (primitive_in_use != TAKE_OFF_FAST)
+		{
+				psi_startup = stateGetNedToBodyEulers_f()->psi;
+				primitive_in_use = TAKE_OFF_FAST;
+				counter_primitive = 0;
+				time_primitive = 0;
+				tf_status.flag_open_loop = FALSE;
+				tf_status.flag_climb_mode = FALSE;
+				tf_status.flag_hover_mode = FALSE;
+				guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
+				states_race.attitude_control = TRUE;
+				states_race.altitude_is_achieved = 0;
+				tf_status.flag_open_loop = TRUE;
+				tf_status.take_off_altitude = TAKE_OFF_ALTITUDE;
+				tf_status.altitude_counter = 0;
+				tf_status.sum_altitude = 0.0;
+				tf_status.ave_altitude = 0.0;
+				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
+				set_altitude(TAKE_OFF_ALTITUDE);
+				tf_status.flag_ekf_initialized = FALSE;
+		}
+				guidance_loop_set_theta(-10/57.6);
+				guidance_loop_set_phi(0);
+				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
+				if (time_primitive > 2.5)
+				{
+						tf_status.flag_ekf_initialized = TRUE;
+						race_state.flag_in_open_loop = FALSE;
+						initialize_EKF();
+						return TRUE;
+
+				}
+				else
+				{
+						return FALSE;
+				}
 }
