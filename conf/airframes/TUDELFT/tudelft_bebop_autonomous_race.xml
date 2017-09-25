@@ -23,6 +23,14 @@
 	<define name="MT9F002_INITIAL_OFFSET_X" value="2050"/>      <!--2034--><!--2050-->
 
 	<define name="MT9F002_INITIAL_OFFSET_Y" value="476"/><!--700-->
+
+	<define name="MT9F002_TARGET_EXPOSURE" value="30.0"/>
+	<define name="MT9F002_GAIN_RED" value="3.0"/>
+	<define name="MT9F002_GAIN_BLUE" value="4.0"/>
+	<define name="MT9F002_GAIN_GREEN1" value="3.0"/>
+	<define name="MT9F002_GAIN_GREEN2" value="3.0"/>
+
+
 	<!-- Subsystem section -->
     <module name="telemetry" type="transparent_udp"/>
     <module name="radio_control" type="datalink"/>
@@ -62,14 +70,29 @@
     <module name="state_autonomous_race"/>
     <!--module name="kalman_filter"/-->
     <module name="command_level_iros"/>
+    <module name="first_stretch"/>
     <!--module name="replay_commands"/-->
     <module name="send_imu_mag_current"/>
     <module name="video_thread">
     </module>
+
+    <module name="video_capture">
+       <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
+       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Left_2m"/>
+    </module>
+
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
+
+    <module name="cv_me_mwb"/>
+
     <!--module name="cv_detect_gate">
 	<define name="OPENCVDEMO_CAMERA" value="front_camera"/>
+    </module-->
+
+    <!--module name="video_capture">
+       <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
+       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Left_2m"/>
     </module-->
 
     <module name="cv_snake_gate_detection">

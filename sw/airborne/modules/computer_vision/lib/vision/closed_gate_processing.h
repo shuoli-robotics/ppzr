@@ -124,3 +124,4 @@ extern float y_pos_hist;
 extern float gate_dist_x;//distance from filter init point to gate 
 extern float gate_size_m;//size of gate edges in meters
 extern float gate_center_height;//height of gate in meters ned wrt ground
+

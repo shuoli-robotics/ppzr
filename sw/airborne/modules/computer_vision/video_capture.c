@@ -117,6 +117,20 @@ void video_capture_save(struct image_t *img)
     fwrite(img_jpeg.buf, sizeof(uint8_t), img_jpeg.buf_size, fp);
     fclose(fp);
 
+    sprintf(save_name, "%s/img_%05d.csv", STRINGIFY(VIDEO_CAPTURE_PATH), video_capture_index);
+    fp = fopen(save_name, "w");
+    unsigned char *p = img->buf;
+    for (int h=0;h < img->h;h++){
+      for (int w=0 ; w<img->w;w++){
+	int b = *p++;
+	int c = *p++;
+	fprintf(fp,"%d,%d,",b,c);
+      }
+      fprintf(fp, "\n");
+    }
+    fclose(fp);
+
+    
     // Free image
     image_free(&img_jpeg);
 
