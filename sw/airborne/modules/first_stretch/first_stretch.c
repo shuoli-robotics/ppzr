@@ -33,6 +33,15 @@
 
 #define MODEL_DRAG  0.53f
 
+
+// Global multithreaded
+volatile int first_stretch_add = 0;
+volatile float first_stretch_psi = 0;
+volatile float first_stretch_certainty = 0;
+
+
+void first_stretch_add_psi( float psi, float certainty);
+
 typedef struct
 {
   float t;
@@ -62,6 +71,11 @@ void first_stretch_init(void) {
   first_stretch.vx = 0;
   first_stretch.x = 0;
   first_stretch.t = 0;
+
+  first_stretch_add = 0;
+  first_stretch_psi = 0;
+  first_stretch_certainty = 0;
+
 }
 
 void first_stretch_debug_store(void);
@@ -81,6 +95,16 @@ void first_stretch_periodic(void) {
     first_stretch.vx += dvx * (DELTA_T);
     first_stretch.x += first_stretch.vx * (DELTA_T);
     first_stretch.t += (DELTA_T);
+
+    if (first_stretch_add > 0) {
+      first_stretch_add_psi(first_stretch_psi,first_stretch_certainty);
+      first_stretch_add = 0;
+    }
+
+    if (first_stretch.t > 30) {
+      first_stretch.active = 0;
+      first_stretch_debug_store();
+    }
   }
 }
 
@@ -89,7 +113,7 @@ void first_stretch_start(void) {
   first_stretch.active = 1;
 }
 
-void first_stretch_add( float psi, float certainty) {
+void first_stretch_add_psi( float psi, float certainty) {
   if (first_stretch.active > 0) {
     if (first_stretch.counter < MAX_FIRST_STRETCH) {
       // Store set of data

@@ -26,11 +26,16 @@
 #ifndef FIRST_STRETCH_H
 #define FIRST_STRETCH_H
 
+// Global multithreaded
+extern volatile int first_stretch_add;
+extern volatile float first_stretch_psi;
+extern volatile float first_stretch_certainty;
+
+
 extern void first_stretch_init(void);
 extern void first_stretch_periodic(void);
 
 extern void first_stretch_start(void);
-extern void first_stretch_add(float time, float psi);
 
 
 #endif
