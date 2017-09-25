@@ -38,6 +38,7 @@
 #include "modules/computer_vision/snake_gate_detection.h"
 #include "subsystems/ins.h"
 #include "modules/kalman_filter/kalman_filter.h"
+#include "modules/first_stretch/first_stretch.h"
 #include "subsystems/imu.h"
 #include "math/pprz_algebra_float.h"
 
@@ -1119,6 +1120,7 @@ bool take_off_fast(void)
 {
 		if (primitive_in_use != TAKE_OFF_FAST)
 		{
+		    first_stretch_start();
 				psi_startup = stateGetNedToBodyEulers_f()->psi;
 				primitive_in_use = TAKE_OFF_FAST;
 				counter_primitive = 0;
