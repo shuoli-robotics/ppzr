@@ -44,6 +44,7 @@
 #include "modules/state_autonomous_race/state_autonomous_race.h"
 #include "modules/computer_vision/lib/vision/qr_code_recognition.h"
 #include "modules/computer_vision/lib/vision/calc_p3p.h"
+#include "modules/first_stretch/first_stretch.h"
 
 #include "math/pprz_algebra.h"
 #include "math/pprz_algebra_float.h"
@@ -150,7 +151,11 @@ float detect_gate_side_o(int *hist_raw, int *side){
 //     for(int i = 0;i<315;i++){
 //       printf("hist_raw[%d]:%d hist_smooth[%d]:%d hist_peeks[%d]:%d\n",i,hist_raw[i],i,hist_smooth[i],i,hist_peeks[i]);
 //     }
-    return hist_peeks[index[314]];
+
+
+
+
+      return hist_peeks[index[314]];
 
 }
 
@@ -367,6 +372,12 @@ int open_gate_processing(struct image_t *img,float *o_pos_x, float *o_pos_y, flo
   undistort_fisheye_point(center_p,princ_y,&undist_x,&undist_y,f_fisheye,1.150,princ_x,princ_y);
   side_angle_o = atanf(undist_x/f_fisheye);
   
+  // Send to position estimator
+  first_stretch_psi = side_angle_o;
+  first_stretch_certainty = peek_height_o;
+  first_stretch_add = 1;
+
+
   //0.5m 8
   //1m 6
   //1.5m 5
