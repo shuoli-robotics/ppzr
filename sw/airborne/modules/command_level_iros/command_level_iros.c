@@ -66,12 +66,12 @@ enum states_upper_level state_upper_level ;
 // enum maneuver maneuvers[] = {ARC_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
 enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
-float gate_initial_position_y[] = {3.0,2.0,2.0,4.0};
-float turn_point[] = {5.0,2.5,2.5,4.5};
-float gate_initial_heading[] = {00.0/PI*180, 180.0/180*3.14,180.0/180*3.14,90.0/180*3.14};
+float gate_initial_position_y[] = {3.0,3.0,3.0,3.0,3.0};
+float turn_point[] = {6.0,3.5,3.5,3.5,3.5};
+float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
-float gate_altitude[] = {-2.0,-2.3,-2.0,-1.5};
-float open_loop_altitude[] = {-2.0,-2.0,-2.0,-1.5};
+float gate_altitude[] = {-2.3,-2.3,-2.0,-2.0,2.0};
+float open_loop_altitude[] = {-2.3,-2.0,-2.0,-2.0,-2.0};
 
 
 float break_time[] = {0.0,0.0,0.0,0.0};
@@ -88,9 +88,9 @@ float delta_2_arc_angle[] = {180.0/180*3.14,     180.0/180*3.14, 180.0/180*3.14,
 
 int   flag_zig_zag_right[] = {1,0,0};
 int   flag_zig_zag_break[] = {1,1,0};
-float zig_zag_desired_y[] = {6.0,6.0,0};
-float zig_zag_break_time[] = {1.0,0,0};
-float zig_zag_max_roll[] = {10.0/180*3.14,20.0/180*3.14,0};
+float zig_zag_desired_y[] = {0.0,6.0,-6.0,6.0,-6.0};
+float zig_zag_break_time[] = {0.0,1.0,1.0,1.0,1.0};
+float zig_zag_max_roll[] = {10.0/180*3.14,10.0/180*3.14,10.0/180*PI,10.0/180*PI,10.0/180*PI};
 
 
 float stop_and_turn_break_time = 1.0;

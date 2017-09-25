@@ -58,8 +58,8 @@
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 
-# define FAST_TIME 5.5
-# define TURN_TIME 7.5
+# define FAST_TIME 5.3
+# define TURN_TIME 7.3
 
 //most turns until now
 //P 0.4
@@ -503,7 +503,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	}
 	else
 	{
-			double height = open_loop_altitude[race_state.gate_counter]-0.5*time_primitive;
+			double height = open_loop_altitude[race_state.gate_counter]-1.8*time_primitive;
 			/*printf("desired height is %f ----------------\n",height);*/
 			/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
 			set_altitude(height);
