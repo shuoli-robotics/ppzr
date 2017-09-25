@@ -421,11 +421,11 @@ void snake_gate_periodic(void)
       
       
 //     printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
-    debug_5 = 0;
+    //debug_5 = 0;
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
     printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
-    debug_5 = 1;
+    //debug_5 = 1;
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);
    // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);
     //printf("AAAAAAAAA    pos x = %f and pos_y = %f\n",debug_1,debug_2);
