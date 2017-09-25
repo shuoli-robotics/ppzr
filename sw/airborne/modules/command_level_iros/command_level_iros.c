@@ -233,7 +233,7 @@ void second_part_logic()
 					break;
 			case TURN_CM:
 			  /*printf("The arc in first strech is executed__________________!!!!!!!!!!!!!!!!!\n");*/
-					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,0,0))
+					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,1,0))
 					{
 							race_state.gate_counter = 0; // clear gate counter since in arc_open_loop gate_counter++
 							state_upper_level = THIRD_PART;
