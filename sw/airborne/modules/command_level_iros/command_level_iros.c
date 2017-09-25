@@ -118,8 +118,8 @@ void command_run() {
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		state_lower_level = PREPARE_CM; //PREPARE_CM;
-        /*state_lower_level = FAST_TAKE_OFF_CM; //PREPARE_CM;*/
+		/*state_lower_level = PREPARE_CM; //PREPARE_CM;*/
+		state_lower_level = FAST_TAKE_OFF_CM; //PREPARE_CM;
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		state_upper_level = FIRST_PART;
 		/*state_upper_level = FOURTH_PART;*/

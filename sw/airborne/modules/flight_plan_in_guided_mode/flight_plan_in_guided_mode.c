@@ -1138,10 +1138,10 @@ bool take_off_fast(void)
 				set_altitude(TAKE_OFF_ALTITUDE);
 				tf_status.flag_ekf_initialized = FALSE;
 		}
-				guidance_loop_set_theta(-10/57.6);
+				guidance_loop_set_theta(-15/57.6);
 				guidance_loop_set_phi(0);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
-				if (time_primitive > 2.5)
+				if (time_primitive > 8.5)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
 						race_state.flag_in_open_loop = FALSE;
