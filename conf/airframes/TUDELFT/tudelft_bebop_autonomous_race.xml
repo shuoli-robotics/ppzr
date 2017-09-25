@@ -193,13 +193,20 @@
 <define name="ACCEL_Z_SENS" value="2.39465460205" integer="16"/-->
 
 <!-- bebob 13-->
-<define name="ACCEL_X_NEUTRAL" value="88"/>
+<!--define name="ACCEL_X_NEUTRAL" value="88"/>
 <define name="ACCEL_Y_NEUTRAL" value="1"/>
 <define name="ACCEL_Z_NEUTRAL" value="431"/>
 <define name="ACCEL_X_SENS" value="2.45351621526" integer="16"/>
 <define name="ACCEL_Y_SENS" value="2.46197058163" integer="16"/>
-<define name="ACCEL_Z_SENS" value="2.41469039877" integer="16"/>
+<define name="ACCEL_Z_SENS" value="2.41469039877" integer="16"/-->
 
+<!-- bebob 11-->
+<define name="ACCEL_X_NEUTRAL" value="51"/>
+<define name="ACCEL_Y_NEUTRAL" value="-10"/>
+<define name="ACCEL_Z_NEUTRAL" value="-249"/>
+<define name="ACCEL_X_SENS" value="2.44741419177" integer="16"/>
+<define name="ACCEL_Y_SENS" value="2.4449953678" integer="16"/>
+<define name="ACCEL_Z_SENS" value="2.42947575642" integer="16"/>
 
 
   </section>
