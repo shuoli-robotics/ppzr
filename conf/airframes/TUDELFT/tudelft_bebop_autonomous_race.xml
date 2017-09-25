@@ -74,6 +74,12 @@
     <module name="send_imu_mag_current"/>
     <module name="video_thread">
     </module>
+
+    <module name="video_capture">
+       <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
+       <define name="VIDEO_CAPTURE_PATH" value="/data/ftp/internal_000/Left_2m"/>
+    </module>
+
     <module name="sonar_bebop"/>
     <module name="pose_history"/>
 
