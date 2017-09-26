@@ -969,13 +969,13 @@ bool zigzag_2(float zig_zag_break_time,float max_roll,float distance_y)
 		/*printf("Kalman filter y disdance is %f\n",kf_pos_y);*/
 		if(fabs(kf_pos_y)<fabs(distance_y)/2.0)
 		{
-				if(time_temp2 < zig_zag_break_time)
+				if(time_temp2 < zig_zag_break_time )
 				{
-						guidance_loop_set_theta(10.0/180*3.14);
+						guidance_loop_set_theta(5.0/180*3.14);
 				}
 				else
 				{
-						guidance_loop_set_theta(-5.0/180*3.14);
+						guidance_loop_set_theta(0.0/180*3.14);
 				}
 				if (distance_y > 0)
 				{
