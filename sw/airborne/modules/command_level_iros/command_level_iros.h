@@ -72,6 +72,7 @@ struct race_states
 
 		float desired_x_in_first_part;      // decide when to turn: TODO
 		float target_heading;
+		float stop_and_turn_delta_psi;
 };
 
 

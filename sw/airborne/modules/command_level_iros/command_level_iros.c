@@ -64,7 +64,7 @@ enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
 // enum maneuver maneuvers[] = {ARC_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
-enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
+enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,STOP_AND_TURN};
 
 float gate_initial_position_y[] = {3.0,3.0,3.0,3.0,3.0};
 float turn_point[] = {6.0,3.5,3.5,3.5,3.5};
@@ -319,7 +319,17 @@ void third_part_logic()
 				}
 				break;
 			case STOP_TURN_CM:
-				if(stop_turn(stop_and_turn_break_time,90.0/180.0*PI))
+				if(race_state.gate_counter < 1)
+				{
+
+						race_state.stop_and_turn_delta_psi = 90.0/180*PI;
+				}
+				else
+				{
+						race_state.stop_and_turn_delta_psi = -90.0/180*PI;
+
+				}
+				if(stop_turn(stop_and_turn_break_time,race_state.stop_and_turn_delta_psi))
 				{
 						previous_mode = STOP_TURN_CM;
 						race_state.flag_in_open_loop = FALSE;
