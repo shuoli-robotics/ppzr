@@ -67,7 +67,7 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
 float gate_initial_position_y[] = {3.0,3.0,3.0,3.0,3.0};
-float turn_point[] = {6.0,3.5,3.5,3.5,3.5};
+float turn_point[] = {5.0,3.5,3.5,3.5,3.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
 float gate_altitude[] = {-2.5,-2.5,-2.0,-2.0,2.0};
