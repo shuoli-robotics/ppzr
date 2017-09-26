@@ -58,8 +58,8 @@
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 
-# define FAST_TIME 5.3
-# define TURN_TIME 7.3
+# define FAST_TIME 5.2
+# define TURN_TIME 7.2
 
 //most turns until now
 //P 0.4
