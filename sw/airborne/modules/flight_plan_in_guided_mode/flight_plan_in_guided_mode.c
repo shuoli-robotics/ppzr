@@ -61,6 +61,10 @@
 # define FAST_TIME 5.1
 # define TURN_TIME 7.1
 
+float log_pid_error = 0;
+float log_pid_derror = 0;
+
+
 //most turns until now
 //P 0.4
 //D 0.07
@@ -787,6 +791,10 @@ bool go_through_gate(float theta)
 		
 		float D_term = error_y-previous_error_y;
 		race_state.sum_y_error += error_y;
+
+		log_pid_error = error_y;
+		log_pid_derror = ((D_term+prev_D_term)/2.0)*100;
+
 		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
 		/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
 		previous_error_y = error_y;

@@ -78,6 +78,10 @@ struct acceleration{
 		double az;
 };
 
+extern float log_pid_error;
+extern float log_pid_derror;
+
+
 struct arc_open_loop_status{
 
 		double x;
