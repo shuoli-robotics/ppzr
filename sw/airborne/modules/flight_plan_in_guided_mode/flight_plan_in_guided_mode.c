@@ -977,7 +977,7 @@ bool zigzag_2(float zig_zag_break_time,float max_roll,float distance_y)
 		/*printf("Kalman filter y disdance is %f\n",kf_pos_y);*/
     if(time_temp2 < 2.2 )
 		{
-				guidance_loop_set_theta(6.0/180*3.14);
+				guidance_loop_set_theta(9.0/180*3.14);
 
         guidance_loop_set_heading(psi0);
         set_altitude(open_loop_altitude[race_state.gate_counter]);
@@ -993,7 +993,7 @@ bool zigzag_2(float zig_zag_break_time,float max_roll,float distance_y)
 						return FALSE;
 				}
 		}
-		else if (time_temp2 < 4.6 )
+		else if (time_temp2 < 4.4 )
 		{
         guidance_loop_set_phi(0.0);
         guidance_loop_set_theta(0.0/180*3.14);
