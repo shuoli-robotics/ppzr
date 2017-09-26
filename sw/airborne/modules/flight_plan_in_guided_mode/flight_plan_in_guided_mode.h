@@ -70,13 +70,17 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -0.7
+#define TAKE_OFF_ALTITUDE -2.3
 #endif
 struct acceleration{
 		double ax;
 		double ay;
 		double az;
 };
+
+extern float log_pid_error;
+extern float log_pid_derror;
+
 
 struct arc_open_loop_status{
 

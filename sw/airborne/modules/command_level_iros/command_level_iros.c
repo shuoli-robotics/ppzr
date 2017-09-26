@@ -89,7 +89,7 @@ float delta_2_arc_angle[] = {180.0/180*3.14,     180.0/180*3.14, 180.0/180*3.14,
 int   flag_zig_zag_right[] = {1,0,0};
 int   flag_zig_zag_break[] = {1,1,0};
 float zig_zag_desired_y[] = {0.0,5.5,-5.5,5.5,-5.5};
-float zig_zag_break_time[] = {0.0,1.0,0.5,1.0,1.0};
+float zig_zag_break_time[] = {0.0,1.8,1.8,1.8,1.8};
 float zig_zag_max_roll[] = {10.0/180*3.14,10.0/180*3.14,10.0/180*PI,10.0/180*PI,10.0/180*PI};
 
 
@@ -118,8 +118,8 @@ void command_run() {
         time_autopilot_mode = 0;
         primitive_in_use = NO_PRIMITIVE;
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		/*state_lower_level = PREPARE_CM; //PREPARE_CM;*/
-		state_lower_level = FAST_TAKE_OFF_CM; //PREPARE_CM;
+		state_lower_level = PREPARE_CM; //PREPARE_CM;
+		/*state_lower_level = FAST_TAKE_OFF_CM; //PREPARE_CM;*/
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		state_upper_level = FIRST_PART;
 		/*state_upper_level = FOURTH_PART;*/

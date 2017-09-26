@@ -26,7 +26,7 @@
 
 // Gate detection settings:
 int n_samples = 10000;//2000;//1000;//500;
-int min_pixel_size = 30;//55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+int min_pixel_size = 40;//55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
@@ -297,6 +297,12 @@ float detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
     
     //avarage peek height
     float peek_value = (hist_peeks[index[313]] + hist_peeks[index[314]])/2;
+    float peak_ratio_1 = ((float)hist_peeks[index[313]]) / ((float)hist_peeks[index[314]]);
+    float peak_ratio_2 = ((float)hist_peeks[index[314]]) / ((float)hist_peeks[index[313]]);
+    float peak_ratio = (peak_ratio_1 < peak_ratio_2) ? peak_ratio_1 : peak_ratio_2;
+    if(peak_ratio < 0.5) {
+      peek_value = 0.0f;
+    }
     //debug_5 = peek_value;
   
 //     for(int i = 0;i<315;i++){
@@ -663,7 +669,7 @@ int closed_gate_processing(struct image_t *img){
   float side_angle_2 = atanf(undist_x/f_fisheye)+local_psi;
   
   float b = (tanf(side_angle_2)*tanf(side_angle_1))/((tanf(side_angle_1)-tanf(side_angle_2))*tanf(side_angle_1)); //tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
-  y_pos_hist = 0.4+b;//was 0.5
+  y_pos_hist = 0.5+b;//was 0.4
   //float a = 1-b;
   x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   

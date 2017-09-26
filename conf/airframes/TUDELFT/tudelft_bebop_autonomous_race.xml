@@ -63,9 +63,9 @@
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
     <module name="flight_plan_in_guided_mode"/>
-    <!--module name="logger_file">
+    <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000/track_p3p"/>
-    </module-->
+    </module>
     <module name="guidance_loop_velocity_autonomous_race"/>
     <module name="state_autonomous_race"/>
     <!--module name="kalman_filter"/-->
@@ -202,8 +202,8 @@
 <define name="ACCEL_Y_SENS" value="2.46197058163" integer="16"/>
 <define name="ACCEL_Z_SENS" value="2.41469039877" integer="16"/-->
 
-<!-- bebob 11-->
-<define name="ACCEL_X_NEUTRAL" value="75"/>
+<!-- bebob 18-->
+<define name="ACCEL_X_NEUTRAL" value="0"/>
 <define name="ACCEL_Y_NEUTRAL" value="-10"/>
 <define name="ACCEL_Z_NEUTRAL" value="-249"/>
 <define name="ACCEL_X_SENS" value="2.44741419177" integer="16"/>
