@@ -768,7 +768,7 @@ bool go_through_gate(float theta)
 				race_state.flag_in_open_loop = FALSE;
 				states_race.attitude_control = TRUE;
 				prev_D_term = 0.0;
-				previous_error_y = 0.0;
+				previous_error_y = -kf_pos_y;
 				counter_temp2 = 0;
 				time_temp2 = 0;
 		}
@@ -793,12 +793,14 @@ bool go_through_gate(float theta)
 		race_state.sum_y_error += error_y;
 
 		log_pid_error = error_y;
-		log_pid_derror = ((D_term+prev_D_term)/2.0)*100;
 
-		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		prev_D_term = (prev_D_term * (1.0f-0.005f) + D_term*0.005f);
+    log_pid_derror = prev_D_term; //((D_term+prev_D_term)/2.0)*100;
+
+		float desired_phi = KP_Y*error_y+KD_Y*(prev_D_term)*100+KI_Y*race_state.sum_y_error;
 		/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
 		previous_error_y = error_y;
-		previous_D_term = D_term;
+		//previous_D_term = D_term;
 		if(desired_phi > MAX_PHI)
 				desired_phi = MAX_PHI;
 		else if (desired_phi < -MAX_PHI)
