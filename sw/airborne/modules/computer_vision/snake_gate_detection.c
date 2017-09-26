@@ -260,6 +260,10 @@ void initialize_EKF(){
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
     MAT_PRINT(7, 7,P_k_1_k_1_d);
+    for(int i = 0; i < 7; i++)
+    {
+      P_k_1_k_1_d[i][i] = 1.5f;
+    }
     //debug_5 = gate_dist_x;
 }
 
