@@ -259,6 +259,13 @@ void initialize_EKF(){
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
+    // TODO: increase uncertainty
+    int reset_uncertainty = 1;
+    if(reset_uncertainty) {
+      for(int i = 0; i < 7; i++) {
+	P_k_1_k_1_d[i][i] = 1.0f;
+      }
+    }
     MAT_PRINT(7, 7,P_k_1_k_1_d);
     for(int i = 0; i < 7; i++)
     {
@@ -307,6 +314,7 @@ void snake_gate_periodic(void)
   
   
   if(race_state.flag_in_open_loop == TRUE || autopilot_mode == 4){
+    // TODO: really no observations?
     last_open_loop_time = time_now;
     run_ekf = 0;
     printf("open loop true %d !!!!!!!!!!!!!!!!!!!!!!!!\n",race_state.flag_in_open_loop );
