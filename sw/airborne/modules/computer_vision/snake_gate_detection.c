@@ -260,7 +260,7 @@ void initialize_EKF(){
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
     MAT_PRINT(7, 7,P_k_1_k_1_d);
-    debug_5 = gate_dist_x;
+    //debug_5 = gate_dist_x;
 }
 
 void init_next_open_gate(){
@@ -364,6 +364,9 @@ void snake_gate_periodic(void)
     debug_3 = x_pos_hist;
     debug_4 = y_pos_hist;
    }
+   
+   debug_5 = ls_pos_y;
+   
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
    //debug_5 = u_k[2][0];
@@ -442,14 +445,24 @@ void snake_gate_periodic(void)
       //xy-position in local gate frame(ls, or histogram)
       
       //if histogram detection measures close proximity to the gate, switch to histogram method
-      if(hist_sample){
-	local_x = gate_dist_x - x_pos_hist;
-	local_y = y_pos_hist;
+//       if(hist_sample){
+// 	local_x = gate_dist_x - x_pos_hist;
+// 	local_y = y_pos_hist;
+// 	hist_sample = 0;
+// 	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
+//       }else{
+// 	local_x = ls_pos_x;
+// 	local_y = ls_pos_y;
+//       }
+      if(vision_sample){
+	local_x = ls_pos_x;
+	local_y = ls_pos_y;
 	hist_sample = 0;
 	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
       }else{
-	local_x = ls_pos_x;
-	local_y = ls_pos_y;
+	local_x = gate_dist_x - x_pos_hist;
+	local_y = y_pos_hist;
+	hist_sample = 0;
       }
       
 // 	   debug_3 = local_x;

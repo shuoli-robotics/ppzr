@@ -663,7 +663,7 @@ int closed_gate_processing(struct image_t *img){
   float side_angle_2 = atanf(undist_x/f_fisheye)+local_psi;
   
   float b = (tanf(side_angle_2)*tanf(side_angle_1))/((tanf(side_angle_1)-tanf(side_angle_2))*tanf(side_angle_1)); //tanf(side_angle_1)/(tanf(side_angle_2)-tanf(side_angle_1));
-  y_pos_hist = 0.4+b;//was 0.5
+  y_pos_hist = 0.7+b;//was 0.4
   //float a = 1-b;
   x_pos_hist = b/tanf(-side_angle_2);//(0.5+y_pos_hist)/tanf(-side_angle_1);// tanf(side_angle_2)*b;
   
