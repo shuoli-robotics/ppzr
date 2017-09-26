@@ -795,7 +795,15 @@ bool go_through_gate(float theta)
 		log_pid_error = error_y;
 		log_pid_derror = ((D_term+prev_D_term)/2.0)*100;
 
-		float desired_phi = KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		float desired_phi;
+		if ((fabs(kf_pos_x - gate_initial_position_y[race_state.gate_counter])>0.5))
+		{
+		  desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		}
+		else
+		{
+		  desired_phi = 0;
+		}
 		/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
 		previous_error_y = error_y;
 		previous_D_term = D_term;
