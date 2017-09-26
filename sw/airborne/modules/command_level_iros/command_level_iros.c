@@ -88,8 +88,8 @@ float delta_2_arc_angle[] = {180.0/180*3.14,     180.0/180*3.14, 180.0/180*3.14,
 
 int   flag_zig_zag_right[] = {1,0,0};
 int   flag_zig_zag_break[] = {1,1,0};
-float zig_zag_desired_y[] = {0.0,6.0,-6.0,6.0,-6.0};
-float zig_zag_break_time[] = {0.0,1.0,1.0,1.0,1.0};
+float zig_zag_desired_y[] = {0.0,5.0,-5.0,5.0,-5.0};
+float zig_zag_break_time[] = {0.0,1.0,0.5,1.0,1.0};
 float zig_zag_max_roll[] = {10.0/180*3.14,10.0/180*3.14,10.0/180*PI,10.0/180*PI,10.0/180*PI};
 
 
