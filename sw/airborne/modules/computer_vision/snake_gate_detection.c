@@ -445,25 +445,25 @@ void snake_gate_periodic(void)
       //xy-position in local gate frame(ls, or histogram)
       
       //if histogram detection measures close proximity to the gate, switch to histogram method
-//       if(hist_sample){
-// 	local_x = gate_dist_x - x_pos_hist;
-// 	local_y = y_pos_hist;
-// 	hist_sample = 0;
-// 	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
-//       }else{
-// 	local_x = ls_pos_x;
-// 	local_y = ls_pos_y;
-//       }
-      if(vision_sample){
-	local_x = ls_pos_x;
+       if(hist_sample){
+ 	local_x = gate_dist_x - x_pos_hist;
+ 	local_y = y_pos_hist;
+ 	hist_sample = 0;
+ 	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
+       }else{
+ 	local_x = ls_pos_x;
 	local_y = ls_pos_y;
-	hist_sample = 0;
-	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
-      }else{
-	local_x = gate_dist_x - x_pos_hist;
-	local_y = y_pos_hist;
-	hist_sample = 0;
-      }
+       }
+//      if(vision_sample){
+//	local_x = ls_pos_x;
+//	local_y = ls_pos_y;
+//	hist_sample = 0;
+//	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
+//      }else{
+//	local_x = gate_dist_x - x_pos_hist;
+//	local_y = y_pos_hist;
+//	hist_sample = 0;
+//      }
       
 // 	   debug_3 = local_x;
 // 	   debug_4 = local_y;
