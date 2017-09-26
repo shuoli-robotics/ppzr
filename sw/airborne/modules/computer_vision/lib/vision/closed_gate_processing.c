@@ -297,6 +297,12 @@ float detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
     
     //avarage peek height
     float peek_value = (hist_peeks[index[313]] + hist_peeks[index[314]])/2;
+    float peak_ratio_1 = ((float)hist_peeks[index[313]]) / ((float)hist_peeks[index[314]]);
+    float peak_ratio_2 = ((float)hist_peeks[index[314]]) / ((float)hist_peeks[index[313]]);
+    float peak_ratio = (peak_ratio_1 < peak_ratio_2) ? peak_ratio_1 : peak_ratio_2;
+    if(peak_ratio < 0.5) {
+      peek_value = 0.0f;
+    }
     //debug_5 = peek_value;
   
 //     for(int i = 0;i<315;i++){
