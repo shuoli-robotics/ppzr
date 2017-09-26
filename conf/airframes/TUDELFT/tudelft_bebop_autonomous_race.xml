@@ -170,8 +170,14 @@
     <define name="MAG_Y_CURRENT_COEF" value="0.0"/>
     <define name="MAG_Z_CURRENT_COEF" value="0.0"/>
 
-    <define name="BODY_TO_IMU_PHI" value="-0.8" unit="deg"/>
+<!-- bebob 13-->
+    <!--define name="BODY_TO_IMU_PHI" value="-0.8" unit="deg"/>
     <define name="BODY_TO_IMU_THETA" value="1.0" unit="deg"/>
+    <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/-->
+
+<!-- bebob 11-->
+    <define name="BODY_TO_IMU_PHI" value="0.0" unit="deg"/>
+    <define name="BODY_TO_IMU_THETA" value="0.0" unit="deg"/>
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
 
    <!--define name="ACCEL_X_NEUTRAL" value="23"/>
@@ -197,20 +203,20 @@
 <define name="ACCEL_Z_SENS" value="2.41469039877" integer="16"/-->
 
 <!-- bebob 11-->
-<!--define name="ACCEL_X_NEUTRAL" value="51"/>
+<define name="ACCEL_X_NEUTRAL" value="75"/>
 <define name="ACCEL_Y_NEUTRAL" value="-10"/>
 <define name="ACCEL_Z_NEUTRAL" value="-249"/>
 <define name="ACCEL_X_SENS" value="2.44741419177" integer="16"/>
 <define name="ACCEL_Y_SENS" value="2.4449953678" integer="16"/>
-<define name="ACCEL_Z_SENS" value="2.42947575642" integer="16"/-->
+<define name="ACCEL_Z_SENS" value="2.42947575642" integer="16"/>
 
 <!-- bebob 13-->
-<define name="ACCEL_X_NEUTRAL" value="70"/>
+<!--define name="ACCEL_X_NEUTRAL" value="70"/>
 <define name="ACCEL_Y_NEUTRAL" value="0"/>
 <define name="ACCEL_Z_NEUTRAL" value="319"/>
 <define name="ACCEL_X_SENS" value="2.42493047571" integer="16"/>
 <define name="ACCEL_Y_SENS" value="2.44387781356" integer="16"/>
-<define name="ACCEL_Z_SENS" value="2.42504133741" integer="16"/>
+<define name="ACCEL_Z_SENS" value="2.42504133741" integer="16"/-->
 
 
   </section>
