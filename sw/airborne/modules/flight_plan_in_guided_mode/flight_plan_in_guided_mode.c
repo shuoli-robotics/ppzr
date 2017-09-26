@@ -972,85 +972,42 @@ bool zigzag_2(float zig_zag_break_time,float max_roll,float distance_y)
 				initialize_EKF();
 		}
 
-		/*if(time_temp2 < zig_zag_break_time)*/
-		/*{*/
-				/*guidance_loop_set_phi(0.0); */
-				/*guidance_loop_set_heading(psi0);*/
-				/*[>guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);<]*/
-				/*set_altitude(gate_altitude[race_state.gate_counter]);*/
-				/*return FALSE;*/
-		/*}*/
 
 		/*printf("zigzag_2 desired_y is %f\n",distance_y);*/
 		/*printf("Kalman filter y disdance is %f\n",kf_pos_y);*/
-		if(fabs(kf_pos_y)<fabs(distance_y)/2.0)
+    if(time_temp2 < 2.2 )
 		{
-				if(time_temp2 < zig_zag_break_time )
-				{
-						guidance_loop_set_theta(6.0/180*3.14);
-				}
-				else
-				{
-						guidance_loop_set_theta(0.0/180*3.14);
-				}
+				guidance_loop_set_theta(6.0/180*3.14);
+
+        guidance_loop_set_heading(psi0);
+        set_altitude(open_loop_altitude[race_state.gate_counter]);
+
 				if (distance_y > 0)
 				{
 						guidance_loop_set_phi(max_roll); 
-						guidance_loop_set_heading(psi0);
-						/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
-						set_altitude(open_loop_altitude[race_state.gate_counter]);	
 						return FALSE;
 				}
 				else
 				{
 						guidance_loop_set_phi(-max_roll); 
-						guidance_loop_set_heading(psi0);
-						/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
-						set_altitude(open_loop_altitude[race_state.gate_counter]);	
 						return FALSE;
 				}
 		}
-		else
+		else if (time_temp2 < 4.6 )
 		{
-				if (distance_y > 0)
-				{
-						guidance_loop_set_theta(0.0/180*3.14);
-						guidance_loop_set_phi(-max_roll/3.0); 
-						guidance_loop_set_heading(psi0);
-						set_altitude(open_loop_altitude[race_state.gate_counter]);	
-						/*guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);*/
-						if(fabs(distance_y-kf_pos_y)<0.6)
-						{
-								race_state.gate_counter++;
-								race_state.flag_in_open_loop = FALSE;
-								initialize_EKF();
-								return TRUE;
-						}
-						else
-						{
-								return FALSE;
-						}
-				}
-				else
-				{
-						guidance_loop_set_theta(0.0/180*3.14);
-						guidance_loop_set_phi(max_roll/3.0); 
-						guidance_loop_set_heading(psi0);
-						/*guidance_v_set_guided_z(open_loop_altitude[race_state.gate_counter]);*/
-						set_altitude(open_loop_altitude[race_state.gate_counter]);
-						if(fabs(distance_y-kf_pos_y)<0.6)
-						{
-								race_state.gate_counter++;
-								race_state.flag_in_open_loop = FALSE;
-								initialize_EKF();
-								return TRUE;
-						}
-						else
-						{
-								return FALSE;
-						}
-				}
+        guidance_loop_set_phi(0.0);
+        guidance_loop_set_theta(0.0/180*3.14);
+        guidance_loop_set_heading(psi0);
+        set_altitude(open_loop_altitude[race_state.gate_counter]);
 
+        return FALSE;
+		}
+		else // time more than 4.6
+		{
+      race_state.gate_counter++;
+      race_state.flag_in_open_loop = FALSE;
+      initialize_EKF();
+      return TRUE;
 		}
 
 }
