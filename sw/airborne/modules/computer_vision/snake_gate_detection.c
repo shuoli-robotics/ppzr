@@ -393,11 +393,11 @@ void snake_gate_periodic(void)
     
     if(X_int[0][0] > (gate_dist_x - 0.3))vision_sample = 0;//-----------------------------------------------------------???????????????
    
-    if(X_int[0][0] > gate_dist_x + 0.2 && run_ekf_m == 0){
+/*    if(X_int[0][0] > gate_dist_x + 0.2 && run_ekf_m == 0){
       run_ekf_m = 1;
       printf("run_ekf_m = 1;--------------------------------------------------\n");
     }
-    
+  */
     
       ekf_sonar_update = 0;
     
