@@ -503,10 +503,21 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	}
 	else
 	{
-			double height = open_loop_altitude[race_state.gate_counter]-1.8*time_primitive;
-			/*printf("desired height is %f ----------------\n",height);*/
-			/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
-			set_altitude(height);
+			if (state_upper_level == SECOND_PART)
+			{
+					double height = -2.3; 
+					/*printf("desired height is %f ----------------\n",height);*/
+					/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
+					set_altitude(height);
+
+			}
+			else
+			{
+					double height = open_loop_altitude[race_state.gate_counter]-1.8*time_primitive;
+					/*printf("desired height is %f ----------------\n",height);*/
+					/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
+					set_altitude(height);
+			}
 	}
 
 
