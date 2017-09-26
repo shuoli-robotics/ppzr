@@ -251,6 +251,12 @@ void third_part_logic()
 	switch(state_lower_level)
 	{
 			case GO_STRAIGHT_CM:
+        if (race_state.gate_counter == 4)
+                            {
+                             state_upper_level =  FOURTH_PART;
+                             state_lower_level = GO_STRAIGHT_CM;
+                             break;
+                            }
 					if (go_through_gate(-5.0/180*PI))
 					{
 							if(maneuvers[race_state.gate_counter] == ARC_L || maneuvers[race_state.gate_counter] == ARC_R ) 
