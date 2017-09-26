@@ -70,8 +70,8 @@ float gate_initial_position_y[] = {3.0,3.0,3.0,3.0,3.0};
 float turn_point[] = {6.0,3.5,3.5,3.5,3.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
-float gate_altitude[] = {-2.3,-2.3,-2.0,-2.0,2.0};
-float open_loop_altitude[] = {-2.3,-2.0,-2.0,-2.0,-2.0};
+float gate_altitude[] = {-2.5,-2.5,-2.0,-2.0,2.0};
+float open_loop_altitude[] = {-2.5,-2.0,-2.0,-2.0,-2.0};
 
 
 float break_time[] = {0.0,0.0,0.0,0.0};
@@ -88,7 +88,7 @@ float delta_2_arc_angle[] = {180.0/180*3.14,     180.0/180*3.14, 180.0/180*3.14,
 
 int   flag_zig_zag_right[] = {1,0,0};
 int   flag_zig_zag_break[] = {1,1,0};
-float zig_zag_desired_y[] = {0.0,5.0,-5.0,5.0,-5.0};
+float zig_zag_desired_y[] = {0.0,5.5,-5.5,5.5,-5.5};
 float zig_zag_break_time[] = {0.0,1.0,0.5,1.0,1.0};
 float zig_zag_max_roll[] = {10.0/180*3.14,10.0/180*3.14,10.0/180*PI,10.0/180*PI,10.0/180*PI};
 

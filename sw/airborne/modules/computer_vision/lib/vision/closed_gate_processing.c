@@ -26,7 +26,7 @@
 
 // Gate detection settings:
 int n_samples = 10000;//2000;//1000;//500;
-int min_pixel_size = 55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+int min_pixel_size = 30;//55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
