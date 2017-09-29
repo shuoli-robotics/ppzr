@@ -400,7 +400,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 		arc_status.phi_cmd = stateGetNedToBodyEulers_f()->phi;
 		arc_status.theta_cmd = desired_theta;
         arc_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
-		
+        race_state.flag_in_open_loop = TRUE;
 		float cruise_speed = 1.8;//1.3;//2.0;
 	
 	

@@ -177,7 +177,7 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
 
   float phi_s = stateGetNedToBodyEulers_f()->phi;
   float theta_s = stateGetNedToBodyEulers_f()->theta;
-  float psi_s = stateGetNedToBodyEulers_f()->psi;
+  float psi_s = 0; // stateGetNedToBodyEulers_f()->psi;
   
   float p_s = stateGetBodyRates_f()->p;
   float q_s = stateGetBodyRates_f()->q;
