@@ -26,7 +26,7 @@
 
 // Gate detection settings:
 int n_samples = 10000;//2000;//1000;//500;
-int min_pixel_size = 55;//55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+int min_pixel_size = 30;//55;//55;//30;////30;//20;//40;//100;//TODO MAKE VARIABLE FOR CLIMBING TURN??///////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 float min_gate_quality = 0.15;//0.2;
 float gate_thickness = 0;//0.05;//0.10;//
 float gate_size = 34;
@@ -809,7 +809,7 @@ int closed_gate_processing(struct image_t *img){
 	
 	
 	//for(int i = 0;i<4;i++)
-	for(int i = 1;i<3;i++)
+	for(int i = 1;i<4;i++)
 	{
 	  float undist_x, undist_y;
 	  //debug_1 = (float)best_gate.x_corners[i];// best_gate.y_corners[i]
@@ -1279,6 +1279,8 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
   float min_ratio_side = 0.30;
   (*n_sides) = 0;
 
+  float min_segment_length = min_pixel_size;//30
+
   // check the four lines of which the gate consists:
   struct point_t from, to;
   
@@ -1287,7 +1289,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
     to.x = gate.x_corners[1];
     to.y = gate.y_corners[1];
     check_line(im, from, to, &np, &nc);
-    if ((float) nc / (float) np >= min_ratio_side) {
+    if ((float) nc / (float) np >= min_ratio_side && check_segment_length(from, to) > min_segment_length) {
       (*n_sides)++;
     }
     n_points += np;
@@ -1298,7 +1300,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
     to.x = gate.x_corners[2];
     to.y = gate.y_corners[2];
     check_line(im, from, to, &np, &nc);
-    if ((float) nc / (float) np >= min_ratio_side) {
+    if ((float) nc / (float) np >= min_ratio_side && check_segment_length(from, to) > min_segment_length) {
       (*n_sides)++;
     }
     n_points += np;
@@ -1309,7 +1311,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
     to.x = gate.x_corners[3];
     to.y = gate.y_corners[3];
     check_line(im, from, to, &np, &nc);
-    if ((float) nc / (float) np >= min_ratio_side) {
+    if ((float) nc / (float) np >= min_ratio_side && check_segment_length(from, to) > min_segment_length) {
       (*n_sides)++;
     }
     n_points += np;
@@ -1320,7 +1322,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
     to.x = gate.x_corners[0];
     to.y = gate.y_corners[0];
     check_line(im, from, to, &np, &nc);
-    if ((float) nc / (float) np >= min_ratio_side) {
+    if ((float) nc / (float) np >= min_ratio_side && check_segment_length(from, to) > min_segment_length) {
       (*n_sides)++;
     }
     /*else{
@@ -1480,6 +1482,11 @@ extern void check_gate(struct image_t *im, struct gate_img gate, float *quality,
   
 }
 
+float check_segment_length(struct point_t Q1, struct point_t Q2){
+  
+  float r = sqrt((Q1.x-Q2.x)*(Q1.x-Q2.x)+(Q1.y-Q2.y)*(Q1.y-Q2.y));
+  return r;
+}
 
 void check_line(struct image_t *im, struct point_t Q1, struct point_t Q2, int *n_points, int *n_colored_points)
 {

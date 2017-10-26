@@ -70,8 +70,11 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -0.7
+#define TAKE_OFF_ALTITUDE -1.4
 #endif
+
+#define TURN_POINT 3.6
+
 struct acceleration{
 		double ax;
 		double ay;

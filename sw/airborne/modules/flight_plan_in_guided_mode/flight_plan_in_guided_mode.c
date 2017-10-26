@@ -54,12 +54,14 @@
 
 #define KP_Y 0.35//40 //was 0.4
 #define KI_Y -0.00
-#define KD_Y 0.30  //0.3//0.2//0.04//0.10//was0.15// 0.2
+#define KD_Y 0.40 //0.30//0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
 
 
-# define FAST_TIME 5.1
-# define TURN_TIME 7.1
+// # define FAST_TIME 5.1
+// # define TURN_TIME 7.1
+# define FAST_TIME 0.5
+# define TURN_TIME 1.5
 
 float log_pid_error = 0;
 float log_pid_derror = 0;
@@ -509,7 +511,8 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	{
 			if (state_upper_level == SECOND_PART)
 			{
-					double height = -2.3; 
+// 					double height = -2.3; 
+					double height = -1.4; 
 					/*printf("desired height is %f ----------------\n",height);*/
 					/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
 					set_altitude(height);
@@ -796,14 +799,16 @@ bool go_through_gate(float theta)
 		log_pid_derror = ((D_term+prev_D_term)/2.0)*100;
 
 		float desired_phi;
-		if (kf_pos_x - gate_initial_position_y[race_state.gate_counter]<-0.5)
-		{
-		  desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
-		}
-		else
-		{
-		  desired_phi = 0;
-		}
+// 		if (kf_pos_x - gate_initial_position_y[race_state.gate_counter]<-0.5)
+// 		{
+// 		  desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+// 		}
+// 		else
+// 		{
+// 		  desired_phi = 0;
+// 		}
+		desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		
 		/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
 		previous_error_y = error_y;
 		previous_D_term = D_term;
@@ -818,8 +823,9 @@ bool go_through_gate(float theta)
 		guidance_loop_set_phi(desired_phi); 
 		guidance_loop_set_heading(psi0);
 		/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
-		set_altitude(gate_altitude[race_state.gate_counter]);	
-		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
+		set_altitude(TAKE_OFF_ALTITUDE);//gate_altitude[race_state.gate_counter]);	
+// 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
+		if (fabs(kf_pos_x - TURN_POINT)<0.05)
 		{
 				return TRUE;
 				/*printf("exit go through mode\n");*/
@@ -1135,7 +1141,8 @@ bool take_off_fast(void)
 		}
 		if (time_primitive < FAST_TIME)
 		{
-				guidance_loop_set_theta(-13/57.6);
+// 				guidance_loop_set_theta(-13/57.6);
+				guidance_loop_set_theta(-0/57.6);//normal attitude again
 				guidance_loop_set_phi(0);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 		}

@@ -246,12 +246,12 @@ void initialize_EKF(){
     //also reset gate position
     gate_heading = gate_initial_heading[race_state.gate_counter];
     gate_distance = gate_initial_position_y[race_state.gate_counter];
-    if(race_state.gate_counter < -1){
+    if(0){//race_state.gate_counter < -1){
 	  gate_size_m = 1.4;
         printf("LARGE GATE\n");
       /*gate_size_m = 1.0;*/
     }else{
-      gate_size_m = 1.4; //after second gate, switch to smaller gates
+      gate_size_m = 1.0; //after second gate, switch to smaller gates
         printf("SMALL GATE\n");
     }
     run_ekf_m = 1;
@@ -371,8 +371,9 @@ void snake_gate_periodic(void)
     debug_4 = y_pos_hist;
    }
    
-   debug_5 = ls_pos_y;
-   
+   if(vision_sample){
+    debug_5 = ls_pos_y;
+   }
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
    //debug_5 = u_k[2][0];
@@ -425,7 +426,7 @@ void snake_gate_periodic(void)
       //If in first stretch limit detection distance///////////////////////////
       if(ls_pos_x < -1.5)vision_sample = 0;//;run_ekf_m = 0;
 
-
+    
     //hist_sample = 0;///////////////////////////////////////////////////////////////////////////////////////
       
       

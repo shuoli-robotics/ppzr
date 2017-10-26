@@ -41,6 +41,7 @@
 #include "subsystems/ahrs/ahrs_int_cmpl_quat.h"
 //#include "boards/bebop/actuators.h"
 #include "modules/computer_vision/snake_gate_detection.h"
+#include "modules/computer_vision/lib/vision/closed_gate_processing.h"
 #include "modules/sonar/sonar_bebop.h"
 
 /** Set the default File logger path to the USB drive */
@@ -124,7 +125,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d, %d,%d,%d,%d,%d,%d,%d,%d,%d,  %f,%f,%f,%f, %f,%f,%f,%f,%f,%f,%f, %f,%f,%f, %f,%f,     %d,%f,%f\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,   %f,%f,%f,%f, %f,%f,%f,%f,%f,%f,%f, %f,%f,%f, %f,%f,     %d,%f,%f\n",
 
           counter,
 	  
@@ -187,7 +188,7 @@ void file_logger_periodic(void)
 	  snake_res_y,
 	  snake_res_z,
 	  distance_after_filter//*///sonar in meters filtered 
-/*	  gate_img_point_x_1,
+	  gate_img_point_x_1,
 	  gate_img_point_y_1,
 	  gate_img_point_x_2,
 	  gate_img_point_y_2,
@@ -195,7 +196,7 @@ void file_logger_periodic(void)
 	  gate_img_point_y_3,
 	  gate_img_point_x_4,
 	  gate_img_point_y_4,
-*/	  //snake_res_y,
+	  //snake_res_y,
 	  //snake_res_z,
 	  distance_after_filter,
 	  ls_pos_x,

@@ -207,7 +207,7 @@ void first_part_logic()
 			if(take_off_fast())
 			{
 				previous_lower_level = FAST_TAKE_OFF_CM;
-				state_lower_level =  TURN_CM;
+				state_lower_level =  GO_STRAIGHT_CM;//TURN_CM;
 				state_upper_level =  SECOND_PART;
 			}
 			break;
@@ -225,7 +225,7 @@ void second_part_logic()
 
 			case GO_STRAIGHT_CM:
 					//printf("go straght !!!!!!!!!!!\n");
-					if (go_through_open_gate(-5.0/180*PI,race_state.desired_x_in_first_part))
+					if (go_through_gate(-5.0/180*PI))//go_through_open_gate(-5.0/180*PI,race_state.desired_x_in_first_part))
 					{ 
 							state_lower_level =  TURN_CM;
 							race_state.flag_in_open_loop = TRUE;
@@ -233,11 +233,11 @@ void second_part_logic()
 					break;
 			case TURN_CM:
 			  /*printf("The arc in first strech is executed__________________!!!!!!!!!!!!!!!!!\n");*/
-					if(arc_open_loop(2.0,-5.0/180*3.14,90.0/180*PI,1,1))
+					if(arc_open_loop(1.2,-5.0/180*3.14,180.0/180*PI,1,1))
 					{
 							race_state.gate_counter = 0; // clear gate counter since in arc_open_loop gate_counter++
-							state_upper_level = THIRD_PART;
-							/*state_upper_level = SECOND_PART;*/
+							//state_upper_level = THIRD_PART;
+							state_upper_level = SECOND_PART;
 							state_lower_level = GO_STRAIGHT_CM;
 					}
 

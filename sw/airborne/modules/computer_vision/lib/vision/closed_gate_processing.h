@@ -75,6 +75,8 @@ void draw_cross(struct image_t *im,int x, int y, uint8_t* color);
 void check_color_center(struct image_t *im, uint8_t *y_c, uint8_t *cb_c, uint8_t *cr_c);
 uint16_t image_yuv422_set_color(struct image_t *input, struct image_t *output, int x, int y);
 
+float check_segment_length(struct point_t Q1, struct point_t Q2);
+
 int closed_gate_processing(struct image_t *img);
 
 int color_count;
