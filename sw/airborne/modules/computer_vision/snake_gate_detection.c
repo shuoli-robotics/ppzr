@@ -311,7 +311,7 @@ void snake_gate_periodic(void)
     // TODO: really no observations?
     last_open_loop_time = time_now;
     run_ekf = 0;
-    printf("open loop true %d !!!!!!!!!!!!!!!!!!!!!!!!\n",race_state.flag_in_open_loop );
+    //printf("open loop true %d !!!!!!!!!!!!!!!!!!!!!!!!\n",race_state.flag_in_open_loop );
   }else{
     run_ekf = 1;
   }

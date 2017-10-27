@@ -403,8 +403,10 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 		arc_status.theta_cmd = desired_theta;
         arc_status.psi_cmd= stateGetNedToBodyEulers_f()->psi;
         race_state.flag_in_open_loop = TRUE;
-		float cruise_speed = 1.8;//1.3;//2.0;
-	
+	float v_x_e = stateGetSpeedNed_f()->x;
+	float v_y_e = stateGetSpeedNed_f()->y;
+	float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;//1.8;//1.3;//2.0;
+	printf("cruise_speed:%f\n",cruise_speed);
 	
 		arc_status.v_x_f = cruise_speed; 
 		arc_status.v_y_f = 0; 
@@ -762,7 +764,13 @@ bool go_through_gate(float theta)
 		{
 
 				primitive_in_use = GO_THROUGH_GATE;
-				psi0 = stateGetNedToBodyEulers_f()->psi;
+				//psi0 = stateGetNedToBodyEulers_f()->psi;
+				//for now make the heading flip 
+				if(fabs(stateGetNedToBodyEulers_f()->psi)<(3.14/2)){
+				  psi0 = 0;
+				}else{
+				  psi0 = 3.14;
+				}
 				z0 = stateGetPositionNed_f()->z;
 				counter_primitive = 0;
 				time_primitive = 0;

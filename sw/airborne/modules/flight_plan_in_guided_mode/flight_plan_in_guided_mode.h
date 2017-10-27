@@ -73,7 +73,7 @@
 #define TAKE_OFF_ALTITUDE -1.4
 #endif
 
-#define TURN_POINT 3.6
+#define TURN_POINT 3.5
 
 struct acceleration{
 		double ax;
