@@ -94,7 +94,7 @@ float prev_ls_pos_x = 0;
 float prev_ls_pos_y = 0;
 
 //KF 
-
+float X_dot[7][1] = {{0}};
 float X_int[7][1] = {{0}};
 
 
@@ -318,7 +318,13 @@ void snake_gate_periodic(void)
   
    
   if(run_ekf){
-      EKF_propagate_state(X_int,X_int,EKF_dt,u_k);
+    float v_x_e = stateGetSpeedNed_f()->x;
+    float v_y_e = stateGetSpeedNed_f()->y;
+    float psi = stateGetNedToBodyEulers_f()->psi;
+    float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;
+    EKF_propagate_state(X_dot,X_int,X_int,EKF_dt,u_k);
+    debug_4 = cruise_speed;
+    debug_5 = X_dot[0][0];//x speed
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
@@ -368,11 +374,11 @@ void snake_gate_periodic(void)
 //     debug_4 = ls_pos_y;
    if(hist_sample){
     debug_3 = x_pos_hist;
-    debug_4 = y_pos_hist;
+    //debug_4 = y_pos_hist;
    }
    
    if(vision_sample){
-    debug_5 = ls_pos_y;
+    //debug_5 = ls_pos_y;
    }
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];

@@ -100,7 +100,7 @@ void EKF_init_diag(float A[7][7], float diag[7]){
   }
 }
 
-void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, float u_k[8][1]){
+void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7][1], float dt, float u_k[8][1]){
   
 //    dt = time_stamp(n)-time_stamp(n-1);
 //    omega = [gyro_p(n) gyro_q(n)];
@@ -118,7 +118,7 @@ void EKF_propagate_state(float x_prev[7][1], float new_state[7][1], float dt, fl
   
   float x[7];
   float u[8];
-  float xdot[7][1];
+  //float xdot[7][1];
   
   //copy x into 1d array
   for(int i = 0;i < 7; i++){
