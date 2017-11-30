@@ -625,7 +625,7 @@ int closed_gate_processing(struct image_t *img){
   previous_best_gate.n_sides = best_gate.n_sides;
   
     //color filtered version of image for overlay and debugging
-  if (0){//filter) {
+  if (1){//filter) {
     int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
@@ -1276,7 +1276,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
   int np, nc;
     
   // how much of the side should be visible to count as a detected side?
-  float min_ratio_side = 0.30;
+  float min_ratio_side = 0.5;//0.30;
   (*n_sides) = 0;
 
   float min_segment_length = min_pixel_size;//30

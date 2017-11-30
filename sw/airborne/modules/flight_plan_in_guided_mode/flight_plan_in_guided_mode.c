@@ -52,16 +52,18 @@
 // #define KI_Y 0.0
 // #define KD_Y 0.2
 
-#define KP_Y 0.35//40 //was 0.4
+#define KP_Y 0.45//0.35 //was 0.4
 #define KI_Y -0.00
-#define KD_Y 0.40 //0.30//0.2//0.04//0.10//was0.15// 0.2
-#define MAX_PHI  30.0/180*3.14//was 15 then 25 deg
+#define KD_Y 0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
+#define MAX_PHI  25.0/180*3.14//was 15 then 25 deg
 
 
 // # define FAST_TIME 5.1
 // # define TURN_TIME 7.1
 # define FAST_TIME 0.5
 # define TURN_TIME 1.5
+
+#define USE_OPTITRACK_SPEED 0
 
 float log_pid_error = 0;
 float log_pid_derror = 0;
@@ -405,8 +407,13 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
         race_state.flag_in_open_loop = TRUE;
 	float v_x_e = stateGetSpeedNed_f()->x;
 	float v_y_e = stateGetSpeedNed_f()->y;
+#if USE_OPTITRACK_SPEED
 	float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;//1.8;//1.3;//2.0;
+#else
+	float cruise_speed = 1.7;//was 1.7
 	printf("cruise_speed:%f\n",cruise_speed);
+#endif
+	
 	
 		arc_status.v_x_f = cruise_speed; 
 		arc_status.v_y_f = 0; 

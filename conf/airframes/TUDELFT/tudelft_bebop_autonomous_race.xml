@@ -48,7 +48,7 @@
 
       <configure name="USE_MAGNETOMETER" value="FALSE"/> <!--TRUE-->
 
-      <configure name="USE_GPS" value="FALSE"/>
+      <configure name="USE_GPS" value="TRUE"/>
 
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/><!--TRUE-->
 
