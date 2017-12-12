@@ -226,7 +226,8 @@ void file_logger_periodic(void)
 
 	  primitive_in_use,
 
-	  log_pid_error,
+	  //log_pid_error,
+	  mean_speed,
 	  log_pid_derror
 
 

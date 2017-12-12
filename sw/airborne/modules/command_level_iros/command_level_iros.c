@@ -230,7 +230,7 @@ void second_part_logic()
 	{
 
 			case GO_STRAIGHT_CM:
-			  //block_acc = 0;
+			  block_acc = 0;
 					//printf("go straght !!!!!!!!!!!\n");
 					if (go_through_gate(-5.0/180*PI))//go_through_open_gate(-5.0/180*PI,race_state.desired_x_in_first_part))
 					{ 
@@ -239,7 +239,7 @@ void second_part_logic()
 					}
 					break;
 			case TURN_CM:
-			  //block_acc = 1;
+			  block_acc = 1;
 			  /*printf("The arc in first strech is executed__________________!!!!!!!!!!!!!!!!!\n");*/
 					if(arc_open_loop(1.5,-5.0/180*3.14,180.0/180*PI,1,1))//was1.5 
 					{
