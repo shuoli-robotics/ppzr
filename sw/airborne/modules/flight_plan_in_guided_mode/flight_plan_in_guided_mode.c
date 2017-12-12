@@ -52,9 +52,9 @@
 // #define KI_Y 0.0
 // #define KD_Y 0.2
 
-#define KP_Y 0.45//0.35 //was 0.4
+#define KP_Y 0.45//0.55//0.45//0.35 //was 0.4
 #define KI_Y -0.00
-#define KD_Y 0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
+#define KD_Y 0.5//0.60//0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  25.0/180*3.14//was 15 then 25 deg
 
 
@@ -410,7 +410,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 #if USE_OPTITRACK_SPEED
 	float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;//1.8;//1.3;//2.0;
 #else
-	float cruise_speed = 1.7;//was 1.7
+	float cruise_speed = mean_speed;//1.7;//was 1.7
 	printf("cruise_speed:%f\n",cruise_speed);
 #endif
 	

@@ -34,6 +34,9 @@
 #include "subsystems/ahrs/ahrs_int_utils.h"
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 
+//for accelerometer blocking
+#include "modules/command_level_iros/command_level_iros.h"
+
 #if USE_GPS
 #include "subsystems/gps.h"
 #endif
@@ -460,6 +463,8 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     ACCELS_FLOAT_OF_BFP(g_meas_f, filtered_gravity_measurement);
     const float g_meas_norm = FLOAT_VECT3_NORM(g_meas_f) / 9.81;
     ahrs_icq.weight = 1.0 - ahrs_icq.gravity_heuristic_factor * fabs(1.0 - g_meas_norm) / 10;
+    //enforce blocking accelerometer update (partially) when in turn 
+    if(block_acc)ahrs_icq.weight = 0;
     Bound(ahrs_icq.weight, 0.15, 1.0);
   } else {
     ahrs_icq.weight = 1.0;

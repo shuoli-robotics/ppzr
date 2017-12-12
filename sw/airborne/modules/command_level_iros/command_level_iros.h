@@ -94,5 +94,9 @@ extern float open_loop_altitude[];
 extern int  flag_2_arc_right[];
 extern float two_arc_radius[];
 extern float break_time[];
+
+//block ahrs accelerometer update during turn
+extern int block_acc;
+
 #endif
 

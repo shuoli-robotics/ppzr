@@ -148,6 +148,12 @@ float acc_bias_z = 0;
 float local_x = 0;
 float local_y = 0;
 
+//moving mean x speed
+#define MEAN_WINDOW_LENGTH 512 //100 //at 100hz? -> one second
+float mov_mean_array[MEAN_WINDOW_LENGTH];
+int mm_idx = 0;
+float mean_speed = 0;
+
 static void snake_gate_send(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_SNAKE_GATE_INFO(trans, dev, AC_ID,&debug_1, &debug_2, &debug_3, &debug_4,&debug_5);
@@ -323,8 +329,18 @@ void snake_gate_periodic(void)
     float psi = stateGetNedToBodyEulers_f()->psi;
     float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;
     EKF_propagate_state(X_dot,X_int,X_int,EKF_dt,u_k);
-    debug_4 = cruise_speed;
+    //debug_4 = cruise_speed;
     debug_5 = X_dot[0][0];//x speed
+    
+    mov_mean_array[mm_idx] = X_dot[0][0];//x speed
+    mm_idx++;
+    if(mm_idx >= MEAN_WINDOW_LENGTH)mm_idx = 0;
+    mean_speed = 0;
+    for(int i = 0; i<MEAN_WINDOW_LENGTH;i++){
+      mean_speed += mov_mean_array[i];
+    }
+    mean_speed/=MEAN_WINDOW_LENGTH;
+    debug_4 = mean_speed;// ---------------------------------------------------------------------
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
