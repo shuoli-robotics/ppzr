@@ -451,7 +451,6 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
   VECT3_ADD(filtered_gravity_measurement, pseudo_gravity_measurement);
   VECT3_SDIV(filtered_gravity_measurement, filtered_gravity_measurement, FIR_FILTER_SIZE);
 
-
   if (ahrs_icq.gravity_heuristic_factor) {
     /* heuristic on acceleration (gravity estimate) norm */
     /* Factor how strongly to change the weight.
@@ -466,6 +465,7 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     //enforce blocking accelerometer update (partially) when in turn 
     if(block_acc)ahrs_icq.weight = 0;
     Bound(ahrs_icq.weight, 0.15, 1.0);
+    printf("AHRS WEIGHT TURN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!%f\n",ahrs_icq.weight);
   } else {
     ahrs_icq.weight = 1.0;
   }

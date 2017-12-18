@@ -139,7 +139,7 @@ void command_run() {
     }
     if (autopilot_mode != AP_MODE_MODULE) {
       //deblock accelerometer
-      printf("de-blocking accelerometer-----------------------------------------\n");
+      //printf("de-blocking accelerometer-----------------------------------------\n");
       block_acc = 0;
         return;
     }

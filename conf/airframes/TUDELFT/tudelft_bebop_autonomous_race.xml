@@ -297,7 +297,7 @@
     <define name="H_Z" value="0.9211303"/>
 
     <define name="HEADING_UPDATE_GPS_MIN_SPEED" value="0"/>
-    <define name="GRAVITY_HEURISTIC_FACTOR" value="0"/>
+    <define name="GRAVITY_HEURISTIC_FACTOR" value="30"/><!-- was 0-->
   </section>
 
   <section name="INS" prefix="INS_">

@@ -323,6 +323,13 @@ void snake_gate_periodic(void)
   }
   
    
+   
+   //Drag body speed X
+   float k_x = -0.55;
+    mov_mean_array[mm_idx] = ACCEL_FLOAT_OF_BFP(acc_body_filtered.x)/k_x;//x speed
+    mm_idx++;
+    if(mm_idx >= MEAN_WINDOW_LENGTH)mm_idx = 0;
+    
   if(run_ekf){
     float v_x_e = stateGetSpeedNed_f()->x;
     float v_y_e = stateGetSpeedNed_f()->y;
@@ -332,9 +339,9 @@ void snake_gate_periodic(void)
     //debug_4 = cruise_speed;
     debug_5 = X_dot[0][0];//x speed
     
-    mov_mean_array[mm_idx] = X_dot[0][0];//x speed
-    mm_idx++;
-    if(mm_idx >= MEAN_WINDOW_LENGTH)mm_idx = 0;
+//     mov_mean_array[mm_idx] = X_dot[0][0];//x speed
+//     mm_idx++;
+//     if(mm_idx >= MEAN_WINDOW_LENGTH)mm_idx = 0;
     mean_speed = 0;
     for(int i = 0; i<MEAN_WINDOW_LENGTH;i++){
       mean_speed += mov_mean_array[i];
