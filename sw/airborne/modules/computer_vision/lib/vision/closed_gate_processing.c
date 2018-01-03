@@ -744,6 +744,7 @@ int closed_gate_processing(struct image_t *img){
 	  //Variable gate dist TODO test variable gate dist
 	  //gate_dist_x = 3.5;//distance from filter init point to gate 
 	  //gate_size_m = 1.4;//size of gate edges in meters
+	  gate_dist_x =  gate_initial_position_y[race_state.gate_counter];
 	  gate_center_height = -3.5;//
 	  
           VECT3_ASSIGN(gate_points[0], gate_dist_x,-(gate_size_m/2), gate_center_height-(gate_size_m/2));
@@ -1276,7 +1277,7 @@ void check_gate_free(struct image_t *im, struct gate_img gate, float *quality, i
   int np, nc;
     
   // how much of the side should be visible to count as a detected side?
-  float min_ratio_side = 0.4;//0.30;
+  float min_ratio_side = 0.3;//0.4;//0.30;
   (*n_sides) = 0;
 
   float min_segment_length = min_pixel_size;//30

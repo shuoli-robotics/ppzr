@@ -282,6 +282,9 @@ void init_next_open_gate(){
 //state filter in periodic loop
 void snake_gate_periodic(void)
 {
+  
+  debug_5 = primitive_in_use;
+  
   gettimeofday(&stop, 0);
   double time_now = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
   EKF_dt = time_now - time_prev;
@@ -337,7 +340,7 @@ void snake_gate_periodic(void)
     float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;
     EKF_propagate_state(X_dot,X_int,X_int,EKF_dt,u_k);
     //debug_4 = cruise_speed;
-    debug_5 = X_dot[0][0];//x speed
+   // debug_5 = X_dot[0][0];//x speed
     
 //     mov_mean_array[mm_idx] = X_dot[0][0];//x speed
 //     mm_idx++;
@@ -352,7 +355,7 @@ void snake_gate_periodic(void)
   }
 
   //bounding pos, speed and biases
-  if(X_int[0][0] > 10)X_int[0][0] = 10;//xmax
+  if(X_int[0][0] > 45)X_int[0][0] = 45;//xmax
   if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
   if(X_int[1][0] > 7)X_int[1][0] = 7;//ymax
   if(X_int[1][0] < -7)X_int[1][0] = -7;//ymin

@@ -224,18 +224,31 @@ bool go_straight(float theta,float distance,double ref_y){
 	  turn_trigger = kf_pos_x;
 	}
 	
-	if(ref_y < 1.5 && turn_trigger > 3.5)   
-	{
-			return TRUE;
+// 	if(ref_y < 1.5 && turn_trigger > 3.5)   
+// 	{
+// 			return TRUE;
+// 	}
+// 	else if(ref_y > 1.5 && turn_trigger < 0)   
+// 	{
+// 			return TRUE;
+// 	}
+// 	else
+// 	{
+// 			return FALSE;
+// 	}
+
+	printf("kf_pos_x === %f\n",kf_pos_x);
+	printf("turn_point[race_state.gate_counter] === %f\n",turn_point[race_state.gate_counter]);
+	if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
+		{
+				return TRUE;
+				/*printf("exit go through mode\n");*/
+		}
+		else
+		{
+				return FALSE;
 	}
-	else if(ref_y > 1.5 && turn_trigger < 0)   
-	{
-			return TRUE;
-	}
-	else
-	{
-			return FALSE;
-	}
+
 }
 
 
@@ -771,13 +784,13 @@ bool go_through_gate(float theta)
 		{
 
 				primitive_in_use = GO_THROUGH_GATE;
-				//psi0 = stateGetNedToBodyEulers_f()->psi;
+				psi0 = stateGetNedToBodyEulers_f()->psi;
 				//for now make the heading flip 
-				if(fabs(stateGetNedToBodyEulers_f()->psi)<(3.14/2)){
-				  psi0 = 0;
-				}else{
-				  psi0 = 3.14;
-				}
+// 				if(fabs(stateGetNedToBodyEulers_f()->psi)<(3.14/2)){
+// 				  psi0 = 0;
+// 				}else{
+// 				  psi0 = 3.14;
+// 				}
 				z0 = stateGetPositionNed_f()->z;
 				counter_primitive = 0;
 				time_primitive = 0;
@@ -839,8 +852,8 @@ bool go_through_gate(float theta)
 		guidance_loop_set_heading(psi0);
 		/*guidance_v_set_guided_z(gate_altitude[race_state.gate_counter]);*/
 		set_altitude(TAKE_OFF_ALTITUDE);//gate_altitude[race_state.gate_counter]);	
-// 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
-		if (fabs(kf_pos_x - TURN_POINT)<0.05)
+ 		if (fabs(kf_pos_x - turn_point[race_state.gate_counter])<0.05)
+// 		if (fabs(kf_pos_x - TURN_POINT)<0.05)
 		{
 				return TRUE;
 				/*printf("exit go through mode\n");*/

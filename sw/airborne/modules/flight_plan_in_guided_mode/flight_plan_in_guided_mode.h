@@ -70,7 +70,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -1.5//-1.4
+#define TAKE_OFF_ALTITUDE -1.7//-1.4
 #endif
 
 #define TURN_POINT 3.5
