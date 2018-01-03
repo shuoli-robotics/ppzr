@@ -63,8 +63,8 @@ bool flag_init_geo;
 enum states_lower_level state_lower_level ;
 enum states_upper_level state_upper_level ;
 
-// enum maneuver maneuvers[] = {ARC_L,TWO_ARCS_R,ZIGZAG_R,TWO_ARCS_L};
-enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
+enum maneuver maneuvers[] = {ARC_L,ARC_L,ARC_L,ARC_L,ARC_L};
+//enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
 float gate_initial_position_y[] = {3.0,3.0,3.0,3.0,3.0};
 float turn_point[] = {5.0,3.5,3.5,3.5,3.5};
@@ -214,7 +214,7 @@ void first_part_logic()
 			{
 				previous_lower_level = FAST_TAKE_OFF_CM;
 				state_lower_level =  GO_STRAIGHT_CM;//TURN_CM;
-				state_upper_level =  SECOND_PART;
+				state_upper_level =  THIRD_PART;//SECOND_PART;
 			}
 			break;
 		default:
@@ -259,7 +259,7 @@ void third_part_logic()
 	switch(state_lower_level)
 	{
 			case GO_STRAIGHT_CM:
-        if (race_state.gate_counter == 4)
+        if (race_state.gate_counter == 5)
                             {
                              state_upper_level =  FOURTH_PART;
                              state_lower_level = GO_STRAIGHT_CM;
