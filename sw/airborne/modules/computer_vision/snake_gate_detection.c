@@ -63,14 +63,14 @@
 struct video_listener *listener = NULL;
 
 // Filter Settings
-uint8_t color_lum_min = 20;//105;
-uint8_t color_lum_max = 228;//205;
-uint8_t color_cb_min  = 66;//52;
-uint8_t color_cb_max  = 194;//140;
+uint8_t color_lum_min = 99;//105;
+uint8_t color_lum_max = 182;//205;
+uint8_t color_cb_min  = 61;//52;
+uint8_t color_cb_max  = 124;//140;
 
-uint8_t color_cr_min  = 134;//138;//146;//was 180
+uint8_t color_cr_min  = 141;//138;//146;//was 180
 
-uint8_t color_cr_max  = 230;//255;
+uint8_t color_cr_max  = 178;//255;
 
 // //color I dont know
 uint8_t green_color[4] = {255,128,255,128}; //{0,250,0,250};

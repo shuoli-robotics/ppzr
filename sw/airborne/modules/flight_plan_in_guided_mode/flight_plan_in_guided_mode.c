@@ -61,7 +61,7 @@
 // # define FAST_TIME 5.1
 // # define TURN_TIME 7.1
 # define FAST_TIME 0.5
-# define TURN_TIME 1.5
+# define TURN_TIME 6.0
 
 #define USE_OPTITRACK_SPEED 0
 

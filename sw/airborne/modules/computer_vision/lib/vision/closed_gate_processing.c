@@ -675,7 +675,7 @@ int closed_gate_processing(struct image_t *img){
   
   float max_dist_h = 1.8;
   float min_dist_h = 0.3;
-  if(hist_peek_value > 7 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
+  if(hist_peek_value > 9 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;
     print_sides(img,side_1,side_2);
   }else{
