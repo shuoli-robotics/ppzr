@@ -43,6 +43,7 @@
 #include "modules/computer_vision/snake_gate_detection.h"
 #include "modules/computer_vision/lib/vision/closed_gate_processing.h"
 #include "modules/sonar/sonar_bebop.h"
+#include "modules/command_level_iros/command_level_iros.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -224,10 +225,11 @@ void file_logger_periodic(void)
     //      peek_height_o,
 	  //   side_angle_o,
 
-	  primitive_in_use,
+	  race_state.gate_counter,
 
 	  //log_pid_error,
-	  mean_speed,
+	  //mean_speed,
+	  arc_status.v_x_f,
 	  log_pid_derror
 
 

@@ -66,19 +66,19 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {ARC_L,ARC_L,ARC_L,ARC_L,ARC_L};
 //enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
-float gate_initial_position_y[] = {3.0,3.0,3.0,3.0,3.0};
-float turn_point[] = {5.0,3.5,3.5,3.5,3.5};
+float gate_initial_position_y[] = {19.0,19.0,15.0,4.0,16.0};
+float turn_point[] = {19.5,19.5,15.5,4.5,16.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
-float gate_altitude[] = {-2.5,-2.5,-2.0,-2.0,2.0};
-float open_loop_altitude[] = {-2.5,-2.0,-2.0,-2.0,-2.0};
+float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
+float open_loop_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
 
 
 float break_time[] = {0.0,0.0,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
-float arc_radius[] =     {1.5,             1.5,           1.0};
-float delta_arc_angle[] = {180.0/180*3.14,135.0/180*3.14};
+float arc_radius[] =     {1.5,             2.0,           1.0,		0};
+float delta_arc_angle[] = {90.0/180*3.14,90.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
 
 /*int   flag_2_arc_right[] = {0,             1,           -1,      1};*/
@@ -132,7 +132,7 @@ void command_run() {
 		race_state.flag_in_open_loop = TRUE;
 		race_state.gate_counter = 0;
 		race_state.current_initial_x =  gate_initial_position_y[race_state.gate_counter];
-		race_state.current_initial_heading= gate_initial_heading[race_state.gate_counter];
+		race_state.current_initial_heading = gate_initial_heading[race_state.gate_counter];
 		race_state.desired_x_in_first_part = DESIRED_X_IN_FIRST_PART;
 		two_arc_st.flag_in_two_arc_mode = FALSE;
 		race_state.sum_y_error = 0.0;
