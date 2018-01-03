@@ -1157,13 +1157,13 @@ bool take_off_fast(void)
 		if (time_primitive < FAST_TIME)
 		{
 // 				guidance_loop_set_theta(-13/57.6);
-				guidance_loop_set_theta(-0/57.6);//normal attitude again
+				guidance_loop_set_theta(-5.0/57.6);//normal attitude again
 				guidance_loop_set_phi(0);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 		}
 		else if (time_primitive < TURN_TIME)
 		{
-				guidance_loop_set_theta(-0.0/57.6);
+				guidance_loop_set_theta(-5.0/57.6);
 				guidance_loop_set_phi(0);
 		}
 		else if (time_primitive > TURN_TIME)
