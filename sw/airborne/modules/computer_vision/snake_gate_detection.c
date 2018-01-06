@@ -53,6 +53,8 @@
 
 #include "modules/computer_vision/lib/vision/closed_gate_processing.h"
 
+#include "modules/computer_vision/cv_me_mwb.h"
+
 //#define PI 3.1415926
 
 #define AHRS_PROPAGATE_FREQUENCY 512
@@ -260,6 +262,28 @@ void initialize_EKF(){
       gate_size_m = 1.0; //after second gate, switch to smaller gates
         printf("SMALL GATE\n");
     }
+    
+    //color filter change
+    if(race_state.gate_counter == 2){
+      //Low exposure
+      cv_me_mwb_exposure = 10;
+      color_lum_min = 99;//105;
+      color_lum_max = 182;//205;
+      color_cb_min  = 61;//52;
+      color_cb_max  = 124;//140;
+      color_cr_min  = 141;//138;//146;//was 180
+      color_cr_max  = 178;//255;
+    }else{
+      //High exposure 30 (standard)
+      cv_me_mwb_exposure = 30;
+      color_lum_min = 106;//105;
+      color_lum_max = 182;//205;
+      color_cb_min  = 87;//52;
+      color_cb_max  = 169;//140;
+      color_cr_min  = 122;//138;//146;//was 180
+      color_cr_max  = 179;//255;
+    }
+    
     run_ekf_m = 1;
     run_ekf = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
