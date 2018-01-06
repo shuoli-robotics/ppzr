@@ -264,7 +264,8 @@ void initialize_EKF(){
     }
     
     //color filter change
-    if(race_state.gate_counter == 2){
+	if(race_state.gate_counter == 2){
+    /*if(1){*/
       //Low exposure
       cv_me_mwb_exposure = 10;
       color_lum_min = 106;//105;
@@ -307,7 +308,7 @@ void init_next_open_gate(){
 void snake_gate_periodic(void)
 {
   
-  debug_5 = primitive_in_use;
+  //debug_5 = primitive_in_use;
   
   gettimeofday(&stop, 0);
   double time_now = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
@@ -374,7 +375,7 @@ void snake_gate_periodic(void)
       mean_speed += mov_mean_array[i];
     }
     mean_speed/=MEAN_WINDOW_LENGTH;
-    debug_4 = mean_speed;// ---------------------------------------------------------------------
+    //debug_4 = mean_speed;// ---------------------------------------------------------------------
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
@@ -420,10 +421,15 @@ void snake_gate_periodic(void)
    debug_1 = X_int[0][0];
    debug_2 = X_int[1][0];
    
+   //acc biases
+   debug_3 = X_int[4][0];
+   debug_4 = X_int[5][0];
+   debug_5 = X_int[6][0];
+   
 //     debug_3 = ls_pos_x;
 //     debug_4 = ls_pos_y;
    if(hist_sample){
-    debug_3 = x_pos_hist;
+    //debug_3 = x_pos_hist;
     //debug_4 = y_pos_hist;
    }
    
@@ -585,8 +591,6 @@ void snake_gate_detection_init(void)
   init_butterworth_2_low_pass_int(&filter_x, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   init_butterworth_2_low_pass_int(&filter_y, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   init_butterworth_2_low_pass_int(&filter_z, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
-  
-  
   
   EKF_init();
   
