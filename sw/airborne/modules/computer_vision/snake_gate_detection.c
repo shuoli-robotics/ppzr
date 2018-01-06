@@ -264,7 +264,8 @@ void initialize_EKF(){
     }
     
     //color filter change
-    if(race_state.gate_counter == 2){
+	if(race_state.gate_counter == 2){
+    /*if(1){*/
       //Low exposure
       cv_me_mwb_exposure = 10;
       color_lum_min = 106;//105;
@@ -585,7 +586,6 @@ void snake_gate_detection_init(void)
   init_butterworth_2_low_pass_int(&filter_x, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   init_butterworth_2_low_pass_int(&filter_y, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   init_butterworth_2_low_pass_int(&filter_z, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
-  
-  EKF_init();
+    EKF_init();
   
 }
