@@ -67,7 +67,7 @@ enum maneuver maneuvers[] = {ARC_L,ARC_L,ARC_L,ARC_L,ARC_L};
 //enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
 float gate_initial_position_y[] = {19.0,20.0,15.0,4.0,16.0};
-float turn_point[] = {19.5,40.5,25.5,4.5,16.5};
+float turn_point[] = {19.5,35.0,25.5,4.5,16.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
 float gate_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
@@ -77,7 +77,7 @@ float open_loop_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
 float break_time[] = {0.0,0.0,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
-float arc_radius[] =     {1.8,             4.5,           1.0,		0};
+float arc_radius[] =     {1.5,             4.5,           1.0,		0};
 float delta_arc_angle[] = {90.0/180*3.14,90.0/180*3.14,90.0/180*3.14,90.0/180*3.14};
 
 
