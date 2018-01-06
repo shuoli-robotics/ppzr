@@ -267,21 +267,21 @@ void initialize_EKF(){
     if(race_state.gate_counter == 2){
       //Low exposure
       cv_me_mwb_exposure = 10;
-      color_lum_min = 99;//105;
-      color_lum_max = 182;//205;
-      color_cb_min  = 61;//52;
-      color_cb_max  = 124;//140;
-      color_cr_min  = 141;//138;//146;//was 180
-      color_cr_max  = 178;//255;
-    }else{
-      //High exposure 30 (standard)
-      cv_me_mwb_exposure = 30;
       color_lum_min = 106;//105;
       color_lum_max = 182;//205;
       color_cb_min  = 87;//52;
       color_cb_max  = 169;//140;
       color_cr_min  = 122;//138;//146;//was 180
       color_cr_max  = 179;//255;
+    }else{
+      //High exposure 30 (standard)
+      cv_me_mwb_exposure = 30;
+      color_lum_min = 93;//105;
+      color_lum_max = 227;//205;
+      color_cb_min  = 53;//52;
+      color_cb_max  = 169;//140;
+      color_cr_min  = 142;//138;//146;//was 180
+      color_cr_max  = 255;//255;
     }
     
     run_ekf_m = 1;
