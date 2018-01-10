@@ -52,6 +52,7 @@ double desired_phi;
 int arc_counter;
 int arc_passed;
 float reference_y;
+bool flag_low_exposure = 0;
 
 void first_part_logic(void);
 void second_part_logic(void);
@@ -67,7 +68,7 @@ enum maneuver maneuvers[] = {ARC_L,ARC_L,ARC_L,ARC_L,ARC_L};
 //enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
 float gate_initial_position_y[] = {19.0,20.0,15.0,4.0,16.0};
-float turn_point[] = {19.5,35.0,25.5,4.5,16.5};
+float turn_point[] = {19.5,32.0,32,4.5,16.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
 float gate_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
@@ -136,6 +137,7 @@ void command_run() {
 		race_state.desired_x_in_first_part = DESIRED_X_IN_FIRST_PART;
 		two_arc_st.flag_in_two_arc_mode = FALSE;
 		race_state.sum_y_error = 0.0;
+		flag_low_exposure = 0;
     }
     if (autopilot_mode != AP_MODE_MODULE) {
       //deblock accelerometer
@@ -308,6 +310,10 @@ void third_part_logic()
 					}
 					break;
 			case ARC_CM:
+			  if (primitive_in_use == ARC_OPEN_LOOP &&  race_state.gate_counter== 1)
+			  {
+			    flag_low_exposure = 1;
+			  }
 				if(	arc_open_loop(race_state.current_arc_radius,-7.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,0))
 				{
 							previous_mode = ARC_CM;

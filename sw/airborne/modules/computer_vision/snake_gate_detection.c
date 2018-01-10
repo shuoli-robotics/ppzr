@@ -264,9 +264,10 @@ void initialize_EKF(){
     }
     
     //color filter change
-	if(race_state.gate_counter == 2){
-    /*if(1){*/
+	//if(race_state.gate_counter == 2 || flag_low_exposure == 1){
+    if(0){
       //Low exposure
+//       cv_me_mwb_exposure = 10;
       cv_me_mwb_exposure = 10;
       color_lum_min = 106;//105;
       color_lum_max = 182;//205;
