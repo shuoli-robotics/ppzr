@@ -170,7 +170,30 @@ static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev
 
 float sonar_filter_gate(float distance_sonar){
 	float distance;
-	current_distance = distance_sonar;
+	//current_distance = distance_sonar;
+	
+	//attitude compensation
+	struct FloatRMat R;
+	struct FloatEulers attitude;
+	struct FloatVect3 unit_vec, rot_vec;
+	attitude.phi =   stateGetNedToBodyEulers_f()->phi;//positive ccw
+	attitude.theta = stateGetNedToBodyEulers_f()->theta;//negative downward
+	attitude.psi = 0;
+	
+	unit_vec.x = 0;
+	unit_vec.y = 0;
+	unit_vec.z = -1;
+	
+	float_rmat_of_eulers_321(&R,&attitude);
+	
+	MAT33_VECT3_MUL(rot_vec, R, unit_vec);
+	
+	double dot = VECT3_DOT_PRODUCT(rot_vec, unit_vec);
+	float sonar_comp_angle = acos(dot);
+	//a.b = 1*1*cos(theta)
+	current_distance = cos(sonar_comp_angle)*distance_sonar;
+	printf("current_distance:%f distance_sonar:%f\n",current_distance,distance_sonar);
+	
 	diff_pre_cur = current_distance - previous_distance;
 	if (diff_pre_cur < -0.4) {
 		z0 = previous_distance;

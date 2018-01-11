@@ -126,6 +126,8 @@ struct FloatVect3 gate_vectors[4];
 struct FloatVect3 gate_points[4];
 struct FloatVect3 p3p_pos_solution;
 
+int new_detection = 0;
+
 //logging corner points in image plane
 float gate_img_point_x_1 = 0;
 float gate_img_point_y_1 = 0;
@@ -896,6 +898,8 @@ int closed_gate_processing(struct image_t *img){
 	gate_img_point_x_4 = best_gate.x_corners[3];
 	gate_img_point_y_4 = best_gate.y_corners[3];
 	
+	//SIGNAL NEW DETECTION AVAILABLE
+	new_detection = 1;
     
   } else {
 

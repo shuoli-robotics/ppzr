@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="vision_heading">
+  <doc>
+    <description>Use gate detection data for d the drones heading with respect to this gate. This using back-projection optimization.</description>
+  </doc>
+  <header>
+    <file name="vision_heading.h"/>
+  </header>
+  <init fun="vision_heading_init()"/>
+  <periodic fun="vision_heading_periodic()" freq="15" autorun="TRUE"/>
+  <makefile>
+    <file name="vision_heading.c"/>
+  </makefile>
+</module>
+

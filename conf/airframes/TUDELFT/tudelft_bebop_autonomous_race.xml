@@ -99,6 +99,7 @@
       <define name="SGD_CAMERA" value="front_camera"/>
     </module>
 
+        <module name="vision_heading"/>
 
     <module name="cv_opticflow">
        <define name="OPTICFLOW_METHOD" value="0"/>

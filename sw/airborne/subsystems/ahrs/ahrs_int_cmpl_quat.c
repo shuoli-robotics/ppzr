@@ -465,7 +465,7 @@ void ahrs_icq_update_accel(struct Int32Vect3 *accel, float dt)
     //enforce blocking accelerometer update (partially) when in turn 
     if(block_acc)ahrs_icq.weight = 0;
     Bound(ahrs_icq.weight, 0.15, 1.0);
-    printf("AHRS WEIGHT TURN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!%f\n",ahrs_icq.weight);
+    //printf("AHRS WEIGHT TURN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!%f\n",ahrs_icq.weight);
   } else {
     ahrs_icq.weight = 1.0;
   }
