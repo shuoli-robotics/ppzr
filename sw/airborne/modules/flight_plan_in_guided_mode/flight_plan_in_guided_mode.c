@@ -61,7 +61,7 @@
 // # define FAST_TIME 5.1
 // # define TURN_TIME 7.1
 # define FAST_TIME 0.5
-# define TURN_TIME 4.0
+# define TURN_TIME 2.0
 
 #define USE_OPTITRACK_SPEED 0
 
@@ -558,6 +558,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 					race_state.gate_counter++;
 					race_state.flag_in_open_loop = FALSE;
 					initialize_EKF();
+					printf("Arc is finished !!!!!!!!!!!!!!!!!!\n");
 			}
 			else
 			{

@@ -465,12 +465,12 @@ void snake_gate_periodic(void)
 //     }
     
     //-1.6 for open gate?
-    if(X_int[0][0] > (gate_dist_x - 0.3)){//block after to close to the target gate //////////////0.8, was 0.4
-      //ekf_sonar_update = 1;
-      run_ekf_m = 0;
-    }else{
-      run_ekf_m = 1;
-    }
+    /*if(X_int[0][0] > (gate_dist_x - 0.3)){//block after to close to the target gate //////////////0.8, was 0.4*/
+      /*//ekf_sonar_update = 1;*/
+      /*run_ekf_m = 0;*/
+    /*}else{*/
+      /*run_ekf_m = 1;*/
+    /*}*/
     
     if(X_int[0][0] > (gate_dist_x - 0.3))vision_sample = 0;//-----------------------------------------------------------???????????????
    

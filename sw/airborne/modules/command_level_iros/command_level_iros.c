@@ -67,19 +67,19 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {ARC_L,ARC_L,ARC_R,ARC_L,ARC_L};
 //enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
-float gate_initial_position_y[] = {10.0,8.0,2.0,3.0,5.0};
-float turn_point[] = {10.5,8.5,2.5,3.5,5.5};
+float gate_initial_position_y[] = {10.0,10.0,8.0,3.0,5.0};
+float turn_point[] = {10.5,10.5,8.5,3.5,5.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
-float gate_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
-float open_loop_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
+float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
+float open_loop_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
 
 
 float break_time[] = {0.0,0.0,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
-float arc_radius[] =     {1.0,             2.0,           0.5,		1,	 1};
-float delta_arc_angle[] = {90.0/180*3.14,180.0/180*3.14,90.0/180*3.14,90.0/180*3.14, 90.0/180*3.14};
+float arc_radius[] =     {1.0,             2.5,           1.0,		1,	 1};
+float delta_arc_angle[] = {90.0/180*3.14,180.0/180*3.14,120.0/180*3.14,90.0/180*3.14, 90.0/180*3.14};
 
 
 /*int   flag_2_arc_right[] = {0,             1,           -1,      1};*/
@@ -267,7 +267,7 @@ void third_part_logic()
                              state_lower_level = GO_STRAIGHT_CM;
                              break;
                             }
-					if (go_through_gate(-7.0/180*PI))
+					if (go_through_gate(-5.0/180*PI))
 					{
 							if(maneuvers[race_state.gate_counter] == ARC_L || maneuvers[race_state.gate_counter] == ARC_R ) 
 							{
@@ -314,7 +314,7 @@ void third_part_logic()
 			  {
 			    flag_low_exposure = 1;
 			  }
-				if(	arc_open_loop(race_state.current_arc_radius,-7.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,0))
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,0))
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
