@@ -144,7 +144,7 @@ double last_detection_time = 0;
 
 float gate_dist_x = 3.5;//distance from filter init point to gate 
 float gate_size_m = 1.4;//size of gate edges in meters
-float gate_center_height = -3.5;//height of gate in meters ned wrt ground
+float gate_center_height = -1.7;//height of gate in meters ned wrt ground
 
 
 //qsort comp function for sorting 

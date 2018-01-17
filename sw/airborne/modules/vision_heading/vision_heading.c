@@ -25,6 +25,8 @@
 
 #include "modules/vision_heading/vision_heading.h"
 #include "modules/computer_vision/lib/vision/closed_gate_processing.h"
+#include "modules/computer_vision/snake_gate_detection.h"
+#include "state.h"
 
 #define RING_BUFFER_SIZE 50
 
@@ -76,7 +78,9 @@ void vision_heading_periodic(void) {
     x_4[buf_pointer] = gate_img_point_x_4;
     y_4[buf_pointer] = gate_img_point_y_4;
     altitude[buf_pointer];
-    gate_vectors[buf_pointer];
+    gate_vectors[buf_pointer].x = ls_pos_x;
+    gate_vectors[buf_pointer].y = ls_pos_y;
+    gate_vectors[buf_pointer].z = stateGetPositionNed_f()->z;
     detection_time[buf_pointer];
   }
   
@@ -95,7 +99,7 @@ void vision_heading_periodic(void) {
     theta_g = theta_gate;%positive down
     psi_g = psi_gate;%positive to the left*/
     //xy plane distance
-    //float cam_gd = 
+    float cam_gd = sqrt((gate_dist_x-gate_vectors[read_pointer].x)*(gate_dist_x-gate_vectors[read_pointer].x) + (0-gate_vectors[buf_pointer].y)*(0-gate_vectors[buf_pointer].y));
     
 //  for cam_a_i = (cam_a-deg2rad(35)):deg2rad(2):(cam_a+deg2rad(35))
 //   angle_iter = rad2deg(cam_a_i);

@@ -521,7 +521,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 			if (state_upper_level == SECOND_PART)
 			{
 // 					double height = -2.3; 
-					double height = -1.4; 
+					double height = TAKE_OFF_ALTITUDE; 
 					/*printf("desired height is %f ----------------\n",height);*/
 					/*printf("current height is %f ----------------\n",stateGetPositionNed_f()->z);*/
 					set_altitude(height);

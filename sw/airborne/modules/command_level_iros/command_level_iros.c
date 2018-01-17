@@ -214,7 +214,7 @@ void first_part_logic()
 			{
 				previous_lower_level = FAST_TAKE_OFF_CM;
 				state_lower_level =  GO_STRAIGHT_CM;//TURN_CM;
-				state_upper_level =  THIRD_PART;//SECOND_PART;
+				state_upper_level =  SECOND_PART;//THIRD_PART;//SECOND_PART;
 			}
 			break;
 		default:
