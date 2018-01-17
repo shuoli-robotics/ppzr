@@ -367,8 +367,8 @@
     <!--define name="HOVER_KP" value="550"/-->
     <!--define name="HOVER_KP" value="1200"/>
     <define name="HOVER_KD" value="100"/-->
-    <define name="HOVER_KP" value="950"/> <!-- 950 -->
-    <define name="HOVER_KD" value="200"/>  <!-- 60 -->
+    <define name="HOVER_KP" value="600"/> <!-- 950 -->
+    <define name="HOVER_KD" value="100"/>  <!-- 60 -->
     <define name="HOVER_KI" value="13"/>  <!-- 13 -->
     <define name="NOMINAL_HOVER_THROTTLE" value="0.50"/>
     <define name="ADAPT_THROTTLE_ENABLED" value="FALSE"/>
