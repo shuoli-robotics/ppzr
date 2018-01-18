@@ -46,8 +46,8 @@ double theta_hover;
 double phi_hover;
 struct acceleration accel_bias;
 struct acceleration accel_hover;
-double desired_theta;
-double desired_phi;
+//double desired_theta;
+//double desired_phi;
 
 int arc_counter;
 int arc_passed;
@@ -71,8 +71,8 @@ float gate_initial_position_y[] = {10.0,10.0,8.0,3.0,5.0};
 float turn_point[] = {10.5,10.5,8.5,3.5,5.5};
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
-float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
-float open_loop_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
+float gate_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
+float open_loop_altitude[] = {-1.7,-1.7,-1.7,-1.7,-1.7};
 
 
 float break_time[] = {0.0,0.0,0.0,0.0};

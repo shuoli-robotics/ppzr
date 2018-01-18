@@ -438,19 +438,19 @@ void snake_gate_periodic(void)
    debug_2 = X_int[1][0];
    
    //acc biases
-   debug_3 = X_int[4][0];
-   debug_4 = X_int[5][0];
+   //debug_3 = X_int[4][0];
+   //debug_4 = X_int[5][0];
    debug_5 = X_int[6][0];
    
 //     debug_3 = ls_pos_x;
 //     debug_4 = ls_pos_y;
    if(hist_sample){
-    //debug_3 = x_pos_hist;
+    debug_3 = y_pos_hist;
     //debug_4 = y_pos_hist;
    }
    
    if(vision_sample){
-    //debug_5 = ls_pos_y;
+    debug_4 = ls_pos_y;
    }
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];

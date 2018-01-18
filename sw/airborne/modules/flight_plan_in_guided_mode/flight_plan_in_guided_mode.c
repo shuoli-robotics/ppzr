@@ -779,6 +779,7 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 
 float previous_error_y ;
 float previous_D_term;
+float desired_phi;
 bool go_through_gate(float theta)
 {
 		if(primitive_in_use != GO_THROUGH_GATE)
@@ -827,7 +828,6 @@ bool go_through_gate(float theta)
 		log_pid_error = error_y;
 		log_pid_derror = ((D_term+prev_D_term)/2.0)*100;
 
-		float desired_phi;
 // 		if (kf_pos_x - gate_initial_position_y[race_state.gate_counter]<-0.5)
 // 		{
 // 		  desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
