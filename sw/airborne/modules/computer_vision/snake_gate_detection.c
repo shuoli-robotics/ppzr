@@ -65,22 +65,22 @@
 struct video_listener *listener = NULL;
 
 // Filter Settings
-// uint8_t color_lum_min = 99;//105;
-// uint8_t color_lum_max = 182;//205;
-// uint8_t color_cb_min  = 61;//52;
-// uint8_t color_cb_max  = 124;//140;
-// 
-// uint8_t color_cr_min  = 141;//138;//146;//was 180
-// 
-// uint8_t color_cr_max  = 178;//255;
+uint8_t color_lum_min = 99;//105;
+uint8_t color_lum_max = 182;//205;
+uint8_t color_cb_min  = 61;//52;
+uint8_t color_cb_max  = 124;//140;
+
+uint8_t color_cr_min  = 141;//138;//146;//was 180
+
+uint8_t color_cr_max  = 178;//255;
 
 //basement
-uint8_t color_lum_min = 0;//105;
-uint8_t color_lum_max = 255;//205;
-uint8_t color_cb_min  = 0;//52;
-uint8_t color_cb_max  = 255;//140;
-uint8_t color_cr_min  = 130;//138;//146;//was 180
-uint8_t color_cr_max  = 255;//255;
+// uint8_t color_lum_min = 0;//105;
+// uint8_t color_lum_max = 255;//205;
+// uint8_t color_cb_min  = 0;//52;
+// uint8_t color_cb_max  = 255;//140;
+// uint8_t color_cr_min  = 130;//138;//146;//was 180
+// uint8_t color_cr_max  = 255;//255;
 
 // //color I dont know
 uint8_t green_color[4] = {255,128,255,128}; //{0,250,0,250};
@@ -286,19 +286,26 @@ void initialize_EKF(){
     }else{
       //High exposure 30 (standard)
       cv_me_mwb_exposure = 30;
+      //main hall
 //       color_lum_min = 93;//105;
 //       color_lum_max = 227;//205;
 //       color_cb_min  = 53;//52;
 //       color_cb_max  = 169;//140;
 //       color_cr_min  = 142;//138;//146;//was 180
 //       color_cr_max  = 255;//255;
+        color_lum_min = 20;//105;
+	color_lum_max = 228;//205;
+        color_cb_min  = 66;//52;
+        color_cb_max  = 194;//140;
+        color_cr_min  = 134;//138;//146;//was 180
+        color_cr_max  = 230;//255;
       //basement 
-      color_lum_min = 0;//105;
+      /*color_lum_min = 0;//105;
       color_lum_max = 255;//205;
       color_cb_min  = 0;//52;
       color_cb_max  = 255;//140;
       color_cr_min  = 130;//138;//146;//was 180
-      color_cr_max  = 255;//255;
+      color_cr_max  = 255;/*///255;
     }
     
     run_ekf_m = 1;
