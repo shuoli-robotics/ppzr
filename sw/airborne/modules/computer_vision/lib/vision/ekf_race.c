@@ -241,7 +241,7 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   MAT_MUL(7,3,1, temp_7_1_1, K_d, EKF_inn);
   //x_opt=x_state + temp_7_1_1
   MAT_SUM(7, 1, x_opt, x_state, temp_7_1_1);
-  x_opt[4][0] = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!BLOCK X ACC BIAS
+  //x_opt[4][0] = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!BLOCK X ACC BIAS
   //MAT_PRINT(3, 1,EKF_inn);
   //MAT_PRINT(7, 1,x_opt);
   
