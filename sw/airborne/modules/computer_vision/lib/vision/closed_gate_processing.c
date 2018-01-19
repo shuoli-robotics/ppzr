@@ -625,7 +625,7 @@ int closed_gate_processing(struct image_t *img){
   previous_best_gate.n_sides = best_gate.n_sides;
   
     //color filtered version of image for overlay and debugging
-  if (1){//filter) {
+  if (0){//filter) {
     int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
@@ -910,7 +910,7 @@ int closed_gate_processing(struct image_t *img){
   }
 
 	//better principal point?
-	//draw_cross(img,158,32,green_color);
+	draw_cross(img,158,32,green_color);
 return 1;	
 }
 
