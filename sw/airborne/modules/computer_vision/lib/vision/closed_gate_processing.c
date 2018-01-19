@@ -144,6 +144,8 @@ float gate_dist_x = 3.5;//distance from filter init point to gate
 float gate_size_m = 1.4;//size of gate edges in meters
 float gate_center_height = -3.5;//height of gate in meters ned wrt ground
 
+int side_1 = 0;
+int side_2 = 0;
 
 //qsort comp function for sorting 
 int cmpfunc (const void * a, const void * b)
@@ -648,9 +650,6 @@ int closed_gate_processing(struct image_t *img){
   
 //change to gate based heading 
     local_psi = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading;--------------------------------------------------------------
-
-  int side_1;
-  int side_2;
   
   float hist_peek_value = detect_gate_sides(histogram,&side_1, &side_2);
   
