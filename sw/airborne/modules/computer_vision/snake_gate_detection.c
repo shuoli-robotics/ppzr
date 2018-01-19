@@ -513,7 +513,7 @@ void snake_gate_periodic(void)
 
     
     //hist_sample = 0;///////////////////////////////////////////////////////////////////////////////////////
-      vision_sample = 0;
+      //vision_sample = 0;
       
 //     printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     //debug_5 = 0;
