@@ -267,7 +267,7 @@ void third_part_logic()
                              state_lower_level = GO_STRAIGHT_CM;
                              break;
                             }
-					if (go_through_gate(-7.0/180*PI))
+					if (go_through_gate(-5.0/180*PI))
 					{
 							if(maneuvers[race_state.gate_counter] == ARC_L || maneuvers[race_state.gate_counter] == ARC_R ) 
 							{
@@ -314,7 +314,7 @@ void third_part_logic()
 			  {
 			    flag_low_exposure = 1;
 			  }
-				if(	arc_open_loop(race_state.current_arc_radius,-7.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,0))
+				if(	arc_open_loop(race_state.current_arc_radius,-5.0/180*3.14,race_state.current_arc_delta_psi,race_state.current_arc_flag_right,0))
 				{
 							previous_mode = ARC_CM;
 							race_state.flag_in_open_loop = FALSE;
