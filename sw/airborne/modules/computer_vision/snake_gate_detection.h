@@ -152,8 +152,12 @@ extern float ls_pos_z;
 //final KF results
 extern float kf_pos_x;
 extern float kf_pos_y;
+extern float kf_pos_z;
 extern float kf_vel_x;
 extern float kf_vel_y;
+
+extern float EKF_dt;
+extern float EKF_m_dt;
 
 extern float debug_1;
 extern float debug_2;

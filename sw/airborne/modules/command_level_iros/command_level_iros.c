@@ -263,9 +263,9 @@ void third_part_logic()
 			case GO_STRAIGHT_CM:
         if (race_state.gate_counter == 5)
                             {
-                             state_upper_level =  FOURTH_PART;
+                            // state_upper_level =  FOURTH_PART;
                              state_lower_level = GO_STRAIGHT_CM;
-			    // race_state.gate_counter =0;
+			     race_state.gate_counter =0;
                              break;
                             }
 					if (go_through_gate(-5.0/180*PI))

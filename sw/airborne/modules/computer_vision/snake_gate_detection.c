@@ -127,6 +127,7 @@ double time_prev_m = 0;
 //final KF results
 float kf_pos_x = 0;
 float kf_pos_y = 0;
+float kf_pos_z = 0;
 float kf_vel_x = 0;
 float kf_vel_y = 0;
 
@@ -308,8 +309,8 @@ void initialize_EKF(){
       color_cr_max  = 255;/*///255;
     }
     
-    run_ekf_m = 1;
-    run_ekf = 1;
+     run_ekf_m = 1;
+     run_ekf = 1;
     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
@@ -428,7 +429,7 @@ void snake_gate_periodic(void)
   
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
-  kf_vel_x = X_int[2][0];
+  kf_pos_z = X_int[2][0];
   kf_vel_y = X_int[3][0];
   acc_bias_x = X_int[4][0];
   acc_bias_y = X_int[5][0];
@@ -535,7 +536,7 @@ void snake_gate_periodic(void)
     
     //MAT_PRINT(2, 2,temp_2_2_b);
     
-    if(EKF_m_dt>5.0)EKF_m_dt=5.0;
+    if(EKF_m_dt>5.0)EKF_m_dt=0.0;//was 5
     //update dt 
    
       //xy-position in local gate frame(ls, or histogram)
