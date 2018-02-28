@@ -319,10 +319,10 @@ void initialize_EKF(){
     {
       P_k_1_k_1_d[i][i] = 1.5f;
     }
-//     for(int i = 4; i < 7; i++)
-//     {
-//       P_k_1_k_1_d[i][i] = 0.0f;
-//     }
+    for(int i = 4; i < 7; i++)
+    {
+      P_k_1_k_1_d[i][i] = 0.0f;
+    }
     //debug_5 = gate_dist_x;
 }
 
@@ -451,7 +451,7 @@ void snake_gate_periodic(void)
    //acc biases
    //debug_3 = X_int[4][0];
    //debug_4 = X_int[5][0];
-   debug_5 = X_int[4][0];
+   debug_5 = X_int[5][0];
    
 //     debug_3 = ls_pos_x;
 //     debug_4 = ls_pos_y;
