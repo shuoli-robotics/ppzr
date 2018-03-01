@@ -536,7 +536,7 @@ void snake_gate_periodic(void)
     
     //MAT_PRINT(2, 2,temp_2_2_b);
     
-    if(EKF_m_dt>5.0)EKF_m_dt=0.0;//was 5
+    if(EKF_m_dt>5)EKF_m_dt=0.02;//.02;//was EKF_m_dt>5 and =0.0
     //update dt 
    
       //xy-position in local gate frame(ls, or histogram)
@@ -548,7 +548,7 @@ void snake_gate_periodic(void)
  	hist_sample = 0;
  	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
        }else{
- 	local_x = ls_pos_x;
+ 	local_x = ls_pos_x;//+ 0.4;//0.4 for alligning
 	local_y = ls_pos_y;
        }
 //      if(vision_sample){

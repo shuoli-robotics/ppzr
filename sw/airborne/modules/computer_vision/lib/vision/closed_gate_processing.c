@@ -676,7 +676,7 @@ int closed_gate_processing(struct image_t *img){
   float min_dist_h = 0.3;
   if(hist_peek_value > 9 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;
-    print_sides(img,side_1,side_2);
+    if(gate_graphics)print_sides(img,side_1,side_2);
   }else{
     hist_sample = 0;
   }
@@ -707,7 +707,7 @@ int closed_gate_processing(struct image_t *img){
     
     
     //draw_gate_color(img, best_gate, blue_color);
-    if(1){//gate drawing /////////////////////////////////////////////////////////////////////////////////////
+    if(gate_graphics){//gate drawing /////////////////////////////////////////////////////////////////////////////////////
 	if(repeat_gate == 0){
 	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
 	}
@@ -909,7 +909,7 @@ int closed_gate_processing(struct image_t *img){
   }
 
 	//better principal point?
-	draw_cross(img,158,32,green_color);
+	if(gate_graphics)draw_cross(img,158,32,green_color);
 return 1;	
 }
 
