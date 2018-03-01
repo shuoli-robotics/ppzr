@@ -450,19 +450,19 @@ void snake_gate_periodic(void)
    debug_2 = X_int[1][0];
    
    //acc biases
-   //debug_3 = X_int[4][0];
-   //debug_4 = X_int[5][0];
-   debug_5 = X_int[5][0];
+   debug_3 = X_int[4][0];
+   debug_4 = X_int[5][0];
+   debug_5 = X_int[6][0];
    
 //     debug_3 = ls_pos_x;
 //     debug_4 = ls_pos_y;
    if(hist_sample){
-    debug_3 = y_pos_hist;
+    //debug_3 = y_pos_hist;
     //debug_4 = y_pos_hist;
    }
    
    if(vision_sample){
-    debug_4 = ls_pos_y;
+    //debug_4 = ls_pos_y;
    }
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
@@ -536,7 +536,7 @@ void snake_gate_periodic(void)
     
     //MAT_PRINT(2, 2,temp_2_2_b);
     
-    if(EKF_m_dt>5)EKF_m_dt=0.02;//.02;//was EKF_m_dt>5 and =0.0
+    if(EKF_m_dt>1.5)EKF_m_dt=0.02;//.02;//was EKF_m_dt>5 and =0.0
     //update dt 
    
       //xy-position in local gate frame(ls, or histogram)
