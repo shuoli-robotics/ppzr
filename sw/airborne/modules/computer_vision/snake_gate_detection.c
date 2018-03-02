@@ -315,10 +315,10 @@ void initialize_EKF(){
     printf("gate distance:%f\n",gate_distance);
     printf("gate heading:%f\n",gate_heading);
     // TODO: increase uncertainty
-    MAT_PRINT(7, 7,P_k_1_k_1_d);
+    //MAT_PRINT(7, 7,P_k_1_k_1_d);
     for(int i = 0; i < 4; i++)//should be 3
     {
-      P_k_1_k_1_d[i][i] = 1.5f;
+      P_k_1_k_1_d[i][i] = 1.0f;//was 1.5
     }
     for(int i = 4; i < 7; i++)
     {
