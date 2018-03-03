@@ -424,7 +424,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;//1.8;//1.3;//2.0;
 #else
 	float cruise_speed = mean_speed;//1.7;//was 1.7
-	printf("cruise_speed:%f\n",cruise_speed);
+	//printf("cruise_speed:%f\n",cruise_speed);
 #endif
 	
 	

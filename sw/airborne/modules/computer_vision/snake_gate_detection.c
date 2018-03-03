@@ -269,7 +269,7 @@ void initialize_EKF(){
       /*gate_size_m = 1.0;*/
     }else{
       gate_size_m = 1.0; //after second gate, switch to smaller gates
-        printf("SMALL GATE\n");
+        //printf("SMALL GATE\n");
     }
     
     //color filter change
@@ -311,9 +311,9 @@ void initialize_EKF(){
     
      run_ekf_m = 1;
      run_ekf = 1;
-    printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("gate distance:%f\n",gate_distance);
-    printf("gate heading:%f\n",gate_heading);
+//     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+//     printf("gate distance:%f\n",gate_distance);
+//     printf("gate heading:%f\n",gate_heading);
     // TODO: increase uncertainty
     //MAT_PRINT(7, 7,P_k_1_k_1_d);
     for(int i = 0; i < 4; i++)//should be 3
@@ -524,7 +524,7 @@ void snake_gate_periodic(void)
     //debug_5 = 0;
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
-    printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
+    //printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     //debug_5 = 1;
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);
    // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);
