@@ -1184,7 +1184,7 @@ bool take_off_fast(void)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
 						race_state.flag_in_open_loop = FALSE;
-						initialize_EKF();
+						initialize_EKF(); //first initialization shpuld be after first turn instead, otherwise wrong P mat initialization causes bias estimation errors
 						return TRUE;
 
 				} return FALSE;
