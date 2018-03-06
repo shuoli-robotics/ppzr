@@ -312,6 +312,11 @@ void initialize_EKF(){
     
      run_ekf_m = 1;
      run_ekf = 1;
+     
+     //just to be sure nothing is remaining
+     vision_sample = 0;
+     hist_sample = 0;
+     
 //     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 //     printf("gate distance:%f\n",gate_distance);
 //     printf("gate heading:%f\n",gate_heading);
