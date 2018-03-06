@@ -102,6 +102,8 @@ void EKF_init_diag(float A[7][7], float diag[7]){
   }
 }
 
+int pred_print_count = 0;
+
 void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7][1], float dt, float u_k[8][1]){
   
 //    dt = time_stamp(n)-time_stamp(n-1);
@@ -113,6 +115,18 @@ void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7
 // 
 //    X_int = [X_int; X_int_prev + d_kf_calc_f_nl(dt,X_int_prev,U_k)'*dt];
 
+  int show_mat_p = 0;
+//   if(pred_print_count>512){
+//     pred_print_count = 0;
+//     show_mat_p = 1;
+//   }else{
+//     pred_print_count++;
+//   }
+  
+  gettimeofday(&stopp, 0);
+  double time_p = (double)(stopp.tv_sec + stopp.tv_usec / 1000000.0);
+  if(show_mat_p)printf("STARTING MAT OUTPUT PREDICTION dt:%f  at time:%lf !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n",dt,time_p);
+  
   const float D_x = -1/0.5;
   const float D_y = -1/0.43;
   
@@ -149,6 +163,16 @@ void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7
 
   //new_state = curr_state + xdot*dt
   MAT_SUM_c(7,1, new_state, x_prev, xdot,dt);
+  
+  if(show_mat_p)MAT_PRINT(7, 1,x_prev);
+  if(show_mat_p)MAT_PRINT(7, 1,new_state);
+  if(show_mat_p)MAT_PRINT(7, 1,xdot);
+  if(show_mat_p)MAT_PRINT(8, 1,u_k);
+  
+  if(show_mat_p){
+    printf("STOPPING MAT OUTPUT  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+    show_mat_p = 0;
+  }
   
 }
 
