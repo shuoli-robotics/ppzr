@@ -121,8 +121,10 @@ int vision_sample = 0;
 
 float EKF_dt = 0;
 float EKF_m_dt = 0;
+float EKF_s_dt = 0;
 double time_prev = 0;
 double time_prev_m = 0;
+double time_prev_s = 0;
 
 //final KF results
 float kf_pos_x = 0;
@@ -502,25 +504,14 @@ void snake_gate_periodic(void)
     }
   */
     
-      ekf_sonar_update = 0;
-    
-    if(primitive_in_use == ZIGZAG_2){
-	  run_ekf_m = 0;
-    }
-    
-    //First stretch gate switching logic
-    float switch_threshold_x = 1.0;
-    float switch_threshold_y = 0.5;
-    if(vision_sample && run_ekf_m == 1  && fabs(X_int[0][0]-ls_pos_x)>switch_threshold_x && fabs(X_int[1][0]-ls_pos_y)>switch_threshold_y){
-      //init_next_open_gate();
-      //printf("init_next_open_gate()--------------------------------------------------\n");
-    }
-
-    //only update when we trust the vision such to be good enough for a meausrement update 
-//     if(vision_sample && run_ekf_m == 1){
-//     prev_ls_pos_x = ls_pos_x;
-//     prev_ls_pos_y = ls_pos_y;
-//     }
+      gettimeofday(&stop, 0);
+      double time_s = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+      EKF_s_dt = time_s - time_prev_m;//time since last measurement update
+      if(vision_sample == 0 && hist_sample == 0 && EKF_s_dt > 0.05){
+	ekf_sonar_update = 1;
+      }else{
+	ekf_sonar_update = 0;
+      }
 
 
       //If in first stretch limit detection distance///////////////////////////
