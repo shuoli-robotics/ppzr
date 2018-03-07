@@ -162,6 +162,12 @@ float acc_bias_z = 0;
 float local_x = 0;
 float local_y = 0;
 
+float u_k_x = 0;
+float u_k_y = 0;
+float u_k_z = 0;
+float u_k_p = 0;
+float u_k_q = 0;
+
 //moving mean x speed
 #define MEAN_WINDOW_LENGTH 512 //100 //at 100hz? -> one second
 float mov_mean_array[MEAN_WINDOW_LENGTH];
@@ -335,6 +341,7 @@ void initialize_EKF(){
       }
     }else{
       first_ekf_init = 1;
+      X_int[3][0] = -1;//initial w -1 m/s
     }
     //debug_5 = gate_dist_x;
 }
@@ -379,6 +386,12 @@ void snake_gate_periodic(void)
   u_k[5][0] = stateGetNedToBodyEulers_f()->phi;
   u_k[6][0] = stateGetNedToBodyEulers_f()->theta;
   u_k[7][0] = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading; Quick fix !!!!!!!!!!!!!!!!!!!!!!
+  
+  u_k_x = u_k[0][0];
+  u_k_y = u_k[1][0];
+  u_k_z = u_k[2][0];
+  u_k_p = u_k[3][0];
+  u_k_q = u_k[4][0];
   
   
   if((race_state.flag_in_open_loop == TRUE && primitive_in_use != 30) || autopilot_mode == 4){

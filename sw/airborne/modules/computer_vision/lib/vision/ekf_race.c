@@ -68,7 +68,7 @@ void EKF_init(void){
   
   init_eye_7(eye_7);
   
-  float P_k_1_diag[7] = {1,1,1,1,1,1,1};
+  float P_k_1_diag[7] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0};
   EKF_init_diag(P_k_1_k_1_d,P_k_1_diag);
   
   //check  process noise of biases---------------------------------
@@ -202,7 +202,7 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
 //         P_k_1_k_1 = (eye(7) - K*DHx) * P_k_1 * (eye(7) - K*DHx)' + K*R_k*K';
   
   int show_mat = 0;
-  //if(EKF_delta > 0.2 && EKF_delta < 1.5)show_mat = 1;
+  if(EKF_delta > 0.15 && EKF_delta < 1.5)show_mat = 1;
   gettimeofday(&stopp, 0);
   double time_p = (double)(stopp.tv_sec + stopp.tv_usec / 1000000.0);
   if(show_mat)printf("STARTING MAT OUTPUT WITH EKF_delta:%f  at time:%lf !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n",EKF_delta,time_p);

@@ -194,6 +194,13 @@ extern float local_y;
 //mean speed
 extern float mean_speed;
 
+//ekf uk
+extern float u_k_x;
+extern float u_k_y;
+extern float u_k_z;
+extern float u_k_p;
+extern float u_k_q;
+
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */
 #define VECT3_VECT3_TRANS_MUL(_mat, _v_a,_v_b) {    \
