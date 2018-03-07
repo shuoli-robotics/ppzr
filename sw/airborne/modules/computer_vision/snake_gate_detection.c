@@ -381,7 +381,7 @@ void snake_gate_periodic(void)
   u_k[7][0] = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading; Quick fix !!!!!!!!!!!!!!!!!!!!!!
   
   
-  if(race_state.flag_in_open_loop == TRUE || autopilot_mode == 4){
+  if((race_state.flag_in_open_loop == TRUE && primitive_in_use != 30) || autopilot_mode == 4){
     // TODO: really no observations?
     last_open_loop_time = time_now;
     run_ekf = 0;
@@ -404,6 +404,13 @@ void snake_gate_periodic(void)
     float psi = stateGetNedToBodyEulers_f()->psi;
     float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;
     EKF_propagate_state(X_dot,X_int,X_int,EKF_dt,u_k);
+    
+    gettimeofday(&stop, 0);
+    double time_s = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+    EKF_s_dt = time_s - time_prev_m;//time since last measurement update
+    if(EKF_s_dt > 0.16){
+      X_int[2][0] = stateGetPositionNed_f()->z;
+    }
     //debug_4 = cruise_speed;
    // debug_5 = X_dot[0][0];//x speed
     
@@ -419,25 +426,28 @@ void snake_gate_periodic(void)
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
-  //bounding pos, speed and biases
-  if(X_int[0][0] > 45)X_int[0][0] = 45;//xmax
-  if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
-  if(X_int[1][0] > 7)X_int[1][0] = 7;//ymax
-  if(X_int[1][0] < -7)X_int[1][0] = -7;//ymin
-  if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
-  if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
-  
-  //w speed
-  if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
-  if(X_int[3][0] < -1.5)X_int[3][0] = -1.5;//ymin
-  
-  //acc biases
-  if(X_int[4][0] > 1)X_int[4][0] = 1;//ymax
-  if(X_int[4][0] < -1)X_int[4][0] = -1;//ymin
-  if(X_int[5][0] > 1)X_int[5][0] = 1;//ymax
-  if(X_int[5][0] < -1)X_int[5][0] = -1;//ymin
-  if(X_int[6][0] > 2)X_int[6][0] = 2;//ymax
-  if(X_int[6][0] < -2)X_int[6][0] = -2;//ymin
+  int bounds = 0;
+  if(bounds){
+    //bounding pos, speed and biases
+    if(X_int[0][0] > 45)X_int[0][0] = 45;//xmax
+    if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
+    if(X_int[1][0] > 7)X_int[1][0] = 7;//ymax
+    if(X_int[1][0] < -7)X_int[1][0] = -7;//ymin
+    if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
+    if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
+    
+    //w speed
+    if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
+    if(X_int[3][0] < -1.5)X_int[3][0] = -1.5;//ymin
+    
+    //acc biases
+    if(X_int[4][0] > 1)X_int[4][0] = 1;//ymax
+    if(X_int[4][0] < -1)X_int[4][0] = -1;//ymin
+    if(X_int[5][0] > 1)X_int[5][0] = 1;//ymax
+    if(X_int[5][0] < -1)X_int[5][0] = -1;//ymin
+    if(X_int[6][0] > 2)X_int[6][0] = 2;//ymax
+    if(X_int[6][0] < -2)X_int[6][0] = -2;//ymin
+  }
   
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
@@ -504,15 +514,15 @@ void snake_gate_periodic(void)
     }
   */
     
-      gettimeofday(&stop, 0);
-      double time_s = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
-      EKF_s_dt = time_s - time_prev_m;//time since last measurement update
-      if(vision_sample == 0 && hist_sample == 0 && EKF_s_dt > 0.05){
-	ekf_sonar_update = 1;
-      }else{
-	ekf_sonar_update = 0;
-      }
-
+//       gettimeofday(&stop, 0);
+//       double time_s = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+//       EKF_s_dt = time_s - time_prev_m;//time since last measurement update
+//       if(vision_sample == 0 && hist_sample == 0 && EKF_s_dt > 0.05){
+// 	ekf_sonar_update = 1;
+//       }else{
+// 	ekf_sonar_update = 0;
+//       }
+      ekf_sonar_update = 0;
 
       //If in first stretch limit detection distance///////////////////////////
       if(ls_pos_x < -1.5)vision_sample = 0;//;run_ekf_m = 0;

@@ -1167,6 +1167,9 @@ bool take_off_fast(void)
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 				set_altitude(TAKE_OFF_ALTITUDE);
 				tf_status.flag_ekf_initialized = FALSE;
+				
+				initialize_EKF();//init EKF should be before takeoff, instead of mid air  
+				
 		}
 		if (time_primitive < FAST_TIME)
 		{
@@ -1184,7 +1187,7 @@ bool take_off_fast(void)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
 						race_state.flag_in_open_loop = FALSE;
-						initialize_EKF(); //first initialization shpuld be after first turn instead, otherwise wrong P mat initialization causes bias estimation errors
+						//initialize_EKF();///first initialization shpuld be after first turn instead, otherwise wrong P mat initialization causes bias estimation errors
 						return TRUE;
 
 				} return FALSE;
