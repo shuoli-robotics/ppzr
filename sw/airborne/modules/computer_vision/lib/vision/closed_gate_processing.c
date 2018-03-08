@@ -322,7 +322,7 @@ float detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
 int closed_gate_processing(struct image_t *img){
   
   int filter = 0;
-  int gate_graphics = 0;
+  int gate_graphics = 1;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;
   float quality;
 

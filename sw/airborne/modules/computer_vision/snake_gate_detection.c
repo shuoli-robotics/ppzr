@@ -407,7 +407,10 @@ void snake_gate_periodic(void)
    
    //Drag body speed X
    float k_x = -0.55;
-    mov_mean_array[mm_idx] = ACCEL_FLOAT_OF_BFP(acc_body_filtered.x)/k_x;//x speed
+   float x_speed_bias = X_int[4][0];
+   if(x_speed_bias > 1)x_speed_bias = 1;
+   if(x_speed_bias < -1)x_speed_bias = -1;
+    mov_mean_array[mm_idx] = (ACCEL_FLOAT_OF_BFP(acc_body_filtered.x)-x_speed_bias)/k_x;//x speed
     mm_idx++;
     if(mm_idx >= MEAN_WINDOW_LENGTH)mm_idx = 0;
     
