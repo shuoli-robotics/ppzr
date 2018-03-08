@@ -82,7 +82,7 @@ float open_loop_altitude[] = {-1.8,-1.8,-1.8,-1.8,-1.8};
 float break_time[] = {0.0,0.0,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
-float arc_radius[] =     {1.0,             2.2,           1.0,		1,	 0.75};
+float arc_radius[] =     {1.0,             2.4,           1.0,		1,	 0.75};
 float delta_arc_angle[] = {90.0/180*3.14,180.0/180*3.14,120.0/180*3.14,120.0/180*3.14, 90.0/180*3.14};
 
 
