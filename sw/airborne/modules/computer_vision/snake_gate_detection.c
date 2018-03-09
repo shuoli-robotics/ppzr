@@ -307,7 +307,7 @@ void initialize_EKF(){
 	color_lum_max = 228;//205;
         color_cb_min  = 66;//52;
         color_cb_max  = 194;//140;
-        color_cr_min  = 134;//138;//146;//was 180
+        color_cr_min  = 132;//138;//146;//was 180
         color_cr_max  = 230;//255;
       //basement 
       /*color_lum_min = 0;//105;
@@ -339,7 +339,7 @@ void initialize_EKF(){
       {
 	P_k_1_k_1_d[i][i] = 0.0f;
       }
-    }else{
+    }else if(first_ekf_init == 0){
       first_ekf_init = 1;
       X_int[3][0] = -1;//initial w -1 m/s
     }

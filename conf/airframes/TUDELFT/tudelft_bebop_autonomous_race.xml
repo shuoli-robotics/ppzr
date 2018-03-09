@@ -181,7 +181,7 @@
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/-->
 
 <!-- bebob 09-->
-    <define name="BODY_TO_IMU_PHI" value="0.6" unit="deg"/>
+    <define name="BODY_TO_IMU_PHI" value="0.3" unit="deg"/>
     <define name="BODY_TO_IMU_THETA" value="0.0" unit="deg"/>
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
 
@@ -198,12 +198,20 @@
    <define name="ACCEL_Y_SENS" value="2.4394"  integer="16"/>
    <define name="ACCEL_Z_SENS" value="2.4453" integer="16"/-->
 
-<define name="ACCEL_X_NEUTRAL" value="122"/>
+<!--define name="ACCEL_X_NEUTRAL" value="122"/>
 <define name="ACCEL_Y_NEUTRAL" value="-17"/>
 <define name="ACCEL_Z_NEUTRAL" value="-6"/>
 <define name="ACCEL_X_SENS" value="2.45647109131" integer="16"/>
 <define name="ACCEL_Y_SENS" value="2.44777763777" integer="16"/>
-<define name="ACCEL_Z_SENS" value="2.39465460205" integer="16"/>
+<define name="ACCEL_Z_SENS" value="2.39465460205" integer="16"/-->
+
+<define name="ACCEL_X_NEUTRAL" value="9"/>
+<define name="ACCEL_Y_NEUTRAL" value="-33"/>
+<define name="ACCEL_Z_NEUTRAL" value="119"/>
+<define name="ACCEL_X_SENS" value="2.45415537683" integer="16"/>
+<define name="ACCEL_Y_SENS" value="2.4443148217" integer="16"/>
+<define name="ACCEL_Z_SENS" value="2.43910931645" integer="16"/>
+
 
 <!--titus drone--> 
 <!--define name="ACCEL_X_NEUTRAL" value="9"/>
