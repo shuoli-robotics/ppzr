@@ -485,7 +485,7 @@ void snake_gate_periodic(void)
 //   debug_3 = u_k[4][0];
   
    debug_1 = X_int[0][0];
-   debug_2 = X_int[1][0];
+   debug_2 = gate_dist_x;//X_int[1][0];
    
    //acc biases
    debug_3 = X_int[4][0];
@@ -522,7 +522,8 @@ void snake_gate_periodic(void)
       /*run_ekf_m = 1;*/
     /*}*/
     
-    if(X_int[0][0] > (gate_dist_x - 0.3))vision_sample = 0;//-----------------------------------------------------------???????????????
+    /*if(X_int[0][0] > (gate_dist_x - 0.3) || ls_pos_x > gate_dist_x)vision_sample = 0;//------*/
+   if(ls_pos_x > gate_dist_x)vision_sample = 0;//------
    
 /*    if(X_int[0][0] > gate_dist_x + 0.2 && run_ekf_m == 0){
       run_ekf_m = 1;
