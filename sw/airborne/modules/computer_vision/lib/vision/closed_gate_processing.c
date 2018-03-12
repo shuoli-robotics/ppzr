@@ -699,7 +699,6 @@ int closed_gate_processing(struct image_t *img){
     
     //sucessfull detection
     last_frame_detection = 1;
-    vision_sample = 1;
     
     gettimeofday(&stop, 0);
     last_detection_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
@@ -895,6 +894,9 @@ int closed_gate_processing(struct image_t *img){
 	gate_img_point_y_3 = best_gate.y_corners[2];
 	gate_img_point_x_4 = best_gate.x_corners[3];
 	gate_img_point_y_4 = best_gate.y_corners[3];
+	
+	//new vision_sample ready
+	vision_sample = 1;
 	
     
   } else {
