@@ -56,9 +56,9 @@ struct MedianFilterInt D_med;
 // #define KI_Y 0.0
 // #define KD_Y 0.2
 
-#define KP_Y 0.45//0.55//0.45//0.35 //was 0.4
+#define KP_Y 0.50//0.45//0.55//0.45//0.35 //was 0.4
 #define KI_Y 0.0//0.00010
-#define KD_Y 0.25//0.25//0.5//0.5//0.60//0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
+#define KD_Y 0.15//0.35//0.25//0.5//0.5//0.60//0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  25.0/180*3.14//was 15 then 25 deg
 
 
@@ -827,7 +827,7 @@ bool go_through_gate(float theta)
 				return FALSE;
 		}
        		
-		float error_y = -kf_pos_y;
+		float error_y = -kf_pos_y;//+0.15;
 		
 		/*printf("go through function is called\n");*/
 		
