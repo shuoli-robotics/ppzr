@@ -221,5 +221,8 @@ extern void set_altitude(float altitude);
 extern bool stop_turn(float break_time, float delta_psi);
 extern bool take_off_fast(void);
 
+extern float D_term;
+extern float D_term_median;
+
 #endif
 
