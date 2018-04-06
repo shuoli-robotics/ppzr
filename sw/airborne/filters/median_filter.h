@@ -24,7 +24,7 @@
 #ifndef MEDIAN_H
 #define MEDIAN_H
 
-#define MEDIAN_DATASIZE 5
+#define MEDIAN_DATASIZE 5//10//5
 
 #include "std.h"
 #include "math/pprz_algebra_int.h"

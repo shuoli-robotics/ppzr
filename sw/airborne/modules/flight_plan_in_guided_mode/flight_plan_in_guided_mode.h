@@ -70,7 +70,7 @@
 #endif
 
 #ifndef TAKE_OFF_ALTITUDE 
-#define TAKE_OFF_ALTITUDE -1.5//-1.4
+#define TAKE_OFF_ALTITUDE -1.8//-1.4
 #endif
 
 #define TURN_POINT 3.5
@@ -83,6 +83,7 @@ struct acceleration{
 
 extern float log_pid_error;
 extern float log_pid_derror;
+extern float desired_phi;
 
 
 struct arc_open_loop_status{
@@ -219,6 +220,9 @@ extern bool go_through_open_gate(double desired_theta, double desired_x);
 extern void set_altitude(float altitude);
 extern bool stop_turn(float break_time, float delta_psi);
 extern bool take_off_fast(void);
+
+extern float D_term;
+extern float D_term_median;
 
 #endif
 

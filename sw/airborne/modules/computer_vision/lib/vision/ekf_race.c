@@ -11,6 +11,8 @@
 
 #include "modules/computer_vision/lib/vision/ekf_race.h"
 
+struct timeval stopp;
+
 // float Jac_F[7][7] = {0};
 
 float eye_7[7][7] = {{0}};
@@ -43,9 +45,9 @@ float DHx[3][7] = {
 };
 
 float R_k_d[3][3] = {   
-   { 0.2, 0, 0, } ,
-   { 0, 0.2, 0, } ,
-   { 0, 0, 0.8, }//was 0.2////////////////////////////////////////////////////////////////////////////////////////////
+   { 1.1, 0, 0, } ,
+   { 0, 0.1, 0, } ,
+   { 0, 0, 0.5, }//was 0.2////////////////////////////////////////////////////////////////////////////////////////////
 };
 
 float K_d[7][3] = {{0}};
@@ -66,11 +68,11 @@ void EKF_init(void){
   
   init_eye_7(eye_7);
   
-  float P_k_1_diag[7] = {1,1,1,1,1,1,1};
+  float P_k_1_diag[7] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0};
   EKF_init_diag(P_k_1_k_1_d,P_k_1_diag);
   
   //check  process noise of biases---------------------------------
-  float Q_diag[7] = {0.2,0.2,0.2,0.2,0,0,0};
+  float Q_diag[7] = {0.2,0.2,0.1,4.2,0,0,0};
   //float Q_diag[7] = {0.2,0.2,0.2,0.2,0.01,0.01,0.01};
   EKF_init_diag(Q,Q_diag);
   
@@ -100,6 +102,8 @@ void EKF_init_diag(float A[7][7], float diag[7]){
   }
 }
 
+int pred_print_count = 0;
+
 void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7][1], float dt, float u_k[8][1]){
   
 //    dt = time_stamp(n)-time_stamp(n-1);
@@ -111,6 +115,18 @@ void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7
 // 
 //    X_int = [X_int; X_int_prev + d_kf_calc_f_nl(dt,X_int_prev,U_k)'*dt];
 
+  int show_mat_p = 0;
+//   if(pred_print_count>512){
+//     pred_print_count = 0;
+//     show_mat_p = 1;
+//   }else{
+//     pred_print_count++;
+//   }
+  
+  gettimeofday(&stopp, 0);
+  double time_p = (double)(stopp.tv_sec + stopp.tv_usec / 1000000.0);
+  if(show_mat_p)printf("STARTING MAT OUTPUT PREDICTION dt:%f  at time:%lf !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n",dt,time_p);
+  
   const float D_x = -1/0.5;
   const float D_y = -1/0.43;
   
@@ -148,6 +164,16 @@ void EKF_propagate_state(float xdot[7][1], float x_prev[7][1], float new_state[7
   //new_state = curr_state + xdot*dt
   MAT_SUM_c(7,1, new_state, x_prev, xdot,dt);
   
+  if(show_mat_p)MAT_PRINT(7, 1,x_prev);
+  if(show_mat_p)MAT_PRINT(7, 1,new_state);
+  if(show_mat_p)MAT_PRINT(7, 1,xdot);
+  if(show_mat_p)MAT_PRINT(8, 1,u_k);
+  
+  if(show_mat_p){
+    printf("STOPPING MAT OUTPUT  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+    show_mat_p = 0;
+  }
+  
 }
 
 void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], float EKF_delta, int sonar_only){
@@ -174,6 +200,12 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
 //         X_int(n,:) = X_opt';
 // 
 //         P_k_1_k_1 = (eye(7) - K*DHx) * P_k_1 * (eye(7) - K*DHx)' + K*R_k*K';
+  
+  int show_mat = 0;
+  //if(EKF_delta > 0.15 && EKF_delta < 1.5)show_mat = 1;
+  gettimeofday(&stopp, 0);
+  double time_p = (double)(stopp.tv_sec + stopp.tv_usec / 1000000.0);
+  if(show_mat)printf("STARTING MAT OUTPUT WITH EKF_delta:%f  at time:%lf !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n",EKF_delta,time_p);
 
   float phi_s = stateGetNedToBodyEulers_f()->phi;
   float theta_s = stateGetNedToBodyEulers_f()->theta;
@@ -181,6 +213,12 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   
   float p_s = stateGetBodyRates_f()->p;
   float q_s = stateGetBodyRates_f()->q;
+   
+  if(show_mat)printf("U_k  [phi_s:%f theta_s:%f psi_s:%f p_q:%f q_s:%f ]\n",phi_s,theta_s,psi_s,p_s,q_s);
+  
+  if(show_mat)MAT_PRINT(7, 1,x_state);
+  
+  if(show_mat)MAT_PRINT(7, 7,P_k_1_k_1_d);
   
   //adapt DHx if only using sonar
   if(sonar_only){
@@ -202,11 +240,11 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   //jacobian
   EKF_evaluate_jacobian(DFx,phi_s,theta_s,psi_s,q_s,p_s);
 
-  //MAT_PRINT(7, 7,DFx);
+  if(show_mat)MAT_PRINT(7, 7,DFx);
   //discretize the system
   c_2_d(Phi_d, DFx,EKF_delta);
 
-//  MAT_PRINT(7, 7,Phi_d);
+  if(show_mat)MAT_PRINT(7, 7,Phi_d);
   
   //P_k_1 = Phi*P_k_1_k_1*Phi' + Q
   //temp_m_1=P_k_1_k_1*Phi'
@@ -216,7 +254,7 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   //P_k_1_d=temp_m_2 + Q
    MAT_SUM(7, 7, P_k_1_d,temp_m_2, Q);
   
-  // MAT_PRINT(7, 7,P_k_1_d);
+  if(show_mat) MAT_PRINT(7, 7,P_k_1_d);
   
   //K = P_k_1 * DHx' / (DHx*P_k_1 * DHx' + R_k);
   //temp_7_3_1=P_k_1 * DHx' 
@@ -230,7 +268,9 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   //K_d=temp_7_3_1*temp_3_3_1
   MAT_MUL(7,3,3, K_d, temp_7_3_1, temp_3_3_1);
   
-  //MAT_PRINT(7, 3,K_d);
+  if(show_mat)MAT_PRINT(7, 3,K_d);
+  
+  if(show_mat)printf("z_k_d[0]:%f z_k_d[1]:%f z_k_d[2]:%f \n",z_k_d[0],z_k_d[1],z_k_d[2]);
   
   //X_opt = x_kk_1' + K * (z_k - X_int(n,1:3))';
   //EKF_inn=z_k - X_int(n,1:3)
@@ -241,9 +281,9 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   MAT_MUL(7,3,1, temp_7_1_1, K_d, EKF_inn);
   //x_opt=x_state + temp_7_1_1
   MAT_SUM(7, 1, x_opt, x_state, temp_7_1_1);
-  x_opt[4][0] = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!BLOCK X ACC BIAS
+  //x_opt[4][0] = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!BLOCK X ACC BIAS
   //MAT_PRINT(3, 1,EKF_inn);
-  //MAT_PRINT(7, 1,x_opt);
+  if(show_mat)MAT_PRINT(7, 1,x_opt);
   
   //P_k_1_k_1 = (eye(7) - K*DHx) * P_k_1 * (eye(7) - K*DHx)' + K*R_k*K';
   MAT_MUL(7, 3, 7, temp_m_1, K_d,DHx);
@@ -263,7 +303,12 @@ void EKF_update_state(float x_state[7][1],float x_opt[7][1], float z_k_d[3], flo
   // MAT_PRINT(7, 7,temp_m_1);
   MAT_SUM(7, 7, P_k_1_k_1_d, temp_m_3, temp_m_1);
   
-  //MAT_PRINT(7, 7,P_k_1_k_1_d);
+  if(show_mat)MAT_PRINT(7, 7,P_k_1_k_1_d);
+  
+  if(show_mat){
+    printf("STOPPING MAT OUTPUT  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+    show_mat = 0;
+  }
   
 }
 

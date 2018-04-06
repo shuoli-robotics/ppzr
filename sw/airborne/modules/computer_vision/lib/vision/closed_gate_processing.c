@@ -144,6 +144,8 @@ float gate_dist_x = 3.5;//distance from filter init point to gate
 float gate_size_m = 1.4;//size of gate edges in meters
 float gate_center_height = -3.5;//height of gate in meters ned wrt ground
 
+int side_1 = 0;
+int side_2 = 0;
 
 //qsort comp function for sorting 
 int cmpfunc (const void * a, const void * b)
@@ -320,7 +322,7 @@ float detect_gate_sides(int *hist_raw, int *side_1, int *side_2){
 int closed_gate_processing(struct image_t *img){
   
   int filter = 0;
-  int gate_graphics = 0;
+  int gate_graphics = 1;
   int x, y;//, y_low, y_high, x_low1, x_high1, x_low2, x_high2, sz, szx1, szx2;
   float quality;
 
@@ -625,7 +627,7 @@ int closed_gate_processing(struct image_t *img){
   previous_best_gate.n_sides = best_gate.n_sides;
   
     //color filtered version of image for overlay and debugging
-  if (1){//filter) {
+  if (0){//filter) {
     int num_color = image_yuv422_colorfilt(img, img,
                       color_lum_min, color_lum_max,
                       color_cb_min, color_cb_max,
@@ -648,9 +650,6 @@ int closed_gate_processing(struct image_t *img){
   
 //change to gate based heading 
     local_psi = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading;--------------------------------------------------------------
-
-  int side_1;
-  int side_2;
   
   float hist_peek_value = detect_gate_sides(histogram,&side_1, &side_2);
   
@@ -677,7 +676,7 @@ int closed_gate_processing(struct image_t *img){
   float min_dist_h = 0.3;
   if(hist_peek_value > 9 && x_pos_hist < max_dist_h && x_pos_hist > min_dist_h){
     hist_sample = 1;
-    print_sides(img,side_1,side_2);
+    if(gate_graphics)print_sides(img,side_1,side_2);
   }else{
     hist_sample = 0;
   }
@@ -700,7 +699,6 @@ int closed_gate_processing(struct image_t *img){
     
     //sucessfull detection
     last_frame_detection = 1;
-    vision_sample = 1;
     
     gettimeofday(&stop, 0);
     last_detection_time = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
@@ -708,7 +706,7 @@ int closed_gate_processing(struct image_t *img){
     
     
     //draw_gate_color(img, best_gate, blue_color);
-    if(1){//gate drawing /////////////////////////////////////////////////////////////////////////////////////
+    if(gate_graphics){//gate drawing /////////////////////////////////////////////////////////////////////////////////////
 	if(repeat_gate == 0){
 	  draw_gate_polygon(img,best_gate.x_corners,best_gate.y_corners,blue_color);
 	}
@@ -897,6 +895,9 @@ int closed_gate_processing(struct image_t *img){
 	gate_img_point_x_4 = best_gate.x_corners[3];
 	gate_img_point_y_4 = best_gate.y_corners[3];
 	
+	//new vision_sample ready
+	vision_sample = 1;
+	
     
   } else {
 
@@ -910,7 +911,7 @@ int closed_gate_processing(struct image_t *img){
   }
 
 	//better principal point?
-	//draw_cross(img,158,32,green_color);
+	if(gate_graphics)draw_cross(img,158,32,green_color);
 return 1;	
 }
 

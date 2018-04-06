@@ -42,6 +42,10 @@
 #include "subsystems/imu.h"
 #include "math/pprz_algebra_float.h"
 
+//Include median filter
+#include "filters/median_filter.h"
+struct MedianFilterInt D_med;
+
 // #define KP_Y 0.55//0.4 
 // #define KI_Y 0.0
 // #define KD_Y 0.0//0.3
@@ -52,9 +56,9 @@
 // #define KI_Y 0.0
 // #define KD_Y 0.2
 
-#define KP_Y 0.45//0.55//0.45//0.35 //was 0.4
+#define KP_Y 0.50//0.45//0.55//0.45//0.35 //was 0.4
 #define KI_Y 0.0//0.00010
-#define KD_Y 0.5//0.5//0.60//0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
+#define KD_Y 0.20//0.15//0.35//0.25//0.5//0.5//0.60//0.50 //0.4//0.30//0.2//0.04//0.10//was0.15// 0.2
 #define MAX_PHI  25.0/180*3.14//was 15 then 25 deg
 
 
@@ -101,12 +105,18 @@ float previous_error_y = 0;
 float sum_y_error = 0;
 double g = 9.81;
 
+float D_term = 0;
+float D_term_median = 0;
+
 //avarage current and previous derivative term 
 float prev_D_term = 0;
 
 int primitive_in_use; // This variable is used for showing which primitive is used now;
 
 void flight_plan_in_guided_mode_init() {
+  
+    init_median_filter(&D_med);
+  
     primitive_in_use = NO_PRIMITIVE;
 }
 
@@ -424,7 +434,7 @@ bool arc_open_loop(double radius,double desired_theta,float delta_psi,int flag_r
 	float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;//1.8;//1.3;//2.0;
 #else
 	float cruise_speed = mean_speed;//1.7;//was 1.7
-	printf("cruise_speed:%f\n",cruise_speed);
+	//printf("cruise_speed:%f\n",cruise_speed);
 #endif
 	
 	
@@ -779,6 +789,7 @@ bool zigzag_open_loop(double desired_y,double desired_theta,float max_roll,float
 
 float previous_error_y ;
 float previous_D_term;
+float desired_phi;
 bool go_through_gate(float theta)
 {
 		if(primitive_in_use != GO_THROUGH_GATE)
@@ -816,18 +827,19 @@ bool go_through_gate(float theta)
 				return FALSE;
 		}
        		
-		float error_y = -kf_pos_y;
+		float error_y = -kf_pos_y;//+0.15;
 		
 		/*printf("go through function is called\n");*/
 		
 		
-		float D_term = error_y-previous_error_y;
+		D_term = error_y-previous_error_y;
+		D_term_median = (float)update_median_filter(&D_med, (int32_t)(D_term * 1000)) / 1000;
+		
 		race_state.sum_y_error += error_y;
 
 		log_pid_error = error_y;
-		log_pid_derror = ((D_term+prev_D_term)/2.0)*100;
+		log_pid_derror = D_term_median*100;//((D_term+prev_D_term)/2.0)*100;
 
-		float desired_phi;
 // 		if (kf_pos_x - gate_initial_position_y[race_state.gate_counter]<-0.5)
 // 		{
 // 		  desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
@@ -836,7 +848,9 @@ bool go_through_gate(float theta)
 // 		{
 // 		  desired_phi = 0;
 // 		}
-		desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		
+// 		desired_phi= KP_Y*error_y+KD_Y*((D_term+prev_D_term)/2.0)*100+KI_Y*race_state.sum_y_error;
+		desired_phi= KP_Y*error_y+KD_Y*(D_term_median)*100+KI_Y*race_state.sum_y_error;
 		
 		/*printf("intergration item is %f\n",KI_Y*race_state.sum_y_error/3.14*180);*/
 		previous_error_y = error_y;
@@ -1167,24 +1181,27 @@ bool take_off_fast(void)
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 				set_altitude(TAKE_OFF_ALTITUDE);
 				tf_status.flag_ekf_initialized = FALSE;
+				
+				initialize_EKF();//init EKF should be before takeoff, instead of mid air  
+				
 		}
 		if (time_primitive < FAST_TIME)
 		{
 // 				guidance_loop_set_theta(-13/57.6);
-				guidance_loop_set_theta(-7.0/57.6);//normal attitude again
+				guidance_loop_set_theta(-5.0/57.6);//normal attitude again
 				guidance_loop_set_phi(0);
 				guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);  // vertical module should be called!
 		}
 		else if (time_primitive < TURN_TIME)
 		{
-				guidance_loop_set_theta(-7.0/57.6);
+				guidance_loop_set_theta(-5.0/57.6);
 				guidance_loop_set_phi(0);
 		}
 		else if (time_primitive > TURN_TIME)
 				{
 						tf_status.flag_ekf_initialized = TRUE;
 						race_state.flag_in_open_loop = FALSE;
-						initialize_EKF();
+						//initialize_EKF();///first initialization shpuld be after first turn instead, otherwise wrong P mat initialization causes bias estimation errors
 						return TRUE;
 
 				} return FALSE;

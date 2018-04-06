@@ -65,22 +65,22 @@
 struct video_listener *listener = NULL;
 
 // Filter Settings
-// uint8_t color_lum_min = 99;//105;
-// uint8_t color_lum_max = 182;//205;
-// uint8_t color_cb_min  = 61;//52;
-// uint8_t color_cb_max  = 124;//140;
-// 
-// uint8_t color_cr_min  = 141;//138;//146;//was 180
-// 
-// uint8_t color_cr_max  = 178;//255;
+uint8_t color_lum_min = 99;//105;
+uint8_t color_lum_max = 182;//205;
+uint8_t color_cb_min  = 61;//52;
+uint8_t color_cb_max  = 124;//140;
+
+uint8_t color_cr_min  = 141;//138;//146;//was 180
+
+uint8_t color_cr_max  = 178;//255;
 
 //basement
-uint8_t color_lum_min = 0;//105;
-uint8_t color_lum_max = 255;//205;
-uint8_t color_cb_min  = 0;//52;
-uint8_t color_cb_max  = 255;//140;
-uint8_t color_cr_min  = 130;//138;//146;//was 180
-uint8_t color_cr_max  = 255;//255;
+// uint8_t color_lum_min = 0;//105;
+// uint8_t color_lum_max = 255;//205;
+// uint8_t color_cb_min  = 0;//52;
+// uint8_t color_cb_max  = 255;//140;
+// uint8_t color_cr_min  = 130;//138;//146;//was 180
+// uint8_t color_cr_max  = 255;//255;
 
 // //color I dont know
 uint8_t green_color[4] = {255,128,255,128}; //{0,250,0,250};
@@ -121,12 +121,15 @@ int vision_sample = 0;
 
 float EKF_dt = 0;
 float EKF_m_dt = 0;
+float EKF_s_dt = 0;
 double time_prev = 0;
 double time_prev_m = 0;
+double time_prev_s = 0;
 
 //final KF results
 float kf_pos_x = 0;
 float kf_pos_y = 0;
+float kf_pos_z = 0;
 float kf_vel_x = 0;
 float kf_vel_y = 0;
 
@@ -145,6 +148,7 @@ float gate_distance = 3.5;
 
 int run_ekf = 0;
 int run_ekf_m = 0;
+int first_ekf_init = 0;
 int ekf_sonar_update = 0;
 
 double last_open_loop_time = 0;
@@ -157,6 +161,12 @@ float acc_bias_z = 0;
 
 float local_x = 0;
 float local_y = 0;
+
+float u_k_x = 0;
+float u_k_y = 0;
+float u_k_z = 0;
+float u_k_p = 0;
+float u_k_q = 0;
 
 //moving mean x speed
 #define MEAN_WINDOW_LENGTH 512 //100 //at 100hz? -> one second
@@ -268,7 +278,7 @@ void initialize_EKF(){
       /*gate_size_m = 1.0;*/
     }else{
       gate_size_m = 1.0; //after second gate, switch to smaller gates
-        printf("SMALL GATE\n");
+        //printf("SMALL GATE\n");
     }
     
     //color filter change
@@ -286,31 +296,52 @@ void initialize_EKF(){
     }else{
       //High exposure 30 (standard)
       cv_me_mwb_exposure = 30;
+      //main hall
 //       color_lum_min = 93;//105;
 //       color_lum_max = 227;//205;
 //       color_cb_min  = 53;//52;
 //       color_cb_max  = 169;//140;
 //       color_cr_min  = 142;//138;//146;//was 180
 //       color_cr_max  = 255;//255;
+        color_lum_min = 20;//105;
+	color_lum_max = 228;//205;
+        color_cb_min  = 66;//52;
+        color_cb_max  = 194;//140;
+        color_cr_min  = 132;//138;//146;//was 180
+        color_cr_max  = 230;//255;
       //basement 
-      color_lum_min = 0;//105;
+      /*color_lum_min = 0;//105;
       color_lum_max = 255;//205;
       color_cb_min  = 0;//52;
       color_cb_max  = 255;//140;
       color_cr_min  = 130;//138;//146;//was 180
-      color_cr_max  = 255;//255;
+      color_cr_max  = 255;/*///255;
     }
     
-    run_ekf_m = 1;
-    run_ekf = 1;
-    printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("gate distance:%f\n",gate_distance);
-    printf("gate heading:%f\n",gate_heading);
+     run_ekf_m = 1;
+     run_ekf = 1;
+     
+     //just to be sure nothing is remaining
+     vision_sample = 0;
+     hist_sample = 0;
+     
+//     printf("init EKF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+//     printf("gate distance:%f\n",gate_distance);
+//     printf("gate heading:%f\n",gate_heading);
     // TODO: increase uncertainty
-    MAT_PRINT(7, 7,P_k_1_k_1_d);
-    for(int i = 0; i < 4; i++)
-    {
-      P_k_1_k_1_d[i][i] = 1.5f;
+    //MAT_PRINT(7, 7,P_k_1_k_1_d);
+    if(first_ekf_init){
+      for(int i = 0; i < 4; i++)//should be 3
+      {
+	P_k_1_k_1_d[i][i] = 1.0f;//was 1.5
+      }
+      for(int i = 4; i < 7; i++)
+      {
+	P_k_1_k_1_d[i][i] = 0.0f;
+      }
+    }else if(first_ekf_init == 0){
+      first_ekf_init = 1;
+      X_int[3][0] = -1;//initial w -1 m/s
     }
     //debug_5 = gate_dist_x;
 }
@@ -356,8 +387,14 @@ void snake_gate_periodic(void)
   u_k[6][0] = stateGetNedToBodyEulers_f()->theta;
   u_k[7][0] = 0;//stateGetNedToBodyEulers_f()->psi - gate_heading; Quick fix !!!!!!!!!!!!!!!!!!!!!!
   
+  u_k_x = u_k[0][0];
+  u_k_y = u_k[1][0];
+  u_k_z = u_k[2][0];
+  u_k_p = u_k[3][0];
+  u_k_q = u_k[4][0];
   
-  if(race_state.flag_in_open_loop == TRUE || autopilot_mode == 4){
+  
+  if((race_state.flag_in_open_loop == TRUE && primitive_in_use != 30) || autopilot_mode == 4){
     // TODO: really no observations?
     last_open_loop_time = time_now;
     run_ekf = 0;
@@ -370,7 +407,10 @@ void snake_gate_periodic(void)
    
    //Drag body speed X
    float k_x = -0.55;
-    mov_mean_array[mm_idx] = ACCEL_FLOAT_OF_BFP(acc_body_filtered.x)/k_x;//x speed
+   float x_speed_bias = X_int[4][0];
+   if(x_speed_bias > 1)x_speed_bias = 1;
+   if(x_speed_bias < -1)x_speed_bias = -1;
+    mov_mean_array[mm_idx] = (ACCEL_FLOAT_OF_BFP(acc_body_filtered.x)-x_speed_bias)/k_x;//x speed
     mm_idx++;
     if(mm_idx >= MEAN_WINDOW_LENGTH)mm_idx = 0;
     
@@ -380,6 +420,13 @@ void snake_gate_periodic(void)
     float psi = stateGetNedToBodyEulers_f()->psi;
     float cruise_speed = cos(psi)*v_x_e +sin(psi)*v_y_e;
     EKF_propagate_state(X_dot,X_int,X_int,EKF_dt,u_k);
+    
+    gettimeofday(&stop, 0);
+    double time_s = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+    EKF_s_dt = time_s - time_prev_m;//time since last measurement update
+    if(EKF_s_dt > 0.16){
+      X_int[2][0] = stateGetPositionNed_f()->z;
+    }
     //debug_4 = cruise_speed;
    // debug_5 = X_dot[0][0];//x speed
     
@@ -395,29 +442,32 @@ void snake_gate_periodic(void)
     //  printf("propagate psi:%f gate_heading:%f -------------------\n",stateGetNedToBodyEulers_f()->psi*57,gate_heading*57);
   }
 
-  //bounding pos, speed and biases
-  if(X_int[0][0] > 45)X_int[0][0] = 45;//xmax
-  if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
-  if(X_int[1][0] > 7)X_int[1][0] = 7;//ymax
-  if(X_int[1][0] < -7)X_int[1][0] = -7;//ymin
-  if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
-  if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
-  
-  //w speed
-  if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
-  if(X_int[3][0] < -1.5)X_int[3][0] = -1.5;//ymin
-  
-  //acc biases
-  if(X_int[4][0] > 1)X_int[4][0] = 1;//ymax
-  if(X_int[4][0] < -1)X_int[4][0] = -1;//ymin
-  if(X_int[5][0] > 1)X_int[5][0] = 1;//ymax
-  if(X_int[5][0] < -1)X_int[5][0] = -1;//ymin
-  if(X_int[6][0] > 2)X_int[6][0] = 2;//ymax
-  if(X_int[6][0] < -2)X_int[6][0] = -2;//ymin
+  int bounds = 0;
+  if(bounds){
+    //bounding pos, speed and biases
+    if(X_int[0][0] > 45)X_int[0][0] = 45;//xmax
+    if(X_int[0][0] < -4)X_int[0][0] = -4;//xmin
+    if(X_int[1][0] > 7)X_int[1][0] = 7;//ymax
+    if(X_int[1][0] < -7)X_int[1][0] = -7;//ymin
+    if(X_int[2][0] > 0)X_int[2][0] = 0;//xmax
+    if(X_int[2][0] < -5)X_int[2][0] = -5;//xmin
+    
+    //w speed
+    if(X_int[3][0] > 1.5)X_int[3][0] = 1.5;//ymax
+    if(X_int[3][0] < -1.5)X_int[3][0] = -1.5;//ymin
+    
+    //acc biases
+    if(X_int[4][0] > 1)X_int[4][0] = 1;//ymax
+    if(X_int[4][0] < -1)X_int[4][0] = -1;//ymin
+    if(X_int[5][0] > 1)X_int[5][0] = 1;//ymax
+    if(X_int[5][0] < -1)X_int[5][0] = -1;//ymin
+    if(X_int[6][0] > 2)X_int[6][0] = 2;//ymax
+    if(X_int[6][0] < -2)X_int[6][0] = -2;//ymin
+  }
   
   kf_pos_x = X_int[0][0];
   kf_pos_y = X_int[1][0];
-  kf_vel_x = X_int[2][0];
+  kf_pos_z = X_int[2][0];
   kf_vel_y = X_int[3][0];
   acc_bias_x = X_int[4][0];
   acc_bias_y = X_int[5][0];
@@ -435,7 +485,7 @@ void snake_gate_periodic(void)
 //   debug_3 = u_k[4][0];
   
    debug_1 = X_int[0][0];
-   debug_2 = X_int[1][0];
+   debug_2 = gate_dist_x;//X_int[1][0];
    
    //acc biases
    debug_3 = X_int[4][0];
@@ -445,12 +495,12 @@ void snake_gate_periodic(void)
 //     debug_3 = ls_pos_x;
 //     debug_4 = ls_pos_y;
    if(hist_sample){
-    //debug_3 = x_pos_hist;
+    //debug_3 = y_pos_hist;
     //debug_4 = y_pos_hist;
    }
    
    if(vision_sample){
-    //debug_5 = ls_pos_y;
+    //debug_4 = ls_pos_y;
    }
    /*debug_3 = X_int[2][0];*/
     //debug_5 = X_int[2][0];
@@ -472,7 +522,8 @@ void snake_gate_periodic(void)
       /*run_ekf_m = 1;*/
     /*}*/
     
-    if(X_int[0][0] > (gate_dist_x - 0.3))vision_sample = 0;//-----------------------------------------------------------???????????????
+    /*if(X_int[0][0] > (gate_dist_x - 0.3) || ls_pos_x > gate_dist_x)vision_sample = 0;//------*/
+   if(ls_pos_x > gate_dist_x)vision_sample = 0;//------
    
 /*    if(X_int[0][0] > gate_dist_x + 0.2 && run_ekf_m == 0){
       run_ekf_m = 1;
@@ -480,39 +531,28 @@ void snake_gate_periodic(void)
     }
   */
     
+//       gettimeofday(&stop, 0);
+//       double time_s = (double)(stop.tv_sec + stop.tv_usec / 1000000.0);
+//       EKF_s_dt = time_s - time_prev_m;//time since last measurement update
+//       if(vision_sample == 0 && hist_sample == 0 && EKF_s_dt > 0.05){
+// 	ekf_sonar_update = 1;
+//       }else{
+// 	ekf_sonar_update = 0;
+//       }
       ekf_sonar_update = 0;
-    
-    if(primitive_in_use == ZIGZAG_2){
-	  run_ekf_m = 0;
-    }
-    
-    //First stretch gate switching logic
-    float switch_threshold_x = 1.0;
-    float switch_threshold_y = 0.5;
-    if(vision_sample && run_ekf_m == 1  && fabs(X_int[0][0]-ls_pos_x)>switch_threshold_x && fabs(X_int[1][0]-ls_pos_y)>switch_threshold_y){
-      //init_next_open_gate();
-      //printf("init_next_open_gate()--------------------------------------------------\n");
-    }
-
-    //only update when we trust the vision such to be good enough for a meausrement update 
-//     if(vision_sample && run_ekf_m == 1){
-//     prev_ls_pos_x = ls_pos_x;
-//     prev_ls_pos_y = ls_pos_y;
-//     }
-
 
       //If in first stretch limit detection distance///////////////////////////
       if(ls_pos_x < -1.5)vision_sample = 0;//;run_ekf_m = 0;
 
     
     //hist_sample = 0;///////////////////////////////////////////////////////////////////////////////////////
-      
+      //vision_sample = 0;
       
 //     printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     //debug_5 = 0;
   if(( vision_sample || hist_sample || ekf_sonar_update) && run_ekf && run_ekf_m && !isnan(ls_pos_x) && !isnan(ls_pos_y))
   {
-    printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
+    //printf("run ekf:%d run_ekf_m:%d vision_sample:%d \n",run_ekf,run_ekf_m,vision_sample);
     //debug_5 = 1;
     //printf("x pos=%f y pos=%f\n",debug_1,debug_2);
    // printf("primitivr in use = %d; --------------------------------------\n",primitive_in_use);
@@ -524,7 +564,7 @@ void snake_gate_periodic(void)
     
     //MAT_PRINT(2, 2,temp_2_2_b);
     
-    if(EKF_m_dt>5.0)EKF_m_dt=5.0;
+    if(EKF_m_dt>1.5)EKF_m_dt=0.02;//.02;//was EKF_m_dt>5 and =0.0
     //update dt 
    
       //xy-position in local gate frame(ls, or histogram)
@@ -536,7 +576,7 @@ void snake_gate_periodic(void)
  	hist_sample = 0;
  	vision_sample = 0;//dont use vision in next iteration!!?????????????TODO
        }else{
- 	local_x = ls_pos_x;
+ 	local_x = ls_pos_x;//+ 0.4;//0.4 for alligning
 	local_y = ls_pos_y;
        }
 //      if(vision_sample){
@@ -609,5 +649,5 @@ void snake_gate_detection_init(void)
   init_butterworth_2_low_pass_int(&filter_z, HFF_LOWPASS_CUTOFF_FREQUENCY, (1. / AHRS_PROPAGATE_FREQUENCY), 0);
   
   EKF_init();
-  
+     
 }

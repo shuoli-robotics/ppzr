@@ -126,7 +126,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,   %f,%f,%f,%f, %f,%f,%f,%f,%f,%f,%f, %f,%f,%f, %f,%f,     %d,%f,%f\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,   %f,%f,%f,%f, %f,%f,%f,%f,%f,%f,%f, %f,%f,%f, %f,%f,     %d,%f,%f, %d,%f, %d,%d, %f,%f,%f, %f,%f,%f,%f,%f, %f, %d, %f,%f,\n",
 
           counter,
 	  
@@ -230,8 +230,29 @@ void file_logger_periodic(void)
 	  //log_pid_error,
 	  //mean_speed,
 	  arc_status.v_x_f,
-	  log_pid_derror
-
+	  log_pid_derror,
+	  
+	  primitive_in_use,
+	  desired_phi,
+	  
+	  side_1,
+          side_2,
+	  
+	  kf_pos_z,
+	  EKF_dt,
+	  EKF_m_dt,
+	  
+	  u_k_x,
+          u_k_y, 
+          u_k_z,
+          u_k_p,
+          u_k_q,
+	  log_pid_error,
+	  
+	  vision_sample,
+	  
+	  D_term,
+	  D_term_median
 
          );
   counter++;

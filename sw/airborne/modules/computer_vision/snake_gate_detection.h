@@ -152,8 +152,12 @@ extern float ls_pos_z;
 //final KF results
 extern float kf_pos_x;
 extern float kf_pos_y;
+extern float kf_pos_z;
 extern float kf_vel_x;
 extern float kf_vel_y;
+
+extern float EKF_dt;
+extern float EKF_m_dt;
 
 extern float debug_1;
 extern float debug_2;
@@ -189,6 +193,13 @@ extern float local_y;
 
 //mean speed
 extern float mean_speed;
+
+//ekf uk
+extern float u_k_x;
+extern float u_k_y;
+extern float u_k_z;
+extern float u_k_p;
+extern float u_k_q;
 
 //Special vector vector operation
 /* multiply _vin by _mat, store in _vout */

@@ -46,8 +46,8 @@ double theta_hover;
 double phi_hover;
 struct acceleration accel_bias;
 struct acceleration accel_hover;
-double desired_theta;
-double desired_phi;
+//double desired_theta;
+//double desired_phi;
 
 int arc_counter;
 int arc_passed;
@@ -67,19 +67,23 @@ enum states_upper_level state_upper_level ;
 enum maneuver maneuvers[] = {ARC_L,ARC_L,ARC_R,ARC_L,ARC_L};
 //enum maneuver maneuvers[] = {STOP_AND_TURN,ZIGZAG_R,ZIGZAG_L,ZIGZAG_R,ARC_L};
 
-float gate_initial_position_y[] = {10.0,10.0,8.0,3.0,5.0};
-float turn_point[] = {10.5,10.5,8.5,3.5,5.5};
+//float gate_initial_position_y[] = {10.0,10.0,10.0,10.0,10.0};
+float gate_initial_position_y[] = {6.3,9.8,2.8,2.8,3.5+0.8,10.8};
+
+//float turn_point[] = {10.5,10.5,10.5,10.5,10.5};
+float turn_point[] = {6.3+0.1,9.8+0.5,2.8+0.5,2.8+0.5,3.5+0.8+0.5,10.8+0.5};
+
 float gate_initial_heading[] = {90.0/PI*180, 180.0/180*3.14,180.0/180*3.14,180.0/180*3.14,180.0/180*3.14};
 
-float gate_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
-float open_loop_altitude[] = {-1.5,-1.5,-1.5,-1.5,-1.5};
+float gate_altitude[] = {-1.8,-1.8,-1.8,-1.8,-1.8};
+float open_loop_altitude[] = {-1.8,-1.8,-1.8,-1.8,-1.8};
 
 
 float break_time[] = {0.0,0.0,0.0,0.0};
 
 /*int   flag_arc_right[] = {1,              -0,           -0,     0};*/
-float arc_radius[] =     {1.0,             2.5,           1.0,		1,	 1};
-float delta_arc_angle[] = {90.0/180*3.14,180.0/180*3.14,120.0/180*3.14,90.0/180*3.14, 90.0/180*3.14};
+float arc_radius[] =     {1.0,             1.9,           1.0,		1,	 0.9};//0.75
+float delta_arc_angle[] = {90.0/180*3.14,180.0/180*3.14,120.0/180*3.14,120.0/180*3.14, 90.0/180*3.14};
 
 
 /*int   flag_2_arc_right[] = {0,             1,           -1,      1};*/
@@ -261,10 +265,12 @@ void third_part_logic()
 	switch(state_lower_level)
 	{
 			case GO_STRAIGHT_CM:
+			  //block_acc = 0;
         if (race_state.gate_counter == 5)
                             {
-                             state_upper_level =  FOURTH_PART;
+                            // state_upper_level =  FOURTH_PART;
                              state_lower_level = GO_STRAIGHT_CM;
+			     race_state.gate_counter =0;
                              break;
                             }
 					if (go_through_gate(-5.0/180*PI))
@@ -310,6 +316,7 @@ void third_part_logic()
 					}
 					break;
 			case ARC_CM:
+			  //block_acc = 1;
 			  if (primitive_in_use == ARC_OPEN_LOOP &&  race_state.gate_counter== 1)
 			  {
 			    flag_low_exposure = 1;
