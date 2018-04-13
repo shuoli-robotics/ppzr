@@ -1,0 +1,3 @@
+/home/shuo/ppzr/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/shuo/ppzr/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/shuo/ppzr/cmake-build-debug/CMakeFiles/paparazzi.dir
