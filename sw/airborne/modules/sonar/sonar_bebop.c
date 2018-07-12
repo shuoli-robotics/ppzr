@@ -169,7 +169,7 @@ static void sonar_bebop_send(struct transport_tx *trans, struct link_device *dev
 }
 
 float sonar_filter_gate(float distance_sonar){
-	float distance;
+	/*float distance;
 	current_distance = distance_sonar;
 	diff_pre_cur = current_distance - previous_distance;
 	if (diff_pre_cur < -0.4) {
@@ -195,4 +195,6 @@ float sonar_filter_gate(float distance_sonar){
 	if (distance > 5)
 		distance = 5;
 	return distance;
+    */
+    return distance_sonar;
 }

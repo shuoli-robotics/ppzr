@@ -35,10 +35,11 @@
 #include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
 #include "modules/command_level_iros/command_level_iros.h"
 #include "state.h"
+#include "stdio.h"
 
 #include "math/pprz_algebra_int.h"
 
-#define GUIDANCE_V_MODE_MODULE_SETTING GUIDANCE_V_MODE_MODULE
+//#define GUIDANCE_V_MODE_MODULE_SETTING GUIDANCE_V_MODE_MODULE
 
 /* error if some gains are negative */
 #if (GUIDANCE_V_HOVER_KP < 0) ||                   \
@@ -341,6 +342,7 @@ void guidance_v_run(bool in_flight)
         stabilization_cmd[COMMAND_THRUST] = Min(guidance_v_rc_delta_t, guidance_v_delta_t);
       } else
 #endif
+          printf("[guidance_v] verical loop control is running\n");
         stabilization_cmd[COMMAND_THRUST] = guidance_v_delta_t;  // write the value to stabilization level
       break;
 

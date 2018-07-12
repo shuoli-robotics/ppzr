@@ -39,6 +39,7 @@
 #include "generated/airframe.h"
 #include "paparazzi.h"
 #include "subsystems/radio_control.h"
+#include "stdio.h"
 
 #if !defined(STABILIZATION_INDI_ACT_DYN_P) && !defined(STABILIZATION_INDI_ACT_DYN_Q) && !defined(STABILIZATION_INDI_ACT_DYN_R)
 #error You have to define the first order time constant of the actuator dynamics!
@@ -305,6 +306,8 @@ void stabilization_indi_run(bool enable_integrator __attribute__((unused)), bool
 
   /* compute the INDI command */
   stabilization_indi_calc_cmd(stabilization_att_indi_cmd, &att_err, rate_control);
+
+  printf("[stabilization_indi] indi is running\n");
 
   /* copy the INDI command */
   stabilization_cmd[COMMAND_ROLL] = stabilization_att_indi_cmd[COMMAND_ROLL];

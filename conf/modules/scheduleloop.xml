@@ -1,0 +1,17 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="scheduleloop">
+  <doc>
+    <description>This module is the highest loop of control. </description>
+  </doc>
+  <header>
+    <file name="scheduleloop.h"/>
+  </header>
+  <init fun="schedule_init()"/>
+  <periodic fun="schedule_run()" freq="100"/>
+  <periodic fun="clock_run()" freq="100"/>
+  <makefile>
+    <file name="scheduleloop.c"/>
+  </makefile>
+</module>
+

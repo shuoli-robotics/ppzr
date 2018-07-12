@@ -1,0 +1,14 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="nn_controller">
+  <doc>
+    <description>This module only runs in guidance_module mode. It calls funtion of NN controller and get the optimal input of the sysem, then it sends thrust and pitch rate command to low level controller.</description>
+  </doc>
+  <header>
+    <file name="nn_controller.h"/>
+  </header>
+  <makefile>
+    <file name="nn_controller.c"/>
+  </makefile>
+</module>
+

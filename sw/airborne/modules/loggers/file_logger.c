@@ -44,6 +44,7 @@
 #include "modules/computer_vision/lib/vision/closed_gate_processing.h"
 #include "modules/sonar/sonar_bebop.h"
 #include "modules/command_level_iros/command_level_iros.h"
+#include "modules/nn/nn.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -126,7 +127,7 @@ void file_logger_periodic(void)
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
 //flow_v_x,flow_v_y,body_v_x,body_v_y                                                    //%f,%f,%f,
-  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,   %f,%f,%f,%f, %f,%f,%f,%f,%f,%f,%f, %f,%f,%f, %f,%f,     %d,%f,%f, %d,%f, %d,%d, %f,%f,%f, %f,%f,%f,%f,%f, %f, %d, %f,%f,\n",
+  fprintf(file_logger, "%d, %f, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f, %f,%f,%f,%f,%f,%f, %d,  %f,%f,%f, %d,%d, %d,%d,%d,%d,%d,%d,%d,%d,%d, %f,%f,%f,%f,%f,%f,%f,%f,   %f,%f,%f,%f, %f,%f,%f,%f,%f,%f,%f, %f,%f,%f, %f,%f,     %d,%f,%f, %d,%f, %d,%d, %f,%f,%f, %f,%f,%f,%f,%f, %f, %d, %f,%f,%f\n",
 
           counter,
 	  
@@ -252,7 +253,8 @@ void file_logger_periodic(void)
 	  vision_sample,
 	  
 	  D_term,
-	  D_term_median
+	  D_term_median,
+      nn_time
 
          );
   counter++;
