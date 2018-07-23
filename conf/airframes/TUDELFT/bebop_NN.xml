@@ -43,7 +43,6 @@
     <!--module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
     </module-->
-    <!--module name="guidance_loop_controller"/-->
     <module name="send_imu_mag_current"/>
     <module name="video_thread">
     </module>
@@ -56,6 +55,11 @@
     <module name="nn_controller"/>
     <module name="scheduleloop"/>
     <module name="guidance_loop_controller"/>
+    <module name="guidance" type="indi"> 
+       <define name="GUIDANCE_INDI_SPECIFIC_FORCE_GAIN" value="-500.0"/> 
+       <define name="GUIDANCE_INDI_THRUST_DYNAMICS" value="0.1"/> 
+       <define name="GUIDANCE_INDI_RC_DEBUG" value="TRUE"/> 
+    </module>
     <module name="pose_history"/>
     <module name="video_rtp_stream">
        <define name="VIEWVIDEO_CAMERA" value="front_camera"/>

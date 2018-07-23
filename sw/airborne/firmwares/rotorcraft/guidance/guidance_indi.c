@@ -118,6 +118,7 @@ void guidance_indi_enter(void) {
  * main indi guidance function
  */
 void guidance_indi_run(bool in_flight, int32_t heading) {
+    printf("[guidance_indi] guidance_indi_run is running\n");
 
   //filter accel to get rid of noise
   guidance_indi_filter_accel();
