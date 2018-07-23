@@ -1,0 +1,14 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="guidance_loop_controller">
+  <doc>
+    <description>This module includes all controllers that calculate low level command to attitude loop or even lower level loop.</description>
+  </doc>
+  <header>
+    <file name="guidance_loop_controller.h"/>
+  </header>
+  <makefile>
+    <file name="guidance_loop_controller.c"/>
+  </makefile>
+</module>
+

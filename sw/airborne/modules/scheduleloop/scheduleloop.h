@@ -47,6 +47,10 @@ struct Clock
     float time3;
 };
 
+enum HIGH_LEVEL_GUIDANCE_STATE {FIRST_HIGH_LEVEL,SECOND_HIGH_LEVEL};
+enum LOW_LEVEL_GUIDANCE_STATE {TEMP};
+
+
 struct Pos
 {
     float x; float y; float z;

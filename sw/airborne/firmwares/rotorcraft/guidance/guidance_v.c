@@ -26,14 +26,12 @@
 
 #include "generated/airframe.h"
 #include "firmwares/rotorcraft/guidance/guidance_v.h"
-#include "firmwares/rotorcraft/guidance/guidance_module.h"
+//#include "firmwares/rotorcraft/guidance/guidance_module.h"
 
 #include "firmwares/rotorcraft/guidance/guidance_hybrid.h"
 #include "subsystems/radio_control.h"
 #include "firmwares/rotorcraft/stabilization.h"
 #include "firmwares/rotorcraft/navigation.h"
-#include "modules/flight_plan_in_guided_mode/flight_plan_in_guided_mode.h"
-#include "modules/command_level_iros/command_level_iros.h"
 #include "state.h"
 #include "stdio.h"
 
@@ -342,7 +340,6 @@ void guidance_v_run(bool in_flight)
         stabilization_cmd[COMMAND_THRUST] = Min(guidance_v_rc_delta_t, guidance_v_delta_t);
       } else
 #endif
-          printf("[guidance_v] verical loop control is running\n");
         stabilization_cmd[COMMAND_THRUST] = guidance_v_delta_t;  // write the value to stabilization level
       break;
 

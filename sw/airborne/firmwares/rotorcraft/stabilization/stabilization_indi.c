@@ -307,7 +307,6 @@ void stabilization_indi_run(bool enable_integrator __attribute__((unused)), bool
   /* compute the INDI command */
   stabilization_indi_calc_cmd(stabilization_att_indi_cmd, &att_err, rate_control);
 
-  printf("[stabilization_indi] indi is running\n");
 
   /* copy the INDI command */
   stabilization_cmd[COMMAND_ROLL] = stabilization_att_indi_cmd[COMMAND_ROLL];

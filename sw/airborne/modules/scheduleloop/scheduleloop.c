@@ -24,11 +24,18 @@
  */
 
 #include "modules/scheduleloop/scheduleloop.h"
+#include "modules/guidance_loop_controller/guidance_loop_controller.h"
+
+
 struct Clock clockSchedule;
 struct AutopilotMode autopilotMode;
 struct DroneState currentDroneState,lastStepDroneState, droneStateTemp;
+enum HIGH_LEVEL_GUIDANCE_STATE highLevelGuidanceState;
+enum LOW_LEVEL_GUIDANCE_STATE lowLevelGuidanceState;
 
 void readDroneState(struct DroneState * droneState);
+void firstPartLogic(void);
+void secondPartLogic(void);
 
 void schedule_init(){
      clearClock(1);
@@ -47,28 +54,51 @@ void schedule_run() {
     if(autopilotMode.currentMode != autopilotMode.previousMode)
     {
         clearClock(1);
-        readDroneState(&currentDroneState);
+        highLevelGuidanceState = FIRST_HIGH_LEVEL;
     }
 
-    if(getTime(1)<5.0)
-    {
-        if(guidance_h.mode != GUIDANCE_H_MODE_HOVER) guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
-        if(guidance_v_mode != GUIDANCE_V_MODE_HOVER) guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
-    }
-    else
-    {
-        if(guidance_h.mode != GUIDANCE_H_MODE_GUIDED)
-        {
-            guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
-            set_nn_run();
-        }
-        if(guidance_v_mode != GUIDANCE_V_MODE_GUIDED) guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+    readDroneState(&currentDroneState);
 
+    switch(highLevelGuidanceState)
+    {
+        case FIRST_HIGH_LEVEL:
+            firstPartLogic();
+            break;
+        case SECOND_HIGH_LEVEL:
+            secondPartLogic();
+            break;
     }
+
+
 
 
     autopilotMode.previousMode = autopilot_mode;
     readDroneState(&lastStepDroneState);
+}
+
+void firstPartLogic(void)
+{
+    switch(lowLevelGuidanceState)
+    {
+        case TEMP:
+            if(hover_with_optitrack(2.0))
+            {
+                highLevelGuidanceState = SECOND_HIGH_LEVEL;
+            }
+            break;
+    }
+}
+
+
+void secondPartLogic(void)
+{
+    switch(lowLevelGuidanceState)
+    {
+        case TEMP:
+            nn_controller();
+            break;
+    }
+
 }
  
 void clock_run(){

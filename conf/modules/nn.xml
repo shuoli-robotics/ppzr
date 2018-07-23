@@ -7,8 +7,6 @@
   <header>
     <file name="nn.h"/>
   </header>
-  <periodic fun = "nn_run()" freq="100"/>
-  <periodic fun = "nn_clock()" freq="512"/>
   <makefile>
     <file name="nn.c"/>
     <file name="nn_params.c"/>

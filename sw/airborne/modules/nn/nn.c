@@ -1,11 +1,5 @@
-#include <stdio.h>
 #include <math.h>
 #include "nn.h"
-#include "nn_params.h"
-
-int nn_counter;
-clock_t nn_time;
-
 
 void preprocess_input(double input[]) {
     int i;
@@ -83,23 +77,7 @@ void compute_control(double **ptr_arr_1, double **ptr_arr_2) {
     postprocess_output(*ptr_arr_1);
 }
 
-void nn_run(void)
-{
-    double state[NUM_STATE_VARS] = {
-        -4.2232016635363578e-02, -3.0225037024451664e+00, -6.1490007593689278e-01,
-            5.1089365659897990e-01, 2.9941452020833115e-01
-    };
-    clock_t t = clock();
-    test(state);
-    nn_time = clock() -t; 
-    printf("Time spent is %f\n",(double)nn_time/CLOCKS_PER_SEC);
-}
-void test(double state[NUM_STATE_VARS]) {
-    nn_counter = 0;
-    nn_time = 0;
-    double control[NUM_CONTROL_VARS];
-    int i;
-
+void nn(double state[NUM_STATE_VARS], double control[NUM_CONTROL_VARS]) {
     /* allocate memory for two arrays required by compute_control() */
     /* number of array elements must be at least no. of units in widest layer */
     double arr_1_tmp[MAX_LAYER_DIMS];
@@ -114,14 +92,4 @@ void test(double state[NUM_STATE_VARS]) {
     memcpy(arr_1, state, NUM_STATE_VARS * sizeof(double));
     compute_control(&arr_1, &arr_2);
     memcpy(control, arr_1, NUM_CONTROL_VARS * sizeof(double));
-
-    for (i = 0; i < NUM_CONTROL_VARS; i++) {
-//        printf("%.16f\n", control[i]);
-    }
 }
-
-void nn_clock()
-{
-    //printf("clock is running\n");
-}
-
