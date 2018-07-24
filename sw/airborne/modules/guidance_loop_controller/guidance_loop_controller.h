@@ -36,10 +36,11 @@
 #include "modules/guidance_loop_controller/guidance_loop_controller.h"
 
 
-enum ControllerInUse {NO_CONTROLLER,CONTROLLER_HOVER_WITH_OPTITRACK,CONTROLLER_NN_CONTROLLER} ;
+enum ControllerInUse {NO_CONTROLLER,CONTROLLER_HOVER_WITH_OPTITRACK,CONTROLLER_NN_CONTROLLER,CONTROLLER_GO_TO_POINT} ;
 
 extern bool hover_with_optitrack(float hoverTime);
 extern void nn_controller(void);
+extern bool go_to_point(float desired_x,float desired_y,float desired_z,float desired_heading);
 
 extern bool flagNN;
 
