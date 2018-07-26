@@ -28,7 +28,10 @@
 #include "stdio.h"
 #include "state.h"
 
+
 enum ControllerInUse controllerInUse;
+struct Pos hoverPos;
+struct Euler hoverEuler;
 bool flagNN;
 
 bool hover_with_optitrack(float hoverTime)
@@ -37,10 +40,19 @@ bool hover_with_optitrack(float hoverTime)
     {
             controllerInUse= CONTROLLER_HOVER_WITH_OPTITRACK;
             clearClock(2);
-            guidance_h_mode_changed(GUIDANCE_H_MODE_HOVER);
-            guidance_v_mode_changed(GUIDANCE_V_MODE_HOVER);
+            guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
+            guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
+            hoverPos.x = stateGetPositionNed_f()->x;
+            hoverPos.y= stateGetPositionNed_f()->y;
+            hoverPos.z = stateGetPositionNed_f()->z;
+            hoverEuler.psi= stateGetNedToBodyEulers_f()->psi;
             flagNN = false;
     }
+    guidance_h_set_guided_pos(hoverPos.x, hoverPos.y);   
+    guidance_h_set_guided_heading(hoverEuler.psi);
+    guidance_v_set_guided_z(hoverPos.z);
+
+    printf("[guidance loop controller] hovering mode\n");
 
     if(getTime(2)>hoverTime)
         return true;
@@ -59,6 +71,7 @@ void nn_controller(void)
             guidance_h_mode_changed(GUIDANCE_H_MODE_GUIDED);
             guidance_v_mode_changed(GUIDANCE_V_MODE_GUIDED);
             flagNN = true;
+            printf("[nn controle] nn controller is activated]");
     }
 
     double state[NUM_STATE_VARS] = {
