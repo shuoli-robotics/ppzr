@@ -32,7 +32,7 @@
       <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="TRUE"/>
 
     </module>
-    <module name="ins" type="extended"/><!--gps_passthrough"/>extended-->
+    <module name="ins" type="gps_passthrough"/><!--gps_passthrough"/>extended-->
   </firmware>
 
   <modules main_freq="512">
